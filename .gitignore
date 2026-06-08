@@ -1,0 +1,22 @@
+# Android build outputs and caches
+**/build/
+**/.gradle/
+**/local.properties
+
+# Android Studio / IntelliJ IDEA configuration
+**/.idea/
+**/*.iml
+**/*.ipr
+**/*.iws
+
+# System files
+**/.DS_Store
+Thumbs.db
+
+# User specific or temporary files
+**/captures/
+**/.externalNativeBuild/
+**/.cxx/
+
+# Exclude planning documents from repository
+/plan/
