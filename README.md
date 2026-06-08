@@ -6,12 +6,6 @@ Aplikasi ini dibangun menggunakan arsitektur **Feature-First + Clean Architectur
 
 ---
 
-## 📥 Download Aplikasi
-Anda dapat mengunduh langsung berkas APK rilis teroptimasi (siap pasang di Android) dari repositori ini:
-* **[Unduh HitungUang.apk](https://github.com/Medskiyyy/HitungUang/raw/main/HitungUang.apk)** (43.38 MB)
-
----
-
 ## ✨ Fitur Utama
 
 Aplikasi HitungUang dikembangkan dalam 26 Milestone dengan cakupan fitur lengkap:
