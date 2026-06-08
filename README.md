@@ -76,34 +76,50 @@ Setiap fitur bersifat independen dan berkomunikasi melalui lapisan UseCase untuk
 
 ---
 
-## 🚀 Cara Menjalankan & Membangun Proyek
+## 📥 Cara Install
 
-### Prasyarat
-* **Android Studio Ladybug** (atau versi lebih baru)
-* **JDK 17** (direkomendasikan menggunakan JetBrains Runtime bawaan Android Studio)
-* Perangkat Android dengan **SDK Min 26 (Android 8.0)**
+1. Unduh berkas **`HitungUang.apk`** versi terbaru dari halaman **Releases** di repositori GitHub ini.
+2. Buka berkas APK yang telah diunduh di perangkat Android Anda.
+3. Jika muncul peringatan keamanan (keamanan Play Protect atau instalasi dari sumber tidak dikenal), berikan izin untuk melanjutkan instalasi.
+4. Ketuk **Install** (Pasang) dan tunggu hingga proses selesai.
+5. Buka aplikasi **HitungUang 🪙** dari laci aplikasi Anda.
 
-### Build Skenario
+---
 
-1. **Clone repositori**:
-   ```bash
-   git clone https://github.com/Medskiyyy/HitungUang.git
-   cd HitungUang/app
-   ```
+## 📖 Panduan Penggunaan & Tutorial
 
-2. **Menjalankan Pengujian Unit & UI (Robolectric)**:
-   ```powershell
-   # Windows PowerShell
-   $env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"; .\gradlew test
-   ```
+### 1. Setup Awal (Onboarding)
+Saat aplikasi dibuka pertama kali, Anda akan dipandu melalui 8 langkah setup awal:
+* **Profil**: Masukkan nama panggilan dan pekerjaan Anda.
+* **Dompet**: Buat akun dompet utama Anda beserta saldo awalnya.
+* **Anggaran**: Tetapkan batas pengeluaran bulanan global pertama Anda.
+* **Keamanan**: Aktifkan kunci PIN (4 digit) serta Biometrik (Sidik Jari/Wajah) untuk mengamankan data keuangan Anda.
+* **Cadangan**: Pilih folder penyimpanan aman di perangkat Anda untuk auto-backup data.
 
-3. **Membangun APK Rilis Teroptimasi**:
-   ```powershell
-   # Windows PowerShell
-   $env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"; .\gradlew :app:assembleRelease
-   ```
-   APK rilis yang telah dioptimasi dengan Proguard/R8 dan ditandatangani akan berada di folder:
-   `app/app/build/outputs/apk/release/app-release.apk`
+### 2. Mencatat Transaksi Manual
+* Ketuk chip kategori pada bagian **Quick Add** di Dashboard, atau buka tab **Transaksi** lalu ketuk tombol **(+)**.
+* Pilih tipe transaksi (**Pemasukan** atau **Pengeluaran**).
+* Masukkan nominal, pilih akun dompet, pilih kategori, dan tambahkan catatan/tanggal jika diperlukan.
+* Anda juga dapat melampirkan hingga 5 foto bukti transaksi langsung dari Kamera atau Galeri.
+* Ketuk **Simpan**.
+
+### 3. Pindai Struk Belanja Otomatis (OCR)
+* Masuk ke tab **Scan** pada navigasi bawah.
+* Ambil foto struk belanja atau unggah foto dari Galeri.
+* Engine OCR lokal (Google ML Kit) akan memindai struk dan mem-parsing nama toko, tanggal, daftar barang belanjaan, pajak, hingga total pengeluaran.
+* Tinjau hasil pemindaian di layar review, sesuaikan data jika diperlukan, lalu ketuk **Simpan Transaksi**.
+
+### 4. Transfer Dana Antar Rekening
+* Masuk ke tab **Akun** (Kelola Dompet).
+* Ketuk tombol **Transfer** (ikon panah bolak-balik) di pojok kanan atas.
+* Pilih rekening asal, rekening tujuan, nominal transfer, serta biaya admin jika ada.
+* Ketuk **Kirim**. Saldo kedua rekening akan disesuaikan secara real-time dan aman.
+
+### 5. Cadangkan dan Pulihkan Data (Backup & Restore)
+* Buka menu pengaturan (ketuk ikon gerigi di pojok kanan atas Dashboard atau Akun).
+* Pilih opsi **Backup & Restore**.
+* Ketuk **Ekspor Data** untuk mengompresi basis data Room beserta seluruh gambar lampiran ke dalam satu berkas file ZIP di folder yang telah Anda pilih.
+* Anda juga dapat mengimpor berkas ZIP cadangan tersebut di kemudian hari untuk memulihkan data secara utuh.
 
 ---
 
