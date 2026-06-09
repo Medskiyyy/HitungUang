@@ -194,7 +194,7 @@ class DashboardViewModel @Inject constructor(
         val recentTransactions = transactions
             .filter { !it.isDeleted }
             .sortedByDescending { it.transactionDate }
-            .take(10)
+            .take(5)
 
         // Top Expense Category & Amount
         val topExpenseEntry = expenseCategoriesDistribution.maxByOrNull { it.value }

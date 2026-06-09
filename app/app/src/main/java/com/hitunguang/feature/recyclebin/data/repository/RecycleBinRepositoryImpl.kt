@@ -84,12 +84,58 @@ class RecycleBinRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun restoreItem(entityId: String, entityType: String) {
+        if (entityType == "TRANSACTION") {
+            restoreTransaction(entityId)
+            return
+        }
+        database.withTransaction {
+            val now = System.currentTimeMillis()
+            when (entityType) {
+                "CATEGORY" -> database.categoryDao().restoreCategoryState(entityId, now)
+                "WALLET" -> database.accountDao().restoreAccountState(entityId, now)
+                "BUDGET" -> database.budgetDao().restoreBudgetState(entityId, now)
+            }
+
+            val recycleBinEntry = recycleBinDao.getAllDeletedItems().first().find {
+                it.entityId == entityId && it.entityType == entityType
+            }
+            if (recycleBinEntry != null) {
+                recycleBinDao.removeFromRecycleBin(recycleBinEntry)
+            }
+        }
+    }
+
+    override suspend fun permanentDeleteItem(entityId: String, entityType: String) {
+        if (entityType == "TRANSACTION") {
+            permanentDeleteTransaction(entityId)
+            return
+        }
+        database.withTransaction {
+            when (entityType) {
+                "CATEGORY" -> {
+                    val category = database.categoryDao().getCategoryByIdDirect(entityId)
+                    if (category == null || !category.isDefault) {
+                        database.categoryDao().hardDeleteCategory(entityId)
+                    }
+                }
+                "WALLET" -> database.accountDao().hardDeleteAccount(entityId)
+                "BUDGET" -> database.budgetDao().hardDeleteBudget(entityId)
+            }
+
+            val recycleBinEntry = recycleBinDao.getAllDeletedItems().first().find {
+                it.entityId == entityId && it.entityType == entityType
+            }
+            if (recycleBinEntry != null) {
+                recycleBinDao.removeFromRecycleBin(recycleBinEntry)
+            }
+        }
+    }
+
     override suspend fun cleanupExpiredItems(currentTime: Long) {
         val expiredEntries = recycleBinDao.getExpiredItems(currentTime)
         expiredEntries.forEach { entry ->
-            if (entry.entityType == "TRANSACTION") {
-                permanentDeleteTransaction(entry.entityId)
-            }
+            permanentDeleteItem(entry.entityId, entry.entityType)
         }
     }
 }

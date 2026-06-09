@@ -11,5 +11,8 @@ data class TransactionWithDetailsEntity(
     val accountName: String,
     
     @ColumnInfo(name = "category_name")
-    val categoryName: String?
+    val categoryName: String?,
+    
+    @ColumnInfo(name = "category_icon")
+    val categoryIcon: String?
 )

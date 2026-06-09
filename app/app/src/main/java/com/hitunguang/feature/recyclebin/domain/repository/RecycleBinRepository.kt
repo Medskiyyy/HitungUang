@@ -7,5 +7,7 @@ interface RecycleBinRepository {
     fun getDeletedItems(): Flow<List<RecycleBinItem>>
     suspend fun restoreTransaction(transactionId: String)
     suspend fun permanentDeleteTransaction(transactionId: String)
+    suspend fun restoreItem(entityId: String, entityType: String)
+    suspend fun permanentDeleteItem(entityId: String, entityType: String)
     suspend fun cleanupExpiredItems(currentTime: Long)
 }

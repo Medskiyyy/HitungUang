@@ -59,7 +59,7 @@ fun RecycleBinScreen(
     viewModel: RecycleBinViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var transactionToDeletePermanently by remember { mutableStateOf<RecycleBinItem?>(null) }
+    var itemToDeletePermanently by remember { mutableStateOf<RecycleBinItem?>(null) }
 
     Scaffold(
         topBar = {
@@ -161,8 +161,8 @@ fun RecycleBinScreen(
                         items(uiState.items, key = { it.id }) { item ->
                             RecycleBinItemCard(
                                 item = item,
-                                onRestore = { viewModel.restoreTransaction(item.entityId) },
-                                onDeletePermanently = { transactionToDeletePermanently = item }
+                                onRestore = { viewModel.restoreItem(item.entityId, item.entityType) },
+                                onDeletePermanently = { itemToDeletePermanently = item }
                             )
                         }
                         item {
@@ -174,19 +174,27 @@ fun RecycleBinScreen(
         }
     }
 
-    transactionToDeletePermanently?.let { item ->
-        val title = item.transactionDetails?.title ?: "Transaksi"
+    itemToDeletePermanently?.let { item ->
+        val title = item.title
+        val typeName = when (item.entityType) {
+            "TRANSACTION" -> "Transaksi"
+            "CATEGORY" -> "Kategori"
+            "WALLET" -> "Dompet"
+            "BUDGET" -> "Anggaran"
+            else -> "Item"
+        }
+        val extraWarning = if (item.entityType == "TRANSACTION") " dan semua lampiran fisik juga akan dihapus" else ""
         AlertDialog(
-            onDismissRequest = { transactionToDeletePermanently = null },
+            onDismissRequest = { itemToDeletePermanently = null },
             title = { Text("Hapus Permanen?", fontWeight = FontWeight.Bold) },
             text = {
-                Text("Apakah Anda yakin ingin menghapus \"$title\" secara permanen? Tindakan ini tidak dapat dibatalkan dan semua lampiran fisik juga akan dihapus.")
+                Text("Apakah Anda yakin ingin menghapus \"$title\" ($typeName) secara permanen? Tindakan ini tidak dapat dibatalkan$extraWarning.")
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.permanentDeleteTransaction(item.entityId)
-                        transactionToDeletePermanently = null
+                        viewModel.permanentDeleteItem(item.entityId, item.entityType)
+                        itemToDeletePermanently = null
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error,
@@ -197,7 +205,7 @@ fun RecycleBinScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { transactionToDeletePermanently = null }) {
+                TextButton(onClick = { itemToDeletePermanently = null }) {
                     Text("Batal")
                 }
             }
@@ -212,11 +220,9 @@ fun RecycleBinItemCard(
     onDeletePermanently: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val tx = item.transactionDetails
     val remainingDays = max(0L, (item.expireAt - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L))
     val formatter = SimpleDateFormat("dd MMM yyyy", Locale("in", "ID"))
-    val dateStr = tx?.let { formatter.format(Date(it.transactionDate)) } ?: ""
-    val isExpense = tx?.let { it.transactionType == "EXPENSE" || it.transactionType == "TRANSFER_FEE" } ?: true
+    val dateStr = formatter.format(Date(item.deletedAt))
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -234,37 +240,26 @@ fun RecycleBinItemCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = tx?.title ?: "Transaksi Terhapus",
+                        text = item.title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = tx?.accountName ?: "",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        if (tx?.categoryName != null) {
-                            Text(
-                                text = " • ",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = tx.categoryName,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = item.subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = tx?.let { "${if (isExpense) "-" else "+"} Rp ${it.amount}" } ?: "",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-                )
+                item.amountText?.let { amount ->
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = amount,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = if (item.isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -289,16 +284,18 @@ fun RecycleBinItemCard(
                 }
 
                 Row {
-                    IconButton(
-                        onClick = onDeletePermanently,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.DeleteForever,
-                            contentDescription = "Hapus Permanen",
-                            tint = MaterialTheme.colorScheme.error
-                        )
+                    if (!(item.entityType == "CATEGORY" && item.isDefault)) {
+                        IconButton(
+                            onClick = onDeletePermanently,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.DeleteForever,
+                                contentDescription = "Hapus Permanen",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
                     }
-                    Spacer(modifier = Modifier.width(4.dp))
                     OutlinedButton(
                         onClick = onRestore,
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),

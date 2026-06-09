@@ -15,23 +15,48 @@ import java.util.UUID
 
 @Dao
 interface CategoryDao {
-    @Query("SELECT * FROM categories ORDER BY is_pinned DESC, name ASC")
+    @Query("SELECT * FROM categories WHERE is_deleted = 0 ORDER BY is_pinned DESC, name ASC")
     fun getAllCategories(): Flow<List<CategoryEntity>>
 
-    @Query("SELECT * FROM categories WHERE category_type = :type ORDER BY is_pinned DESC, name ASC")
+    @Query("SELECT * FROM categories WHERE category_type = :type AND is_deleted = 0 ORDER BY is_pinned DESC, name ASC")
     fun getCategoriesByType(type: String): Flow<List<CategoryEntity>>
 
-    @Query("SELECT * FROM categories WHERE id = :id")
+    @Query("SELECT * FROM categories WHERE id = :id AND is_deleted = 0")
     fun getCategoryById(id: String): Flow<CategoryEntity?>
+
+    @Query("SELECT * FROM categories WHERE id = :id")
+    suspend fun getCategoryByIdDirect(id: String): CategoryEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategory(category: CategoryEntity)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertCategoriesIgnore(categories: List<CategoryEntity>)
+
+    @Query("UPDATE categories SET is_deleted = 0, deleted_at = NULL, updated_at = :now WHERE is_default = 1")
+    suspend fun restoreDefaultCategoriesState(now: Long)
+
+    @Query("DELETE FROM recycle_bin WHERE entity_type = 'CATEGORY' AND entity_id IN (SELECT id FROM categories WHERE is_default = 1)")
+    suspend fun removeDefaultCategoriesFromRecycleBin()
+
+    @Transaction
+    suspend fun restoreDefaultCategories(categories: List<CategoryEntity>, now: Long) {
+        insertCategoriesIgnore(categories)
+        restoreDefaultCategoriesState(now)
+        removeDefaultCategoriesFromRecycleBin()
+    }
+
     @Update
     suspend fun updateCategory(category: CategoryEntity)
 
-    @Delete
-    suspend fun deleteCategory(category: CategoryEntity)
+    @Query("UPDATE categories SET is_deleted = 1, deleted_at = :now, updated_at = :now WHERE id = :id")
+    suspend fun softDeleteCategory(id: String, now: Long)
+
+    @Query("UPDATE categories SET is_deleted = 0, deleted_at = NULL, updated_at = :now WHERE id = :id")
+    suspend fun restoreCategoryState(id: String, now: Long)
+
+    @Query("DELETE FROM categories WHERE id = :id")
+    suspend fun hardDeleteCategory(id: String)
 
     @Query("SELECT * FROM transactions WHERE category_id = :categoryId AND is_deleted = 0")
     suspend fun getActiveTransactionsForCategory(categoryId: String): List<TransactionEntity>
@@ -71,7 +96,18 @@ interface CategoryDao {
             )
             insertRecycleBinEntry(recycleBinEntry)
         }
+        val categoryRecycleBinId = UUID.randomUUID().toString()
+        val categoryExpireAt = now + 30L * 24 * 60 * 60 * 1000L
+        val categoryRecycleBinEntry = RecycleBinEntity(
+            id = categoryRecycleBinId,
+            entityType = "CATEGORY",
+            entityId = category.id,
+            deletedAt = now,
+            expireAt = categoryExpireAt
+        )
+        insertRecycleBinEntry(categoryRecycleBinEntry)
+
         updateTransactionsForDeletedCategory(category.id, now)
-        deleteCategory(category)
+        softDeleteCategory(category.id, now)
     }
 }

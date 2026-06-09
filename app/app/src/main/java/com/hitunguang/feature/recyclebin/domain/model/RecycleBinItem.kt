@@ -8,5 +8,10 @@ data class RecycleBinItem(
     val entityId: String,
     val deletedAt: Long,
     val expireAt: Long,
-    val transactionDetails: TransactionWithDetails? = null
+    val title: String,
+    val subtitle: String,
+    val amountText: String?,
+    val isExpense: Boolean,
+    val transactionDetails: TransactionWithDetails? = null,
+    val isDefault: Boolean = false
 )

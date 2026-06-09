@@ -66,7 +66,7 @@ fun InsightCard(
                     Icon(
                         imageVector = Icons.Default.Info,
                         contentDescription = "Insight",
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(

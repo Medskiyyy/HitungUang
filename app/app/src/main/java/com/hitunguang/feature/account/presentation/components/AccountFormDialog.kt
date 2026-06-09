@@ -72,15 +72,23 @@ fun AccountFormDialog(
                             selected = type == "CASH",
                             onClick = { type = "CASH"; icon = "wallet" }
                         )
-                        Text("Tunai (Cash)")
+                        Text("Tunai")
                         
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
                         
                         RadioButton(
                             selected = type == "BANK",
                             onClick = { type = "BANK"; icon = "bank" }
                         )
                         Text("Bank")
+                        
+                        Spacer(modifier = Modifier.width(12.dp))
+                        
+                        RadioButton(
+                            selected = type == "E_WALLET",
+                            onClick = { type = "E_WALLET"; icon = "e_wallet" }
+                        )
+                        Text("E-Wallet")
                     }
                 }
 

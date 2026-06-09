@@ -40,13 +40,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import java.text.NumberFormat
 import java.util.Locale
 
-import com.hitunguang.feature.dashboard.presentation.components.AccountSummaryCard
 import com.hitunguang.feature.dashboard.presentation.components.BalanceCard
 import com.hitunguang.feature.dashboard.presentation.components.BudgetSummaryCard
 import com.hitunguang.feature.dashboard.presentation.components.ExpenseChartCard
 import com.hitunguang.feature.dashboard.presentation.components.InsightCard
-import com.hitunguang.feature.dashboard.presentation.components.QuickAddSection
+import com.hitunguang.feature.dashboard.presentation.components.QuickActionsSection
 import com.hitunguang.feature.dashboard.presentation.components.RecentTransactionsSection
+import com.hitunguang.feature.transfer.presentation.components.TransferDialog
 import com.hitunguang.feature.transaction.domain.model.TransactionWithDetails
 import com.hitunguang.feature.transaction.presentation.components.TransactionDetailDialog
 
@@ -56,12 +56,14 @@ fun DashboardScreen(
     onNavigateToTransactions: () -> Unit,
     onNavigateToBudgets: () -> Unit,
     onSettingsClick: () -> Unit,
-    onQuickAddClick: (categoryId: String, transactionType: String) -> Unit,
+    onAddTransactionClick: (type: String) -> Unit,
+    onScanClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedTransactionForDetail by remember { mutableStateOf<TransactionWithDetails?>(null) }
+    var showTransferDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -103,11 +105,14 @@ fun DashboardScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // Balance Card
+                // Balance Card (Redesigned Hero Balance Card)
                 BalanceCard(
                     totalBalance = uiState.totalBalance,
                     hideBalance = uiState.hideBalance,
-                    onToggleHideBalance = { viewModel.toggleHideBalance() }
+                    onToggleHideBalance = { viewModel.toggleHideBalance() },
+                    totalIncome = uiState.totalIncome,
+                    totalExpense = uiState.totalExpense,
+                    netDifference = uiState.netDifference
                 )
 
                 // Period Filter
@@ -116,17 +121,12 @@ fun DashboardScreen(
                     onPeriodSelect = { viewModel.setDashboardPeriod(it) }
                 )
 
-                // Quick Add Section
-                QuickAddSection(
-                    categories = uiState.quickAddCategories,
-                    onCategoryClick = onQuickAddClick
-                )
-
-                // Financial Summary Text
-                FinancialSummaryInfo(
-                    totalIncome = uiState.totalIncome,
-                    totalExpense = uiState.totalExpense,
-                    netDifference = uiState.netDifference
+                // Quick Actions Grid
+                QuickActionsSection(
+                    onAddExpenseClick = { onAddTransactionClick("EXPENSE") },
+                    onAddIncomeClick = { onAddTransactionClick("INCOME") },
+                    onTransferClick = { showTransferDialog = true },
+                    onScanClick = onScanClick
                 )
 
                 // Budget Utilization Card
@@ -138,11 +138,6 @@ fun DashboardScreen(
                 // Expense Distribution Chart
                 ExpenseChartCard(
                     expenseCategoriesDistribution = uiState.expenseCategoriesDistribution
-                )
-
-                // Account Summary
-                AccountSummaryCard(
-                    accounts = uiState.accounts
                 )
 
                 // Insight Card
@@ -180,6 +175,12 @@ fun DashboardScreen(
                 selectedTransactionForDetail = null
                 onNavigateToTransactions()
             }
+        )
+    }
+
+    if (showTransferDialog) {
+        TransferDialog(
+            onDismiss = { showTransferDialog = false }
         )
     }
 }

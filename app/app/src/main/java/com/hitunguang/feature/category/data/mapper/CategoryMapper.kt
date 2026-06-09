@@ -12,6 +12,8 @@ object CategoryMapper {
             icon = entity.icon,
             isDefault = entity.isDefault,
             isPinned = entity.isPinned,
+            isDeleted = entity.isDeleted,
+            deletedAt = entity.deletedAt,
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt
         )
@@ -25,6 +27,8 @@ object CategoryMapper {
             icon = domain.icon,
             isDefault = domain.isDefault,
             isPinned = domain.isPinned,
+            isDeleted = domain.isDeleted,
+            deletedAt = domain.deletedAt,
             createdAt = domain.createdAt,
             updatedAt = domain.updatedAt
         )

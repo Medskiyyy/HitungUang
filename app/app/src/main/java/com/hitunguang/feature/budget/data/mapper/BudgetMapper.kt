@@ -14,6 +14,8 @@ object BudgetMapper {
             startDate = entity.startDate,
             endDate = entity.endDate,
             isActive = entity.isActive,
+            isDeleted = entity.isDeleted,
+            deletedAt = entity.deletedAt,
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt
         )
@@ -29,6 +31,8 @@ object BudgetMapper {
             startDate = domain.startDate,
             endDate = domain.endDate,
             isActive = domain.isActive,
+            isDeleted = domain.isDeleted,
+            deletedAt = domain.deletedAt,
             createdAt = domain.createdAt,
             updatedAt = domain.updatedAt
         )

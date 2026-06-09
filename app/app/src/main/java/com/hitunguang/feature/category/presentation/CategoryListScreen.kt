@@ -17,6 +17,9 @@ import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Restore
+import com.hitunguang.feature.category.presentation.components.CategoryIconHelper
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,6 +50,7 @@ import com.hitunguang.feature.category.presentation.components.DeleteCategoryDia
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryListScreen(
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CategoryViewModel = hiltViewModel()
 ) {
@@ -62,7 +66,24 @@ fun CategoryListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Kelola Kategori", fontWeight = FontWeight.Bold) }
+                title = { Text("Kelola Kategori", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Kembali"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { viewModel.restoreDefaultCategories() }) {
+                        Icon(
+                            imageVector = Icons.Default.Restore,
+                            contentDescription = "Pulihkan Kategori Bawaan",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -145,7 +166,7 @@ fun CategoryListScreen(
                                     modifier = Modifier.weight(1f)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Category,
+                                        imageVector = CategoryIconHelper.getIconByName(category.icon),
                                         contentDescription = category.name,
                                         tint = MaterialTheme.colorScheme.primary
                                     )
@@ -188,13 +209,13 @@ fun CategoryListScreen(
                                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                         }
-                                        IconButton(onClick = { viewModel.showDeleteDialog(category) }) {
-                                            Icon(
-                                                imageVector = Icons.Default.Delete,
-                                                contentDescription = "Hapus",
-                                                tint = MaterialTheme.colorScheme.error
-                                            )
-                                        }
+                                    }
+                                    IconButton(onClick = { viewModel.showDeleteDialog(category) }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Hapus",
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
                                     }
                                 }
                             }

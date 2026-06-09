@@ -169,4 +169,14 @@ class CategoryViewModel @Inject constructor(
             }
         }
     }
+
+    fun restoreDefaultCategories() {
+        viewModelScope.launch {
+            try {
+                categoryRepository.restoreDefaultCategories()
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message) }
+            }
+        }
+    }
 }

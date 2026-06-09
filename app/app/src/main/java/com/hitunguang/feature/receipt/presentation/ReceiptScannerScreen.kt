@@ -2,6 +2,9 @@ package com.hitunguang.feature.receipt.presentation
 
 import android.content.Context
 import android.net.Uri
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -11,6 +14,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
@@ -42,7 +47,7 @@ fun ReceiptScannerScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
-    var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
+    var tempPhotoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
@@ -51,6 +56,22 @@ fun ReceiptScannerScreen(
             tempPhotoUri?.let { uri ->
                 viewModel.setImageUri(uri)
             }
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            val uri = getTempPhotoUri(context)
+            if (uri != null) {
+                tempPhotoUri = uri
+                takePictureLauncher.launch(uri)
+            } else {
+                viewModel.setErrorMessage("Gagal membuat file sementara untuk foto")
+            }
+        } else {
+            viewModel.setErrorMessage("Izin kamera diperlukan untuk mengambil foto struk")
         }
     }
 
@@ -128,9 +149,21 @@ fun ReceiptScannerScreen(
                         ) {
                             FilledTonalButton(
                                 onClick = {
-                                    val uri = getTempPhotoUri(context)
-                                    tempPhotoUri = uri
-                                    takePictureLauncher.launch(uri)
+                                    val permissionCheck = ContextCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.CAMERA
+                                    )
+                                    if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                                        val uri = getTempPhotoUri(context)
+                                        if (uri != null) {
+                                            tempPhotoUri = uri
+                                            takePictureLauncher.launch(uri)
+                                        } else {
+                                            viewModel.setErrorMessage("Gagal membuat file sementara untuk foto")
+                                        }
+                                    } else {
+                                        permissionLauncher.launch(Manifest.permission.CAMERA)
+                                    }
                                 }
                             ) {
                                 Icon(imageVector = Icons.Default.CameraAlt, contentDescription = null)
@@ -220,12 +253,26 @@ fun ReceiptScannerScreen(
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        text = error,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
+                    Column(
                         modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = error,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        if (uiState.imageUri != null && uiState.rawText == null && !uiState.isScanning) {
+                            TextButton(
+                                onClick = { viewModel.startScan() },
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.error
+                                )
+                            ) {
+                                Text("Coba Lagi", fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
                 }
             }
 
@@ -284,13 +331,18 @@ fun ReceiptScannerScreen(
     }
 }
 
-private fun getTempPhotoUri(context: Context): Uri {
-    val tempFile = File.createTempFile("camera_photo_", ".jpg", context.cacheDir).apply {
-        deleteOnExit()
+private fun getTempPhotoUri(context: Context): Uri? {
+    return try {
+        val tempFile = File.createTempFile("camera_photo_", ".jpg", context.cacheDir).apply {
+            deleteOnExit()
+        }
+        androidx.core.content.FileProvider.getUriForFile(
+            context,
+            "com.hitunguang.fileprovider",
+            tempFile
+        )
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
     }
-    return androidx.core.content.FileProvider.getUriForFile(
-        context,
-        "com.hitunguang.fileprovider",
-        tempFile
-    )
 }

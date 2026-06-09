@@ -107,8 +107,9 @@ fun ExpenseChartCard(
                             val topLeftOffset = strokeWidth / 2f
                             var startAngle = -90f
 
-                            val distributionList = expenseCategoriesDistribution.values.toList()
-                            distributionList.forEachIndexed { index, amount ->
+                            val sortedDistributionList = expenseCategoriesDistribution.entries.sortedByDescending { it.value }
+                            sortedDistributionList.forEachIndexed { index, entry ->
+                                val amount = entry.value
                                 val sweepAngle = if (totalExpense > 0) (amount.toFloat() / totalExpense.toFloat()) * 360f else 0f
                                 val color = colors[index % colors.size]
                                 drawArc(
@@ -131,7 +132,8 @@ fun ExpenseChartCard(
                             .fillMaxHeight(),
                         verticalArrangement = Arrangement.Center
                     ) {
-                        expenseCategoriesDistribution.entries.sortedByDescending { it.value }.take(4).forEachIndexed { index, entry ->
+                        val sortedDistributionList = expenseCategoriesDistribution.entries.sortedByDescending { it.value }
+                        sortedDistributionList.take(4).forEachIndexed { index, entry ->
                             val color = colors[index % colors.size]
                             val percent = if (totalExpense > 0) (entry.value.toFloat() / totalExpense.toFloat() * 100f).roundToInt() else 0
                             Row(

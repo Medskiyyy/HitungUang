@@ -6,6 +6,7 @@ data class TransactionWithDetails(
     val accountName: String,
     val categoryId: String?,
     val categoryName: String?,
+    val categoryIcon: String?,
     val receiptId: String?,
     val transactionType: String,
     val title: String,

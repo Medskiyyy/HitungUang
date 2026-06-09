@@ -12,6 +12,8 @@ object AccountMapper {
             icon = entity.icon,
             initialBalance = entity.initialBalance,
             currentBalance = entity.currentBalance,
+            isDeleted = entity.isDeleted,
+            deletedAt = entity.deletedAt,
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt
         )
@@ -25,6 +27,8 @@ object AccountMapper {
             icon = domain.icon,
             initialBalance = domain.initialBalance,
             currentBalance = domain.currentBalance,
+            isDeleted = domain.isDeleted,
+            deletedAt = domain.deletedAt,
             createdAt = domain.createdAt,
             updatedAt = domain.updatedAt
         )

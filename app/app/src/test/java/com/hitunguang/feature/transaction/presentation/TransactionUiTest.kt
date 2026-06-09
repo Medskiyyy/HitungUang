@@ -29,6 +29,7 @@ class TransactionUiTest {
             accountName = "Dompet Tunai",
             categoryId = "cat-1",
             categoryName = "Makanan",
+            categoryIcon = "restaurant",
             receiptId = null,
             transactionType = "EXPENSE",
             title = "Nasi Goreng",

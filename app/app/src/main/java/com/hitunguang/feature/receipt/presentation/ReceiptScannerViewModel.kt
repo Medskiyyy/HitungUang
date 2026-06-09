@@ -30,6 +30,12 @@ class ReceiptScannerViewModel @Inject constructor(
         }
     }
 
+    fun setErrorMessage(message: String) {
+        _uiState.update {
+            it.copy(errorMessage = message)
+        }
+    }
+
     fun startScan() {
         val uri = _uiState.value.imageUri ?: return
         _uiState.update { it.copy(isScanning = true, errorMessage = null, rawText = null) }

@@ -69,6 +69,133 @@ class TransactionViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
+    private val _selectedPeriod = MutableStateFlow("ALL")
+    val selectedPeriod: StateFlow<String> = _selectedPeriod.asStateFlow()
+
+    private val _selectedSort = MutableStateFlow("NEWEST")
+    val selectedSort: StateFlow<String> = _selectedSort.asStateFlow()
+
+    private val _customDateRange = MutableStateFlow<Pair<Long, Long>?>(null)
+    val customDateRange: StateFlow<Pair<Long, Long>?> = _customDateRange.asStateFlow()
+
+    val filteredTransactions: StateFlow<List<TransactionWithDetails>> = kotlinx.coroutines.flow.combine(
+        getTransactionsUseCase(),
+        _selectedPeriod,
+        _selectedSort,
+        _customDateRange
+    ) { txList, period, sort, dateRange ->
+        var result = txList
+
+        // 1. Filter by period
+        if (period != "ALL") {
+            val now = System.currentTimeMillis()
+            val calendar = java.util.Calendar.getInstance()
+            calendar.timeInMillis = now
+
+            val startMs: Long
+            val endMs: Long
+
+            when (period) {
+                "TODAY" -> {
+                    calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+                    calendar.set(java.util.Calendar.MINUTE, 0)
+                    calendar.set(java.util.Calendar.SECOND, 0)
+                    calendar.set(java.util.Calendar.MILLISECOND, 0)
+                    startMs = calendar.timeInMillis
+
+                    calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
+                    calendar.set(java.util.Calendar.MINUTE, 59)
+                    calendar.set(java.util.Calendar.SECOND, 59)
+                    calendar.set(java.util.Calendar.MILLISECOND, 999)
+                    endMs = calendar.timeInMillis
+                }
+                "WEEKLY" -> {
+                    calendar.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.MONDAY)
+                    calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+                    calendar.set(java.util.Calendar.MINUTE, 0)
+                    calendar.set(java.util.Calendar.SECOND, 0)
+                    calendar.set(java.util.Calendar.MILLISECOND, 0)
+                    startMs = calendar.timeInMillis
+
+                    calendar.add(java.util.Calendar.DAY_OF_YEAR, 6)
+                    calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
+                    calendar.set(java.util.Calendar.MINUTE, 59)
+                    calendar.set(java.util.Calendar.SECOND, 59)
+                    calendar.set(java.util.Calendar.MILLISECOND, 999)
+                    endMs = calendar.timeInMillis
+                }
+                "MONTHLY" -> {
+                    calendar.set(java.util.Calendar.DAY_OF_MONTH, 1)
+                    calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+                    calendar.set(java.util.Calendar.MINUTE, 0)
+                    calendar.set(java.util.Calendar.SECOND, 0)
+                    calendar.set(java.util.Calendar.MILLISECOND, 0)
+                    startMs = calendar.timeInMillis
+
+                    calendar.set(java.util.Calendar.DAY_OF_MONTH, calendar.getActualMaximum(java.util.Calendar.DAY_OF_MONTH))
+                    calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
+                    calendar.set(java.util.Calendar.MINUTE, 59)
+                    calendar.set(java.util.Calendar.SECOND, 59)
+                    calendar.set(java.util.Calendar.MILLISECOND, 999)
+                    endMs = calendar.timeInMillis
+                }
+                "YEARLY" -> {
+                    calendar.set(java.util.Calendar.DAY_OF_YEAR, 1)
+                    calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+                    calendar.set(java.util.Calendar.MINUTE, 0)
+                    calendar.set(java.util.Calendar.SECOND, 0)
+                    calendar.set(java.util.Calendar.MILLISECOND, 0)
+                    startMs = calendar.timeInMillis
+
+                    calendar.set(java.util.Calendar.MONTH, java.util.Calendar.DECEMBER)
+                    calendar.set(java.util.Calendar.DAY_OF_MONTH, 31)
+                    calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
+                    calendar.set(java.util.Calendar.MINUTE, 59)
+                    calendar.set(java.util.Calendar.SECOND, 59)
+                    calendar.set(java.util.Calendar.MILLISECOND, 999)
+                    endMs = calendar.timeInMillis
+                }
+                "CUSTOM" -> {
+                    startMs = dateRange?.first ?: 0L
+                    endMs = dateRange?.second ?: Long.MAX_VALUE
+                }
+                else -> {
+                    startMs = 0L
+                    endMs = Long.MAX_VALUE
+                }
+            }
+
+            result = result.filter { it.transactionDate in startMs..endMs }
+        }
+
+        // 2. Sort
+        result = when (sort) {
+            "NEWEST" -> result.sortedWith(compareByDescending<TransactionWithDetails> { it.transactionDate }.thenByDescending { it.createdAt })
+            "OLDEST" -> result.sortedWith(compareBy<TransactionWithDetails> { it.transactionDate }.thenBy { it.createdAt })
+            "HIGHEST" -> result.sortedByDescending { it.amount }
+            "LOWEST" -> result.sortedBy { it.amount }
+            else -> result
+        }
+
+        result
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    fun setPeriod(period: String) {
+        _selectedPeriod.value = period
+    }
+
+    fun setSort(sort: String) {
+        _selectedSort.value = sort
+    }
+
+    fun setCustomDateRange(start: Long, end: Long) {
+        _customDateRange.value = start to end
+    }
+
     val transactionDraft: StateFlow<TransactionDraft?> = getDraftUseCase()
         .stateIn(
             scope = viewModelScope,

@@ -70,12 +70,19 @@ class SecurityViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            var isFirstCollect = true
             settingsRepository.getSecuritySettings().collect { settings ->
                 val hasPin = settings?.pinHash != null
                 _uiState.update { 
+                    val shouldLock = if (isFirstCollect) {
+                        hasPin
+                    } else {
+                        it.isAppLocked && hasPin
+                    }
+                    isFirstCollect = false
                     it.copy(
                         securitySettings = settings,
-                        isAppLocked = hasPin && !it.isAppLocked // Lock initially if PIN exists
+                        isAppLocked = shouldLock
                     )
                 }
             }

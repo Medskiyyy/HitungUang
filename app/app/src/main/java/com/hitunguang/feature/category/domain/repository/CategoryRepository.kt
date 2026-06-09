@@ -12,4 +12,6 @@ interface CategoryRepository {
     suspend fun deleteCategory(category: Category)
     suspend fun getTransactionCountForCategory(categoryId: String): Int
     suspend fun deleteCategoryAndSoftDelete(category: Category, now: Long)
+    suspend fun restoreDefaultCategories()
+    suspend fun getCategoryByIdDirect(id: String): Category?
 }

@@ -26,5 +26,11 @@ data class CategoryEntity(
     val createdAt: Long,
     
     @ColumnInfo(name = "updated_at")
-    val updatedAt: Long
+    val updatedAt: Long,
+
+    @ColumnInfo(name = "is_deleted")
+    val isDeleted: Boolean = false,
+    
+    @ColumnInfo(name = "deleted_at")
+    val deletedAt: Long? = null
 )

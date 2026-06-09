@@ -8,10 +8,6 @@ class DeleteCategoryUseCase @Inject constructor(
     private val categoryRepository: CategoryRepository
 ) {
     suspend operator fun invoke(category: Category, forceDelete: Boolean = false, now: Long = System.currentTimeMillis()) {
-        if (category.isDefault) {
-            throw IllegalStateException("Kategori default tidak dapat dihapus.")
-        }
-        
         val transactionCount = categoryRepository.getTransactionCountForCategory(category.id)
         if (transactionCount > 0) {
             if (!forceDelete) {

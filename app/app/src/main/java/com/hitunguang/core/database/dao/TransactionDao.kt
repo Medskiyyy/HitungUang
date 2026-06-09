@@ -32,7 +32,7 @@ interface TransactionDao {
     suspend fun deleteTransaction(transaction: TransactionEntity)
 
     @Query("""
-        SELECT t.*, a.name AS account_name, c.name AS category_name 
+        SELECT t.*, a.name AS account_name, c.name AS category_name, c.icon AS category_icon 
         FROM transactions t 
         JOIN accounts a ON t.account_id = a.id 
         LEFT JOIN categories c ON t.category_id = c.id 
@@ -42,7 +42,7 @@ interface TransactionDao {
     fun getAllTransactionsWithDetails(): Flow<List<TransactionWithDetailsEntity>>
 
     @Query("""
-        SELECT t.*, a.name AS account_name, c.name AS category_name 
+        SELECT t.*, a.name AS account_name, c.name AS category_name, c.icon AS category_icon 
         FROM transactions t 
         JOIN accounts a ON t.account_id = a.id 
         LEFT JOIN categories c ON t.category_id = c.id 
@@ -162,7 +162,7 @@ interface TransactionDao {
     }
 
     @Query("""
-        SELECT t.*, a.name AS account_name, c.name AS category_name 
+        SELECT t.*, a.name AS account_name, c.name AS category_name, c.icon AS category_icon 
         FROM transactions t 
         JOIN accounts a ON t.account_id = a.id 
         LEFT JOIN categories c ON t.category_id = c.id 

@@ -133,6 +133,25 @@ class BackupModuleTest {
         dir.deleteRecursively()
     }
 
+    @Test
+    fun `ZipHelper addDirectoryToZip - includes receipts files with receipts prefix`() {
+        val dir = File(context.cacheDir, "receipts_test_${System.currentTimeMillis()}")
+        dir.mkdirs()
+        File(dir, "receipt_img1.jpg").writeText("data1")
+        File(dir, "receipt_img2.jpg").writeText("data2")
+
+        val baos = ByteArrayOutputStream()
+        ZipOutputStream(baos).use { zip ->
+            ZipHelper.addDirectoryToZip(zip, dir, "receipts/")
+        }
+
+        assertTrue("Should have receipt_img1",
+            ZipHelper.containsEntry(ByteArrayInputStream(baos.toByteArray()), "receipts/receipt_img1.jpg"))
+        assertTrue("Should have receipt_img2",
+            ZipHelper.containsEntry(ByteArrayInputStream(baos.toByteArray()), "receipts/receipt_img2.jpg"))
+        dir.deleteRecursively()
+    }
+
     // ─── CreateBackupUseCase Tests (using stub use case logic inline) ──────────
 
     @Test

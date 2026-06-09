@@ -8,5 +8,7 @@ data class Category(
     val isDefault: Boolean,
     val isPinned: Boolean,
     val createdAt: Long,
-    val updatedAt: Long
+    val updatedAt: Long,
+    val isDeleted: Boolean = false,
+    val deletedAt: Long? = null
 )

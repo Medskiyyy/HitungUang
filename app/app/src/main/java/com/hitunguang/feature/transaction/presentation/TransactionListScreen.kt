@@ -1,7 +1,9 @@
 package com.hitunguang.feature.transaction.presentation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,23 +11,37 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDateRangePickerState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,9 +50,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.hitunguang.feature.category.presentation.components.CategoryIconHelper
 import com.hitunguang.feature.transaction.domain.model.Attachment
 import com.hitunguang.feature.transaction.domain.model.TransactionWithDetails
 import com.hitunguang.feature.transaction.presentation.components.AttachmentPreviewDialog
@@ -52,15 +70,21 @@ import kotlin.math.abs
 @Composable
 fun TransactionListScreen(
     onSearchClick: () -> Unit,
+    onManageCategoriesClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TransactionViewModel = hiltViewModel()
 ) {
-    val transactions by viewModel.transactions.collectAsState()
+    val transactions by viewModel.filteredTransactions.collectAsState()
+    val selectedPeriod by viewModel.selectedPeriod.collectAsState()
+    val selectedSort by viewModel.selectedSort.collectAsState()
+    val customDateRange by viewModel.customDateRange.collectAsState()
+
     val accounts by viewModel.accounts.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
 
     var activePreviewAttachment by remember { mutableStateOf<Attachment?>(null) }
+    var showDateRangePicker by remember { mutableStateOf(false) }
 
     val groupedTransactions = remember(transactions) {
         val formatter = SimpleDateFormat("dd MMMM yyyy", Locale("in", "ID"))
@@ -75,6 +99,29 @@ fun TransactionListScreen(
                 else -> dateStr
             }
         }
+    }
+
+    val periods = listOf(
+        "ALL" to "Semua",
+        "TODAY" to "Hari Ini",
+        "WEEKLY" to "Minggu Ini",
+        "MONTHLY" to "Bulan Ini",
+        "YEARLY" to "Tahun Ini",
+        "CUSTOM" to "Pilih Tanggal"
+    )
+
+    val sorts = listOf(
+        "NEWEST" to "Terbaru",
+        "OLDEST" to "Terlama",
+        "HIGHEST" to "Tertinggi",
+        "LOWEST" to "Terendah"
+    )
+
+    val sdf = remember { SimpleDateFormat("dd/MM", Locale("in", "ID")) }
+    val customRangeLabel = if (selectedPeriod == "CUSTOM" && customDateRange != null) {
+        "Pilih Tanggal (${sdf.format(Date(customDateRange!!.first))} - ${sdf.format(Date(customDateRange!!.second))})"
+    } else {
+        "Pilih Tanggal"
     }
 
     Scaffold(
@@ -119,6 +166,47 @@ fun TransactionListScreen(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
             }
+
+            // Period Filters Row
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(periods) { (chipValue, label) ->
+                    val isSelected = selectedPeriod == chipValue
+                    val displayLabel = if (chipValue == "CUSTOM") customRangeLabel else label
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = {
+                            if (chipValue == "CUSTOM") {
+                                showDateRangePicker = true
+                            } else {
+                                viewModel.setPeriod(chipValue)
+                            }
+                        },
+                        label = { Text(displayLabel) }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Sort Options Row
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(sorts) { (chipValue, label) ->
+                    val isSelected = selectedSort == chipValue
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { viewModel.setSort(chipValue) },
+                        label = { Text(label) }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             if (transactions.isEmpty()) {
                 Column(
@@ -172,58 +260,136 @@ fun TransactionListScreen(
 
                         items(dailyTxs, key = { it.id }) { tx ->
                             val isExpense = tx.transactionType == "EXPENSE" || tx.transactionType == "TRANSFER_FEE"
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { viewModel.showDetailsDialog(tx) },
-                                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = tx.title,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(
-                                                text = tx.accountName,
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            val dismissState = rememberSwipeToDismissBoxState(
+                                confirmValueChange = { dismissValue ->
+                                    when (dismissValue) {
+                                        SwipeToDismissBoxValue.StartToEnd -> {
+                                            viewModel.showEditDialog(tx)
+                                            false
+                                        }
+                                        SwipeToDismissBoxValue.EndToStart -> {
+                                            viewModel.showDeleteDialog(tx)
+                                            false
+                                        }
+                                        SwipeToDismissBoxValue.Settled -> false
+                                    }
+                                }
+                            )
+
+                            SwipeToDismissBox(
+                                state = dismissState,
+                                backgroundContent = {
+                                    val color = when (dismissState.dismissDirection) {
+                                        SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.primaryContainer
+                                        SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.errorContainer
+                                        SwipeToDismissBoxValue.Settled -> androidx.compose.ui.graphics.Color.Transparent
+                                    }
+                                    val alignment = when (dismissState.dismissDirection) {
+                                        SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+                                        SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
+                                        SwipeToDismissBoxValue.Settled -> Alignment.Center
+                                    }
+                                    val icon = when (dismissState.dismissDirection) {
+                                        SwipeToDismissBoxValue.StartToEnd -> Icons.Default.Edit
+                                        SwipeToDismissBoxValue.EndToStart -> Icons.Default.Delete
+                                        SwipeToDismissBoxValue.Settled -> null
+                                    }
+                                    Box(
+                                        Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(color)
+                                            .padding(horizontal = 24.dp),
+                                        contentAlignment = alignment
+                                    ) {
+                                        if (icon != null) {
+                                            Icon(
+                                                imageVector = icon,
+                                                contentDescription = null,
+                                                tint = when (dismissState.dismissDirection) {
+                                                    SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.onPrimaryContainer
+                                                    SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.onErrorContainer
+                                                    else -> MaterialTheme.colorScheme.onSurface
+                                                }
                                             )
-                                            if (tx.categoryName != null) {
-                                                Text(
-                                                    text = " • ",
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                                Text(
-                                                    text = tx.categoryName,
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.primary
-                                                )
-                                            }
                                         }
                                     }
+                                },
+                                content = {
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { viewModel.showDetailsDialog(tx) },
+                                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(16.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            val iconVector = CategoryIconHelper.getIconByName(tx.categoryIcon)
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(40.dp)
+                                                    .clip(CircleShape)
+                                                    .background(
+                                                        if (isExpense) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+                                                        else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+                                                    ),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = iconVector,
+                                                    contentDescription = null,
+                                                    tint = if (isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            }
 
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                            Spacer(modifier = Modifier.width(12.dp))
 
-                                    Text(
-                                        text = "${if (isExpense) "-" else "+"} Rp ${tx.amount}",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-                                    )
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    text = tx.title,
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(
+                                                        text = tx.accountName,
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                    if (tx.categoryName != null) {
+                                                        Text(
+                                                            text = " • ",
+                                                            style = MaterialTheme.typography.bodySmall,
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                        )
+                                                        Text(
+                                                            text = tx.categoryName,
+                                                            style = MaterialTheme.typography.bodySmall,
+                                                            color = MaterialTheme.colorScheme.primary
+                                                        )
+                                                    }
+                                                }
+                                            }
+
+                                            Spacer(modifier = Modifier.width(8.dp))
+
+                                            Text(
+                                                text = "${if (isExpense) "-" else "+"} Rp ${tx.amount}",
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = if (isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
                                 }
-                            }
+                            )
                         }
                     }
 
@@ -232,6 +398,45 @@ fun TransactionListScreen(
                     }
                 }
             }
+        }
+    }
+
+    if (showDateRangePicker) {
+        val dateRangePickerState = rememberDateRangePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDateRangePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val start = dateRangePickerState.selectedStartDateMillis
+                        val end = dateRangePickerState.selectedEndDateMillis
+                        if (start != null && end != null) {
+                            val calendar = java.util.Calendar.getInstance()
+                            calendar.timeInMillis = end
+                            calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
+                            calendar.set(java.util.Calendar.MINUTE, 59)
+                            calendar.set(java.util.Calendar.SECOND, 59)
+                            calendar.set(java.util.Calendar.MILLISECOND, 999)
+                            viewModel.setCustomDateRange(start, calendar.timeInMillis)
+                            viewModel.setPeriod("CUSTOM")
+                        }
+                        showDateRangePicker = false
+                    },
+                    enabled = dateRangePickerState.selectedStartDateMillis != null && dateRangePickerState.selectedEndDateMillis != null
+                ) {
+                    Text("Pilih")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDateRangePicker = false }) {
+                    Text("Batal")
+                }
+            }
+        ) {
+            DateRangePicker(
+                state = dateRangePickerState,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 
@@ -251,6 +456,7 @@ fun TransactionListScreen(
             },
             onAttachmentClick = { activePreviewAttachment = it },
             onDismiss = { viewModel.hideCreateDialog() },
+            onManageCategoriesClick = onManageCategoriesClick,
             onSave = { accountId, categoryId, type, title, note, amount, date ->
                 viewModel.createTransaction(accountId, categoryId, type, title, note, amount, date)
             }
@@ -274,6 +480,7 @@ fun TransactionListScreen(
             },
             onAttachmentClick = { activePreviewAttachment = it },
             onDismiss = { viewModel.hideEditDialog() },
+            onManageCategoriesClick = onManageCategoriesClick,
             onSave = { accountId, categoryId, type, title, note, amount, date ->
                 viewModel.updateTransaction(
                     transactionId = uiState.transactionToEdit!!.id,

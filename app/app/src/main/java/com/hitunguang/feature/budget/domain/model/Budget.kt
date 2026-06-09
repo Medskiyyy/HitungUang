@@ -10,5 +10,7 @@ data class Budget(
     val endDate: Long,
     val isActive: Boolean,
     val createdAt: Long,
-    val updatedAt: Long
+    val updatedAt: Long,
+    val isDeleted: Boolean = false,
+    val deletedAt: Long? = null
 )

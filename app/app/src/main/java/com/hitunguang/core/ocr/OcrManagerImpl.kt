@@ -32,10 +32,14 @@ class OcrManagerImpl @Inject constructor(
     private suspend fun processImage(image: InputImage): String = suspendCancellableCoroutine { continuation ->
         recognizer.process(image)
             .addOnSuccessListener { visionText ->
-                continuation.resume(visionText.text)
+                if (continuation.isActive) {
+                    continuation.resume(visionText.text)
+                }
             }
             .addOnFailureListener { e ->
-                continuation.resumeWithException(e)
+                if (continuation.isActive) {
+                    continuation.resumeWithException(e)
+                }
             }
     }
 }

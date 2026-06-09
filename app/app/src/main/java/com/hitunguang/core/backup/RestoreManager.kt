@@ -72,6 +72,14 @@ class RestoreManager @Inject constructor(
                 tempAttachments.copyRecursively(targetAttachments, overwrite = true)
             }
 
+            // Copy receipts
+            val tempReceipts = File(tempDir, "receipts")
+            if (tempReceipts.exists() && tempReceipts.isDirectory) {
+                val targetReceipts = File(context.filesDir, "receipts")
+                targetReceipts.deleteRecursively()
+                tempReceipts.copyRecursively(targetReceipts, overwrite = true)
+            }
+
             // 5. Restore settings from settings.json (excluding SecuritySettings)
             val settingsJsonFile = File(tempDir, "settings.json")
             if (settingsJsonFile.exists()) {

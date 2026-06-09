@@ -111,13 +111,11 @@ class CategoryModuleTest {
         )
         repository.insertCategory(defaultCategory)
 
-        // 1. Try to delete default category
-        try {
-            deleteCategoryUseCase(defaultCategory)
-            fail("Default category deletion should throw IllegalStateException")
-        } catch (e: IllegalStateException) {
-            assertTrue(e.message?.contains("default tidak dapat dihapus") == true)
-        }
+        // 1. Deleting default category should succeed (marks as soft-deleted)
+        deleteCategoryUseCase(defaultCategory)
+        val deleted = db.categoryDao().getCategoryByIdDirect("cat-default")
+        assertNotNull(deleted)
+        assertTrue(deleted!!.isDeleted)
 
         // 2. Try to update default category name/type
         val updatedName = defaultCategory.copy(name = "Ubah Nama")
@@ -134,6 +132,32 @@ class CategoryModuleTest {
         val read = repository.getCategoryById("cat-default").first()
         assertNotNull(read)
         assertTrue(read!!.isPinned)
+    }
+
+    @Test
+    fun testRestoreDefaultCategories() = runBlocking {
+        val defaultCategory = Category(
+            id = "default_expense_makanan",
+            name = "Makanan",
+            categoryType = "EXPENSE",
+            icon = "restaurant",
+            isDefault = true,
+            isPinned = false,
+            createdAt = 1000L,
+            updatedAt = 1000L
+        )
+        repository.insertCategory(defaultCategory)
+        deleteCategoryUseCase(defaultCategory)
+
+        val deleted = db.categoryDao().getCategoryByIdDirect("default_expense_makanan")
+        assertNotNull(deleted)
+        assertTrue(deleted!!.isDeleted)
+
+        repository.restoreDefaultCategories()
+
+        val restored = db.categoryDao().getCategoryByIdDirect("default_expense_makanan")
+        assertNotNull(restored)
+        assertFalse(restored!!.isDeleted)
     }
 
     @Test
@@ -216,9 +240,11 @@ class CategoryModuleTest {
 
         // 3. Log should be written to recycle bin
         val deletedItems = db.recycleBinDao().getAllDeletedItems().first()
-        assertEquals(1, deletedItems.size)
-        assertEquals("TRANSACTION", deletedItems[0].entityType)
-        assertEquals("tx-1", deletedItems[0].entityId)
+        assertEquals(2, deletedItems.size)
+        val hasTx = deletedItems.any { it.entityType == "TRANSACTION" && it.entityId == "tx-1" }
+        val hasCat = deletedItems.any { it.entityType == "CATEGORY" && it.entityId == "cat-tx" }
+        assertTrue(hasTx)
+        assertTrue(hasCat)
 
         // 4. Account balance should be adjusted (reverted 15,000 expense: 85,000 + 15,000 = 100,000)
         val account = db.accountDao().getAccountById("acc-1").first()

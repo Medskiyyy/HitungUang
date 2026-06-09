@@ -47,6 +47,7 @@ object TransactionMapper {
             accountName = entity.accountName,
             categoryId = entity.transaction.categoryId,
             categoryName = entity.categoryName,
+            categoryIcon = entity.categoryIcon,
             receiptId = entity.transaction.receiptId,
             transactionType = entity.transaction.transactionType,
             title = entity.transaction.title,

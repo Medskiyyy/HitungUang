@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.border
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
@@ -87,13 +89,41 @@ fun CategoryFormDialog(
                     }
                 }
 
-                OutlinedTextField(
-                    value = icon,
-                    onValueChange = { icon = it },
-                    label = { Text("Ikon Kategori (Nama Ikon)") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Column {
+                    Text("Ikon Kategori *", style = MaterialTheme.typography.bodySmall)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
+                        columns = androidx.compose.foundation.lazy.grid.GridCells.Adaptive(minSize = 48.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(130.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(CategoryIconHelper.availableIcons.size) { index ->
+                            val (iconName, label) = CategoryIconHelper.availableIcons[index]
+                            val isSelected = icon == iconName || (icon.isBlank() && iconName == "category")
+                            androidx.compose.material3.IconButton(
+                                onClick = { icon = iconName },
+                                colors = androidx.compose.material3.IconButtonDefaults.iconButtonColors(
+                                    containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else androidx.compose.ui.graphics.Color.Transparent
+                                ),
+                                modifier = Modifier
+                                    .border(
+                                        width = 1.dp,
+                                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                                    )
+                            ) {
+                                androidx.compose.material3.Icon(
+                                    imageVector = CategoryIconHelper.getIconByName(iconName),
+                                    contentDescription = label,
+                                    tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),

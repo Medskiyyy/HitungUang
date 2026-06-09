@@ -6,16 +6,21 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Backup
+import androidx.compose.material.icons.filled.Category
+import com.hitunguang.feature.category.presentation.CategoryListScreen
+import com.hitunguang.feature.transfer.presentation.TransferHistoryScreen
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Lock
@@ -37,16 +42,27 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
 import com.hitunguang.core.designsystem.theme.HitungUangTheme
 import com.hitunguang.feature.account.presentation.AccountListScreen
 import com.hitunguang.feature.dashboard.presentation.DashboardScreen
 import com.hitunguang.feature.onboarding.domain.model.UserProfile
 import com.hitunguang.feature.onboarding.domain.repository.UserProfileRepository
 import com.hitunguang.feature.onboarding.presentation.OnboardingScreen
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.RadioButton
+import com.hitunguang.feature.settings.domain.model.AppSettings
+import androidx.compose.material.icons.filled.Palette
 import com.hitunguang.feature.budget.presentation.BudgetListScreen
 import com.hitunguang.feature.transaction.presentation.TransactionListScreen
 import com.hitunguang.feature.transaction.presentation.SearchScreen
@@ -122,7 +138,13 @@ class MainActivity : FragmentActivity() {
             }
         }
         setContent {
-            HitungUangTheme {
+            val appSettings by settingsRepository.getAppSettings().collectAsState(initial = null)
+            val isDarkTheme = when (appSettings?.themeMode) {
+                "LIGHT" -> false
+                "DARK" -> true
+                else -> isSystemInDarkTheme()
+            }
+            HitungUangTheme(darkTheme = isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -154,7 +176,10 @@ class MainActivity : FragmentActivity() {
                                     viewModel = securityViewModel
                                 )
                             } else {
-                                MainAppScreen()
+                                MainAppScreen(
+                                    settingsRepository = settingsRepository,
+                                    appSettings = appSettings
+                                )
                             }
                         }
                     }
@@ -199,27 +224,36 @@ enum class MainTab {
 }
 
 @Composable
-fun MainAppScreen() {
-    var currentTab by remember { mutableStateOf(MainTab.DASHBOARD) }
-    var showScanPlaceholder by remember { mutableStateOf(false) }
-    var showSettingsPlaceholder by remember { mutableStateOf(false) }
+fun MainAppScreen(
+    settingsRepository: SettingsRepository,
+    appSettings: AppSettings?
+) {
+    var currentTab by rememberSaveable { mutableStateOf(MainTab.DASHBOARD) }
+    var showScanPlaceholder by rememberSaveable { mutableStateOf(false) }
+    var showSettingsPlaceholder by rememberSaveable { mutableStateOf(false) }
+    var showThemeSettingsDialog by rememberSaveable { mutableStateOf(false) }
+    var showCategoryListScreen by rememberSaveable { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
-    var showSearchScreen by remember { mutableStateOf(false) }
-    var showRecycleBinScreen by remember { mutableStateOf(false) }
-    var showSecuritySettingsScreen by remember { mutableStateOf(false) }
-    var showNotificationSettingsScreen by remember { mutableStateOf(false) }
-    var showBackupScreen by remember { mutableStateOf(false) }
-    var showScanScreen by remember { mutableStateOf(false) }
-    var showReviewScreen by remember { mutableStateOf(false) }
-    var reviewImageUri by remember { mutableStateOf<Uri?>(null) }
-    var reviewOcrRawText by remember { mutableStateOf("") }
-    var showReceiptArchiveScreen by remember { mutableStateOf(false) }
+    var showSearchScreen by rememberSaveable { mutableStateOf(false) }
+    var showRecycleBinScreen by rememberSaveable { mutableStateOf(false) }
+    var showSecuritySettingsScreen by rememberSaveable { mutableStateOf(false) }
+    var showNotificationSettingsScreen by rememberSaveable { mutableStateOf(false) }
+    var showBackupScreen by rememberSaveable { mutableStateOf(false) }
+    var showScanScreen by rememberSaveable { mutableStateOf(false) }
+    var showReviewScreen by rememberSaveable { mutableStateOf(false) }
+    var reviewImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var reviewOcrRawText by rememberSaveable { mutableStateOf("") }
+    var showReceiptArchiveScreen by rememberSaveable { mutableStateOf(false) }
+    var showTransferHistoryScreen by rememberSaveable { mutableStateOf(false) }
 
     // Scoped to activity / parent level to allow quick add pre-population
     val transactionViewModel: TransactionViewModel = hiltViewModel()
 
     if (showSearchScreen) {
         SearchScreen(onBack = { showSearchScreen = false })
+    } else if (showCategoryListScreen) {
+        CategoryListScreen(onBack = { showCategoryListScreen = false })
     } else if (showRecycleBinScreen) {
         RecycleBinScreen(onBack = { showRecycleBinScreen = false })
     } else if (showSecuritySettingsScreen) {
@@ -257,6 +291,10 @@ fun MainAppScreen() {
     } else if (showReceiptArchiveScreen) {
         ReceiptArchiveScreen(
             onBack = { showReceiptArchiveScreen = false }
+        )
+    } else if (showTransferHistoryScreen) {
+        TransferHistoryScreen(
+            onBack = { showTransferHistoryScreen = false }
         )
     } else {
         Scaffold(
@@ -300,32 +338,45 @@ fun MainAppScreen() {
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                when (currentTab) {
-                    MainTab.DASHBOARD -> {
-                        DashboardScreen(
-                            onNavigateToTransactions = { currentTab = MainTab.TRANSACTIONS },
-                            onNavigateToBudgets = { currentTab = MainTab.BUDGETS },
-                            onSettingsClick = { showSettingsPlaceholder = true },
-                            onQuickAddClick = { categoryId, transactionType ->
-                                currentTab = MainTab.TRANSACTIONS
-                                transactionViewModel.showCreateDialog(
-                                    initialCategoryId = categoryId,
-                                    initialType = transactionType
-                                )
-                            }
-                        )
-                    }
-                    MainTab.TRANSACTIONS -> {
-                        TransactionListScreen(
-                            onSearchClick = { showSearchScreen = true },
-                            viewModel = transactionViewModel
-                        )
-                    }
-                    MainTab.ACCOUNTS -> {
-                        AccountListScreen()
-                    }
-                    MainTab.BUDGETS -> {
-                        BudgetListScreen()
+                AnimatedContent(
+                    targetState = currentTab,
+                    transitionSpec = {
+                        fadeIn(animationSpec = tween(220)) togetherWith fadeOut(animationSpec = tween(220))
+                    },
+                    label = "tab_transition"
+                ) { targetTab ->
+                    when (targetTab) {
+                        MainTab.DASHBOARD -> {
+                            DashboardScreen(
+                                onNavigateToTransactions = { currentTab = MainTab.TRANSACTIONS },
+                                onNavigateToBudgets = { currentTab = MainTab.BUDGETS },
+                                onSettingsClick = { showSettingsPlaceholder = true },
+                                onAddTransactionClick = { type ->
+                                    currentTab = MainTab.TRANSACTIONS
+                                    transactionViewModel.showCreateDialog(
+                                        initialType = type
+                                    )
+                                },
+                                onScanClick = {
+                                    showScanScreen = true
+                                }
+                            )
+                        }
+                        MainTab.TRANSACTIONS -> {
+                            TransactionListScreen(
+                                onSearchClick = { showSearchScreen = true },
+                                onManageCategoriesClick = { showCategoryListScreen = true },
+                                viewModel = transactionViewModel
+                            )
+                        }
+                        MainTab.ACCOUNTS -> {
+                            AccountListScreen(
+                                onNavigateToTransferHistory = { showTransferHistoryScreen = true }
+                            )
+                        }
+                        MainTab.BUDGETS -> {
+                            BudgetListScreen()
+                        }
                     }
                 }
             }
@@ -353,6 +404,23 @@ fun MainAppScreen() {
                 Column {
                     Text("Pilih menu pengaturan di bawah ini:")
                     Spacer(modifier = Modifier.height(16.dp))
+
+                    TextButton(
+                        onClick = {
+                            showSettingsPlaceholder = false
+                            showThemeSettingsDialog = true
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Palette,
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Pengaturan Tampilan (Theme)", fontWeight = FontWeight.Bold)
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     TextButton(
                         onClick = {
@@ -425,6 +493,23 @@ fun MainAppScreen() {
                     TextButton(
                         onClick = {
                             showSettingsPlaceholder = false
+                            showCategoryListScreen = true
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Category,
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Kelola Kategori", fontWeight = FontWeight.Bold)
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    TextButton(
+                        onClick = {
+                            showSettingsPlaceholder = false
                             showRecycleBinScreen = true
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -440,6 +525,71 @@ fun MainAppScreen() {
             },
             confirmButton = {
                 TextButton(onClick = { showSettingsPlaceholder = false }) {
+                    Text("Tutup")
+                }
+            }
+        )
+    }
+
+    if (showThemeSettingsDialog) {
+        val currentTheme = appSettings?.themeMode ?: "SYSTEM"
+        AlertDialog(
+            onDismissRequest = { showThemeSettingsDialog = false },
+            title = { Text("Pilih Tema Tampilan", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    listOf(
+                        "SYSTEM" to "Ikuti Sistem",
+                        "LIGHT" to "Terang (Light)",
+                        "DARK" to "Gelap (Dark)"
+                    ).forEach { (mode, label) ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    scope.launch {
+                                        val settings = appSettings ?: AppSettings(
+                                            id = "app_settings",
+                                            themeMode = "SYSTEM",
+                                            hideBalance = false,
+                                            receiptAutoDeleteDays = 30,
+                                            dashboardPeriod = "WEEKLY",
+                                            createdAt = System.currentTimeMillis(),
+                                            updatedAt = System.currentTimeMillis()
+                                        )
+                                        settingsRepository.saveAppSettings(settings.copy(themeMode = mode, updatedAt = System.currentTimeMillis()))
+                                    }
+                                    showThemeSettingsDialog = false
+                                }
+                                .padding(vertical = 12.dp)
+                        ) {
+                            RadioButton(
+                                selected = currentTheme == mode,
+                                onClick = {
+                                    scope.launch {
+                                        val settings = appSettings ?: AppSettings(
+                                            id = "app_settings",
+                                            themeMode = "SYSTEM",
+                                            hideBalance = false,
+                                            receiptAutoDeleteDays = 30,
+                                            dashboardPeriod = "WEEKLY",
+                                            createdAt = System.currentTimeMillis(),
+                                            updatedAt = System.currentTimeMillis()
+                                        )
+                                        settingsRepository.saveAppSettings(settings.copy(themeMode = mode, updatedAt = System.currentTimeMillis()))
+                                    }
+                                    showThemeSettingsDialog = false
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(label)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showThemeSettingsDialog = false }) {
                     Text("Tutup")
                 }
             }

@@ -49,6 +49,11 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import com.hitunguang.feature.category.presentation.components.CategoryPickerDialog
+import com.hitunguang.feature.category.presentation.components.CategoryIconHelper
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionFormDialog(
@@ -63,6 +68,7 @@ fun TransactionFormDialog(
     onDeleteAttachment: (Attachment) -> Unit,
     onAttachmentClick: (Attachment) -> Unit,
     onDismiss: () -> Unit,
+    onManageCategoriesClick: () -> Unit,
     onSave: (
         accountId: String,
         categoryId: String?,
@@ -164,7 +170,7 @@ fun TransactionFormDialog(
     var accountError by remember { mutableStateOf<String?>(null) }
 
     var accountExpanded by remember { mutableStateOf(false) }
-    var categoryExpanded by remember { mutableStateOf(false) }
+    var showCategoryPicker by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
 
     val filteredCategories = remember(type, categories) {
@@ -269,32 +275,28 @@ fun TransactionFormDialog(
                     }
                 }
 
-                // Kategori Dropdown
+                // Kategori Picker Button
                 Column {
                     Text("Kategori", style = MaterialTheme.typography.bodySmall)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        val currentCategory = categories.find { it.id == selectedCategoryId }
-                        OutlinedButton(
-                            onClick = { categoryExpanded = true },
-                            modifier = Modifier.fillMaxWidth()
+                    val currentCategory = categories.find { it.id == selectedCategoryId }
+                    OutlinedButton(
+                        onClick = { showCategoryPicker = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            Text(currentCategory?.name ?: "Pilih Kategori")
-                        }
-                        DropdownMenu(
-                            expanded = categoryExpanded,
-                            onDismissRequest = { categoryExpanded = false },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            filteredCategories.forEach { cat ->
-                                DropdownMenuItem(
-                                    text = { Text(cat.name) },
-                                    onClick = {
-                                        selectedCategoryId = cat.id
-                                        categoryExpanded = false
-                                    }
+                            if (currentCategory != null) {
+                                Icon(
+                                    imageVector = CategoryIconHelper.getIconByName(currentCategory.icon),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
                                 )
+                                Spacer(modifier = Modifier.width(8.dp))
                             }
+                            Text(currentCategory?.name ?: "Pilih Kategori")
                         }
                     }
                 }
@@ -431,6 +433,22 @@ fun TransactionFormDialog(
                 TextButton(onClick = { showAttachmentSourceDialog = false }) {
                     Text("Batal")
                 }
+            }
+        )
+    }
+
+    if (showCategoryPicker) {
+        CategoryPickerDialog(
+            categories = filteredCategories,
+            selectedCategoryId = selectedCategoryId,
+            onCategorySelected = { cat ->
+                selectedCategoryId = cat.id
+                showCategoryPicker = false
+            },
+            onDismiss = { showCategoryPicker = false },
+            onManageCategoriesClick = {
+                onDismiss()
+                onManageCategoriesClick()
             }
         )
     }

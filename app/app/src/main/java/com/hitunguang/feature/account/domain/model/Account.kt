@@ -8,5 +8,7 @@ data class Account(
     val initialBalance: Long,
     val currentBalance: Long,
     val createdAt: Long,
-    val updatedAt: Long
+    val updatedAt: Long,
+    val isDeleted: Boolean = false,
+    val deletedAt: Long? = null
 )

@@ -25,6 +25,7 @@ class BackupManager @Inject constructor(
         const val DB_WAL_ENTRY = "database/hitunguang.db-wal"
         const val DB_SHM_ENTRY = "database/hitunguang.db-shm"
         const val ATTACHMENTS_PREFIX = "attachments/"
+        const val RECEIPTS_PREFIX = "receipts/"
         const val SETTINGS_ENTRY = "settings.json"
         private val DATE_FORMAT = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
     }
@@ -65,6 +66,10 @@ class BackupManager @Inject constructor(
                     // 5. Add attachments directory
                     val attachmentsDir = File(context.filesDir, "attachments")
                     ZipHelper.addDirectoryToZip(zip, attachmentsDir, ATTACHMENTS_PREFIX)
+
+                    // Add receipts directory
+                    val receiptsDir = File(context.filesDir, "receipts")
+                    ZipHelper.addDirectoryToZip(zip, receiptsDir, RECEIPTS_PREFIX)
 
                     // 6. Export settings.json (exclude SecuritySettings for security)
                     val settingsJson = buildSettingsJson()

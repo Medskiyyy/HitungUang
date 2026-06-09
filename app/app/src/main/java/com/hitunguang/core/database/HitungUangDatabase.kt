@@ -50,7 +50,7 @@ import com.hitunguang.core.database.entity.UserProfileEntity
         RecycleBinEntity::class,
         TransactionSearchEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class HitungUangDatabase : RoomDatabase() {

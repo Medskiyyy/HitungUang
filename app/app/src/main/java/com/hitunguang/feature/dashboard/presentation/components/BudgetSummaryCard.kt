@@ -144,10 +144,12 @@ fun BudgetSummaryCard(
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                                val remaining = budget.amount - progress.spentAmount
                                 Text(
-                                    text = "Limit: Rp ${formatter.format(budget.amount)}",
+                                    text = "Sisa Budget: Rp ${formatter.format(remaining)}",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (remaining >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                                    fontWeight = FontWeight.Medium
                                 )
                             }
                         }

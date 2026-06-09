@@ -8,8 +8,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
+import com.hitunguang.core.database.dao.RecycleBinDao
+import com.hitunguang.core.database.entity.RecycleBinEntity
+import java.util.UUID
+
 class AccountRepositoryImpl @Inject constructor(
-    private val accountDao: AccountDao
+    private val accountDao: AccountDao,
+    private val recycleBinDao: RecycleBinDao? = null
 ) : AccountRepository {
     override fun getAllAccounts(): Flow<List<Account>> {
         return accountDao.getAllAccounts().map { list ->
@@ -32,7 +37,18 @@ class AccountRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteAccount(account: Account) {
-        accountDao.deleteAccount(AccountMapper.toEntity(account))
+        val now = System.currentTimeMillis()
+        accountDao.softDeleteAccount(account.id, now)
+        val recycleBinId = UUID.randomUUID().toString()
+        val expireAt = now + 30L * 24 * 60 * 60 * 1000L
+        val recycleBinEntry = RecycleBinEntity(
+            id = recycleBinId,
+            entityType = "WALLET",
+            entityId = account.id,
+            deletedAt = now,
+            expireAt = expireAt
+        )
+        recycleBinDao?.addToRecycleBin(recycleBinEntry)
     }
 
     override suspend fun getTransactionCountForAccount(accountId: String): Int {

@@ -14,6 +14,7 @@ import com.hitunguang.core.database.dao.TransactionDao
 import com.hitunguang.core.database.dao.TransferDao
 import com.hitunguang.core.database.dao.UserProfileDao
 import androidx.room.migration.Migration
+import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import dagger.Module
 import dagger.Provides
@@ -36,6 +37,17 @@ object DatabaseModule {
         }
     }
 
+    val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `categories` ADD COLUMN `is_deleted` INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE `categories` ADD COLUMN `deleted_at` INTEGER DEFAULT NULL")
+            db.execSQL("ALTER TABLE `accounts` ADD COLUMN `is_deleted` INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE `accounts` ADD COLUMN `deleted_at` INTEGER DEFAULT NULL")
+            db.execSQL("ALTER TABLE `budgets` ADD COLUMN `is_deleted` INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE `budgets` ADD COLUMN `deleted_at` INTEGER DEFAULT NULL")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideDatabase(
@@ -46,7 +58,32 @@ object DatabaseModule {
             HitungUangDatabase::class.java,
             "hitunguang.db"
         )
-        .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+        .addCallback(object : RoomDatabase.Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+                val now = System.currentTimeMillis()
+                val defaultCategories = listOf(
+                    Triple("default_expense_makanan", "Makanan", "EXPENSE" to "restaurant"),
+                    Triple("default_expense_transportasi", "Transportasi", "EXPENSE" to "directions_car"),
+                    Triple("default_expense_belanja", "Belanja", "EXPENSE" to "shopping_cart"),
+                    Triple("default_expense_hiburan", "Hiburan", "EXPENSE" to "movie"),
+                    Triple("default_expense_tagihan", "Tagihan", "EXPENSE" to "receipt"),
+                    Triple("default_expense_lain_lain", "Lain-lain", "EXPENSE" to "category"),
+                    
+                    Triple("default_income_gaji", "Gaji", "INCOME" to "payments"),
+                    Triple("default_income_investasi", "Investasi", "INCOME" to "trending_up"),
+                    Triple("default_income_bonus", "Bonus", "INCOME" to "redeem"),
+                    Triple("default_income_lain_lain", "Lain-lain", "INCOME" to "category")
+                )
+                for (cat in defaultCategories) {
+                    db.execSQL(
+                        "INSERT INTO categories (id, name, category_type, icon, is_default, is_pinned, created_at, updated_at, is_deleted, deleted_at) " +
+                        "VALUES ('${cat.first}', '${cat.second}', '${cat.third.first}', '${cat.third.second}', 1, 0, $now, $now, 0, NULL)"
+                    )
+                }
+            }
+        })
         .build()
     }
 
