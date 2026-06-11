@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -31,7 +32,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
+import com.hitunguang.core.designsystem.theme.Radius
+import com.hitunguang.core.designsystem.theme.Spacing
 import com.hitunguang.feature.budget.domain.model.Budget
 import com.hitunguang.feature.category.domain.model.Category
 import java.text.SimpleDateFormat
@@ -79,13 +81,14 @@ fun BudgetFormDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(Radius.large),
         title = {
             Text(if (isEditMode) "Edit Anggaran" else "Tambah Anggaran", fontWeight = FontWeight.Bold)
         },
         text = {
             Column(
                 modifier = modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(Spacing.medium)
             ) {
                 // Tipe Budget
                 Column {
@@ -100,7 +103,7 @@ fun BudgetFormDialog(
                         )
                         Text("Global")
 
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(Spacing.medium))
 
                         RadioButton(
                             selected = budgetType == "CATEGORY",
@@ -114,12 +117,13 @@ fun BudgetFormDialog(
                 if (budgetType == "CATEGORY") {
                     Column {
                         Text("Kategori *", style = MaterialTheme.typography.bodySmall)
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         Box(modifier = Modifier.fillMaxWidth()) {
                             val currentCategory = expenseCategories.find { it.id == selectedCategoryId }
                             OutlinedButton(
                                 onClick = { categoryExpanded = true },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(Radius.medium)
                             ) {
                                 Text(currentCategory?.name ?: "Pilih Kategori")
                             }
@@ -159,7 +163,8 @@ fun BudgetFormDialog(
                     isError = amountError != null,
                     supportingText = { amountError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(Radius.medium)
                 )
 
                 // Threshold percent
@@ -175,30 +180,33 @@ fun BudgetFormDialog(
                     isError = thresholdError != null,
                     supportingText = { thresholdError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(Radius.medium)
                 )
 
                 // Dates
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.small)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Mulai Tanggal", style = MaterialTheme.typography.bodySmall)
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         OutlinedButton(
                             onClick = { showStartDatePicker = true },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(Radius.medium)
                         ) {
                             Text(dateFormatter.format(Date(startDateMillis)))
                         }
                     }
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Sampai Tanggal", style = MaterialTheme.typography.bodySmall)
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         OutlinedButton(
                             onClick = { showEndDatePicker = true },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(Radius.medium)
                         ) {
                             Text(dateFormatter.format(Date(endDateMillis)))
                         }

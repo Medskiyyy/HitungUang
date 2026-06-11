@@ -4,12 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -42,10 +44,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.hitunguang.core.designsystem.theme.Elevation
+import com.hitunguang.core.designsystem.theme.ExpenseRed
+import com.hitunguang.core.designsystem.theme.IncomeGreen
+import com.hitunguang.core.designsystem.theme.Radius
+import com.hitunguang.core.designsystem.theme.Spacing
 import com.hitunguang.feature.budget.presentation.components.BudgetFormDialog
+import com.hitunguang.feature.category.presentation.components.CategoryIconHelper
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -66,14 +75,15 @@ fun BudgetListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Anggaran Saya", fontWeight = FontWeight.Bold) }
+                title = { Text("Anggaran", fontWeight = FontWeight.Bold) }
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { viewModel.showCreateDialog() },
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(Radius.medium)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -92,12 +102,12 @@ fun BudgetListScreen(
                 Tab(
                     selected = selectedTabIndex == 0,
                     onClick = { selectedTabIndex = 0 },
-                    text = { Text("Anggaran Aktif") }
+                    text = { Text("Aktif", fontWeight = FontWeight.Bold) }
                 )
                 Tab(
                     selected = selectedTabIndex == 1,
                     onClick = { selectedTabIndex = 1 },
-                    text = { Text("Riwayat Anggaran") }
+                    text = { Text("Riwayat", fontWeight = FontWeight.Bold) }
                 )
             }
 
@@ -111,7 +121,7 @@ fun BudgetListScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(16.dp),
+                            .padding(Spacing.large),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -119,8 +129,9 @@ fun BudgetListScreen(
                             imageVector = Icons.Default.BarChart,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                            modifier = Modifier.padding(bottom = 16.dp)
+                            modifier = Modifier.size(Spacing.massive)
                         )
+                        Spacer(modifier = Modifier.height(Spacing.medium))
                         Text(
                             text = if (selectedTabIndex == 0) "Belum ada anggaran aktif" else "Belum ada riwayat anggaran",
                             style = MaterialTheme.typography.titleMedium,
@@ -129,15 +140,15 @@ fun BudgetListScreen(
                     }
                 } else {
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp)
+                        verticalArrangement = Arrangement.spacedBy(Spacing.large),
+                        contentPadding = PaddingValues(
+                            start = Spacing.large,
+                            end = Spacing.large,
+                            top = Spacing.medium,
+                            bottom = 80.dp
+                        ),
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        item {
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-
                         if (selectedTabIndex == 0 && uiState.activeBudgets.isNotEmpty()) {
                             item(key = "budget_summary") {
                                 val totalLimit = uiState.activeBudgets.sumOf { it.budget.amount }
@@ -152,86 +163,97 @@ fun BudgetListScreen(
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 8.dp),
+                                        .padding(bottom = Spacing.small),
+                                    shape = RoundedCornerShape(Radius.extraLarge),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = Elevation.low),
                                     colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                    ),
-                                    shape = RoundedCornerShape(16.dp),
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                                    )
                                 ) {
-                                    Column(modifier = Modifier.padding(20.dp)) {
-                                        Text(
-                                            text = "Total Anggaran Aktif",
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                                        )
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        Text(
-                                            text = "Rp ${formatter.format(totalLimit)}",
-                                            style = MaterialTheme.typography.headlineMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                                        )
-                                        Spacer(modifier = Modifier.height(16.dp))
-
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(Spacing.large),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(Spacing.large)
+                                    ) {
+                                        // Left side: Circular Gauge
+                                        Box(
+                                            modifier = Modifier.size(100.dp),
+                                            contentAlignment = Alignment.Center
                                         ) {
-                                            Column {
+                                            val gaugeColor = when {
+                                                totalProgress > 0.8f -> MaterialTheme.colorScheme.error
+                                                totalProgress > 0.6f -> MaterialTheme.colorScheme.tertiary
+                                                else -> IncomeGreen
+                                            }
+
+                                            CircularProgressIndicator(
+                                                progress = { totalProgress.coerceIn(0f, 1f) },
+                                                modifier = Modifier.fillMaxSize(),
+                                                strokeWidth = 10.dp,
+                                                color = gaugeColor,
+                                                trackColor = MaterialTheme.colorScheme.surfaceVariant
+                                            )
+
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Text(
+                                                    text = "${(totalProgress * 100).toInt()}%",
+                                                    style = MaterialTheme.typography.titleLarge,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onSurface
+                                                )
                                                 Text(
                                                     text = "Terpakai",
                                                     style = MaterialTheme.typography.labelSmall,
-                                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                                                )
-                                                Text(
-                                                    text = "Rp ${formatter.format(totalSpent)}",
-                                                    style = MaterialTheme.typography.titleMedium,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            }
-                                            Column(horizontalAlignment = Alignment.End) {
-                                                Text(
-                                                    text = "Sisa",
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                                                )
-                                                Text(
-                                                    text = "Rp ${formatter.format(totalRemaining)}",
-                                                    style = MaterialTheme.typography.titleMedium,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = if (totalRemaining == 0L && totalLimit > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onPrimaryContainer
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
                                             }
                                         }
 
-                                        Spacer(modifier = Modifier.height(16.dp))
+                                        // Right side: Statistics Column
+                                        Column(
+                                            modifier = Modifier.weight(1f),
+                                            verticalArrangement = Arrangement.spacedBy(Spacing.extraSmall)
+                                        ) {
+                                            Text(
+                                                text = "Total Anggaran Aktif",
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                            Text(
+                                                text = "Limit: Rp ${formatter.format(totalLimit)}",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                            Text(
+                                                text = "Terpakai: Rp ${formatter.format(totalSpent)}",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                            Text(
+                                                text = "Sisa: Rp ${formatter.format(totalRemaining)}",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = if (totalRemaining <= 0L && totalLimit > 0) MaterialTheme.colorScheme.error else IncomeGreen
+                                            )
 
-                                        LinearProgressIndicator(
-                                            progress = { totalProgress.coerceIn(0f, 1f) },
-                                            color = if (totalSpent > totalLimit) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                                            trackColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(8.dp)
-                                                .clip(RoundedCornerShape(4.dp))
-                                        )
+                                            Spacer(modifier = Modifier.height(Spacing.extraSmall))
 
-                                        Spacer(modifier = Modifier.height(12.dp))
+                                            val healthSummaryList = mutableListOf<String>()
+                                            if (safeCount > 0) healthSummaryList.add("$safeCount Aman")
+                                            if (warningCount > 0) healthSummaryList.add("$warningCount Warning")
+                                            if (overCount > 0) healthSummaryList.add("$overCount Over")
+                                            val healthSummary = if (healthSummaryList.isEmpty()) "Tidak ada anggaran" else healthSummaryList.joinToString(" • ")
 
-                                        val healthSummaryList = mutableListOf<String>()
-                                        if (safeCount > 0) healthSummaryList.add("$safeCount Aman")
-                                        if (warningCount > 0) healthSummaryList.add("$warningCount Mendekati Limit")
-                                        if (overCount > 0) healthSummaryList.add("$overCount Melebihi Limit")
-                                        val healthSummary = if (healthSummaryList.isEmpty()) "Tidak ada anggaran" else healthSummaryList.joinToString(" • ")
-
-                                        Text(
-                                            text = healthSummary,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            fontWeight = FontWeight.Medium,
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
-                                        )
+                                            Text(
+                                                text = healthSummary,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -240,12 +262,10 @@ fun BudgetListScreen(
                         items(displayList, key = { it.budget.id }) { budgetProgress ->
                             BudgetProgressCard(
                                 budgetProgress = budgetProgress,
+                                categories = uiState.categories,
                                 onEditClick = { viewModel.showEditDialog(it) },
                                 onDeleteClick = { viewModel.deleteBudget(it) }
                             )
-                        }
-                        item {
-                            Spacer(modifier = Modifier.height(80.dp))
                         }
                     }
                 }
@@ -268,6 +288,7 @@ fun BudgetListScreen(
 @Composable
 fun BudgetProgressCard(
     budgetProgress: BudgetWithProgress,
+    categories: List<com.hitunguang.feature.category.domain.model.Category> = emptyList(),
     onEditClick: (com.hitunguang.feature.budget.domain.model.Budget) -> Unit,
     onDeleteClick: (com.hitunguang.feature.budget.domain.model.Budget) -> Unit,
     modifier: Modifier = Modifier
@@ -280,6 +301,10 @@ fun BudgetProgressCard(
     val title = if (budget.budgetType == "GLOBAL") "Anggaran Global" else budgetProgress.categoryName ?: "Kategori Kustom"
     val dateRangeText = "${dateFormatter.format(Date(budget.startDate))} - ${dateFormatter.format(Date(budget.endDate))}"
 
+    val category = remember(budget.categoryId, categories) {
+        categories.find { it.id == budget.categoryId }
+    }
+
     val progressValue = (budgetProgress.progressPercent / 100f).coerceIn(0f, 1f)
 
     val progressColor = when {
@@ -290,66 +315,102 @@ fun BudgetProgressCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        shape = RoundedCornerShape(Radius.medium),
+        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.low),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(Spacing.large)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.weight(1f, fill = false)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    val icon = when {
+                        budget.budgetType == "GLOBAL" -> Icons.Default.BarChart
+                        category != null -> CategoryIconHelper.getIconByName(category.icon)
+                        else -> Icons.Default.BarChart
+                    }
+                    val iconColor = when {
+                        budgetProgress.isOverBudget -> MaterialTheme.colorScheme.error
+                        budgetProgress.isThresholdReached -> MaterialTheme.colorScheme.tertiary
+                        else -> MaterialTheme.colorScheme.primary
+                    }
 
-                        val badgeText = when {
-                            budgetProgress.isOverBudget -> "Over Budget"
-                            budgetProgress.isThresholdReached -> "Warning"
-                            else -> "Aman"
-                        }
-                        val badgeBgColor = when {
-                            budgetProgress.isOverBudget -> MaterialTheme.colorScheme.errorContainer
-                            budgetProgress.isThresholdReached -> MaterialTheme.colorScheme.tertiaryContainer
-                            else -> MaterialTheme.colorScheme.primaryContainer
-                        }
-                        val badgeTextColor = when {
-                            budgetProgress.isOverBudget -> MaterialTheme.colorScheme.onErrorContainer
-                            budgetProgress.isThresholdReached -> MaterialTheme.colorScheme.onTertiaryContainer
-                            else -> MaterialTheme.colorScheme.onPrimaryContainer
-                        }
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(badgeBgColor)
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(androidx.compose.foundation.shape.CircleShape)
+                            .background(iconColor.copy(alpha = 0.1f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = iconColor,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(Spacing.medium))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = badgeText,
-                                style = MaterialTheme.typography.labelSmall,
+                                text = title,
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = badgeTextColor
+                                modifier = Modifier.weight(1f, fill = false)
                             )
+                            Spacer(modifier = Modifier.width(Spacing.small))
+
+                            val badgeText = when {
+                                budgetProgress.isOverBudget -> "Over Budget"
+                                budgetProgress.isThresholdReached -> "Warning"
+                                else -> "Aman"
+                            }
+                            val badgeBgColor = when {
+                                budgetProgress.isOverBudget -> MaterialTheme.colorScheme.errorContainer
+                                budgetProgress.isThresholdReached -> MaterialTheme.colorScheme.tertiaryContainer
+                                else -> MaterialTheme.colorScheme.primaryContainer
+                            }
+                            val badgeTextColor = when {
+                                budgetProgress.isOverBudget -> MaterialTheme.colorScheme.onErrorContainer
+                                budgetProgress.isThresholdReached -> MaterialTheme.colorScheme.onTertiaryContainer
+                                else -> MaterialTheme.colorScheme.onPrimaryContainer
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(Radius.extraSmall))
+                                    .background(badgeBgColor)
+                                    .padding(horizontal = Spacing.small, vertical = Spacing.extraSmall)
+                            ) {
+                                Text(
+                                    text = badgeText,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = badgeTextColor
+                                )
+                            }
                         }
+                        Spacer(modifier = Modifier.height(Spacing.extraSmall))
+                        Text(
+                            text = dateRangeText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = dateRangeText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -370,7 +431,7 @@ fun BudgetProgressCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Spacing.medium))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -389,7 +450,7 @@ fun BudgetProgressCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Spacing.small))
 
             LinearProgressIndicator(
                 progress = { progressValue },
@@ -397,11 +458,11 @@ fun BudgetProgressCard(
                 trackColor = MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
+                    .height(Spacing.small)
+                    .clip(RoundedCornerShape(Radius.small))
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Spacing.small))
 
             Text(
                 text = if (budgetProgress.isOverBudget) {
