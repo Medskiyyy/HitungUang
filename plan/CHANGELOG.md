@@ -35,6 +35,14 @@ All notable changes to the HitungUang project will be documented in this file.
   - Created a custom Dompet/Wallet Selector with balance previews and type-based icons.
   - Standardized Date Picker triggering via a premium card design with Calendar icon.
   - Structured sticky bottom action buttons (Batal/Simpan) using custom spacing and design system tokens.
+- **Wallet Screen Redesign (Phase 5)**: Overhauled the Akun (Wallet) screen to align with the V2 design system and consolidate settings.
+  - Renamed the screen title to "Akun" and redesigned the Wallet Summary card with a premium primary-to-primary-container gradient.
+  - Placed prominent filled tonal action buttons ("Transfer Dana" and "Riwayat") directly below the Wallet Summary card.
+  - Grouped wallets into collapsible sections by account type (Tunai, Bank, E-Wallet) with dynamic subtotal calculations and expand/collapse chevrons.
+  - Modernized wallet list items using `Radius.medium` corners, `surfaceContainerLow` backgrounds, and refined typography.
+  - Integrated the full Settings menu directly into the scrollable screen layout below the wallet list, removing the need for a separate settings dialog.
+  - Added direct navigation items for Theme Settings, Security (PIN/Biometric), Notifications, Backup & Restore, Receipt Archive, Category Management, and Recycle Bin.
+  - Standardized the Floating Action Button shape and spacing to match the new design system tokens.
 
 ## [1.9.0] - 2026-06-10
 

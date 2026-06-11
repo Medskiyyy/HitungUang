@@ -371,7 +371,14 @@ fun MainAppScreen(
                         }
                         MainTab.ACCOUNTS -> {
                             AccountListScreen(
-                                onNavigateToTransferHistory = { showTransferHistoryScreen = true }
+                                onNavigateToTransferHistory = { showTransferHistoryScreen = true },
+                                onNavigateToThemeSettings = { showThemeSettingsDialog = true },
+                                onNavigateToSecuritySettings = { showSecuritySettingsScreen = true },
+                                onNavigateToNotificationSettings = { showNotificationSettingsScreen = true },
+                                onNavigateToBackup = { showBackupScreen = true },
+                                onNavigateToCategoryManagement = { showCategoryListScreen = true },
+                                onNavigateToRecycleBin = { showRecycleBinScreen = true },
+                                onNavigateToReceiptArchive = { showReceiptArchiveScreen = true }
                             )
                         }
                         MainTab.BUDGETS -> {
