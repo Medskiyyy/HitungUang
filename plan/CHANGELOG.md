@@ -28,6 +28,13 @@ All notable changes to the HitungUang project will be documented in this file.
   - Redesigned transaction rows inside the list to align with swipe background corners (`Radius.medium`) and styled the category icon circle (`Spacing.extraHuge`) with tinted backgrounds.
   - Applied bold `titleMedium` to transaction amounts for tabular number alignment.
   - Redesigned empty state to use a larger icon (`Spacing.massive`) and consistent typography.
+- **Transaction Form Redesign (Phase 4)**: Converted the transaction form from a cramped `AlertDialog` into a smooth `ModalBottomSheet`.
+  - Added a Segmented Type Selector (Pengeluaran vs Pemasukan) with custom color indicators.
+  - Implemented a Hero Amount Display showing formatted currency with semantic colors.
+  - Introduced a horizontal scrollable Category Picker containing the top 8 categories, plus a "Lainnya" option to trigger the full dialog.
+  - Created a custom Dompet/Wallet Selector with balance previews and type-based icons.
+  - Standardized Date Picker triggering via a premium card design with Calendar icon.
+  - Structured sticky bottom action buttons (Batal/Simpan) using custom spacing and design system tokens.
 
 ## [1.9.0] - 2026-06-10
 
