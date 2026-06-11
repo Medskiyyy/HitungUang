@@ -33,6 +33,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+import com.hitunguang.core.designsystem.theme.Radius
+import com.hitunguang.core.designsystem.theme.Spacing
+
 @Composable
 fun QuickActionsSection(
     onAddExpenseClick: () -> Unit,
@@ -49,17 +52,17 @@ fun QuickActionsSection(
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(Spacing.medium))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(Spacing.medium)
         ) {
             QuickActionButton(
                 title = "Tambah Pengeluaran",
                 icon = Icons.Default.TrendingDown,
                 iconTint = MaterialTheme.colorScheme.error,
-                backgroundColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f),
+                backgroundColor = MaterialTheme.colorScheme.error.copy(alpha = 0.2f),
                 onClick = onAddExpenseClick,
                 modifier = Modifier.weight(1f)
             )
@@ -67,23 +70,23 @@ fun QuickActionsSection(
                 title = "Tambah Pemasukan",
                 icon = Icons.Default.TrendingUp,
                 iconTint = MaterialTheme.colorScheme.primary,
-                backgroundColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f),
+                backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                 onClick = onAddIncomeClick,
                 modifier = Modifier.weight(1f)
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(Spacing.medium))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(Spacing.medium)
         ) {
             QuickActionButton(
                 title = "Transfer Saldo",
                 icon = Icons.Default.SwapHoriz,
                 iconTint = MaterialTheme.colorScheme.secondary,
-                backgroundColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f),
+                backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
                 onClick = onTransferClick,
                 modifier = Modifier.weight(1f)
             )
@@ -91,7 +94,7 @@ fun QuickActionsSection(
                 title = "Scan Struk",
                 icon = Icons.Default.QrCodeScanner,
                 iconTint = MaterialTheme.colorScheme.tertiary,
-                backgroundColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.2f),
+                backgroundColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f),
                 onClick = onScanClick,
                 modifier = Modifier.weight(1f)
             )
@@ -111,9 +114,9 @@ fun QuickActionButton(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(Radius.medium))
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(Radius.medium),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
         ),
@@ -122,12 +125,12 @@ fun QuickActionButton(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(Spacing.medium),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(Spacing.huge)
                     .clip(CircleShape)
                     .background(backgroundColor),
                 contentAlignment = Alignment.Center
@@ -136,11 +139,11 @@ fun QuickActionButton(
                     imageVector = icon,
                     contentDescription = null,
                     tint = iconTint,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(Spacing.doubleLarge)
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(Spacing.medium))
 
             Text(
                 text = title,

@@ -22,6 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.hitunguang.core.designsystem.theme.BudgetDanger
+import com.hitunguang.core.designsystem.theme.BudgetSafe
+import com.hitunguang.core.designsystem.theme.Elevation
+import com.hitunguang.core.designsystem.theme.Radius
+import com.hitunguang.core.designsystem.theme.Spacing
 import com.hitunguang.feature.dashboard.presentation.BudgetProgress
 import java.text.NumberFormat
 import java.util.Locale
@@ -44,19 +49,19 @@ fun BudgetSummaryCard(
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(Spacing.small))
 
         if (budgetProgressList.isEmpty()) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(Radius.medium),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = Elevation.none)
             ) {
                 Column(
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier.padding(Spacing.doubleLarge),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -66,14 +71,14 @@ fun BudgetSummaryCard(
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(Spacing.small))
                     Text(
                         text = "Buat budget baru untuk membantumu melacak pengeluaran secara teratur.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(Spacing.large))
                     OutlinedButton(onClick = onAddBudgetClick) {
                         Text("Buat Budget")
                     }
@@ -81,7 +86,7 @@ fun BudgetSummaryCard(
             }
         } else {
             Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(Spacing.small)
             ) {
                 budgetProgressList.take(3).forEach { progress ->
                     val budget = progress.budget
@@ -96,11 +101,11 @@ fun BudgetSummaryCard(
 
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        shape = RoundedCornerShape(Radius.medium),
+                        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.low)
                     ) {
                         Column(
-                            modifier = Modifier.padding(16.dp)
+                            modifier = Modifier.padding(Spacing.large)
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -117,23 +122,23 @@ fun BudgetSummaryCard(
                                     text = "${progress.progressPercent.roundToInt()}%",
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isLimitExceeded) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                                    color = if (isLimitExceeded) BudgetDanger else BudgetSafe
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(Spacing.small))
 
                             LinearProgressIndicator(
                                 progress = { progressRatio },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(8.dp)
-                                    .clip(RoundedCornerShape(4.dp)),
-                                color = if (isLimitExceeded) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                                    .height(Spacing.small)
+                                    .clip(RoundedCornerShape(Radius.extraSmall)),
+                                color = if (isLimitExceeded) BudgetDanger else BudgetSafe,
                                 trackColor = MaterialTheme.colorScheme.surfaceVariant
                             )
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(Spacing.small))
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -148,7 +153,7 @@ fun BudgetSummaryCard(
                                 Text(
                                     text = "Sisa Budget: Rp ${formatter.format(remaining)}",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = if (remaining >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                                    color = if (remaining >= 0) BudgetSafe else BudgetDanger,
                                     fontWeight = FontWeight.Medium
                                 )
                             }

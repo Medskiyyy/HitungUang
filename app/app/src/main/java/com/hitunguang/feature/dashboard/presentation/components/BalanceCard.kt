@@ -26,6 +26,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.hitunguang.core.designsystem.theme.Elevation
+import com.hitunguang.core.designsystem.theme.Radius
+import com.hitunguang.core.designsystem.theme.Spacing
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -45,8 +48,8 @@ fun BalanceCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(Radius.extraLarge),
+        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.medium)
     ) {
         Box(
             modifier = Modifier
@@ -58,7 +61,7 @@ fun BalanceCard(
                         )
                     )
                 )
-                .padding(16.dp)
+                .padding(Spacing.large)
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth()
@@ -83,23 +86,23 @@ fun BalanceCard(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(Spacing.extraSmall))
 
                 Text(
                     text = if (hideBalance) "••••••" else formattedBalance,
-                    style = MaterialTheme.typography.headlineLarge,
+                    style = MaterialTheme.typography.displayMedium,
                     color = MaterialTheme.colorScheme.onPrimary,
                     fontWeight = FontWeight.Bold
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(Spacing.large))
 
                 HorizontalDivider(
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
                     thickness = 1.dp
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(Spacing.large))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -114,7 +117,7 @@ fun BalanceCard(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         Text(
                             text = if (hideBalance) "••••••" else "Rp ${formatter.format(totalIncome)}",
                             style = MaterialTheme.typography.titleMedium,
@@ -132,7 +135,7 @@ fun BalanceCard(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         Text(
                             text = if (hideBalance) "••••••" else "Rp ${formatter.format(totalExpense)}",
                             style = MaterialTheme.typography.titleMedium,
@@ -150,7 +153,7 @@ fun BalanceCard(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         val prefix = if (netDifference >= 0) "+" else ""
                         Text(
                             text = if (hideBalance) "••••••" else "${prefix}Rp ${formatter.format(netDifference)}",

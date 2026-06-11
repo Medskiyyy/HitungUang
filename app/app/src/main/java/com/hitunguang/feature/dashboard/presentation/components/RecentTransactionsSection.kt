@@ -34,6 +34,11 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
 
+import com.hitunguang.core.designsystem.theme.ExpenseRed
+import com.hitunguang.core.designsystem.theme.IncomeGreen
+import com.hitunguang.core.designsystem.theme.Radius
+import com.hitunguang.core.designsystem.theme.Spacing
+
 @Composable
 fun RecentTransactionsSection(
     transactions: List<TransactionWithDetails>,
@@ -62,54 +67,54 @@ fun RecentTransactionsSection(
             }
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(Spacing.extraSmall))
 
         if (transactions.isEmpty()) {
             Text(
                 text = "Belum ada transaksi tercatat",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier.padding(vertical = Spacing.large)
             )
         } else {
             Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(Spacing.small)
             ) {
-                transactions.forEach { tx ->
+                transactions.take(5).forEach { tx ->
                     val isExpense = tx.transactionType == "EXPENSE" || tx.transactionType == "TRANSFER_FEE"
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onTransactionClick(tx) },
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(Radius.medium),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
+                                .padding(Spacing.large),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             val iconVector = CategoryIconHelper.getIconByName(tx.categoryIcon)
                             Box(
                                 modifier = Modifier
-                                    .size(40.dp)
+                                    .size(Spacing.huge)
                                     .clip(CircleShape)
                                     .background(
-                                        if (isExpense) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
-                                        else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+                                        if (isExpense) ExpenseRed.copy(alpha = 0.1f)
+                                        else IncomeGreen.copy(alpha = 0.1f)
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = iconVector,
                                     contentDescription = null,
-                                    tint = if (isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(20.dp)
+                                    tint = if (isExpense) ExpenseRed else IncomeGreen,
+                                    modifier = Modifier.size(Spacing.extraLarge)
                                 )
                             }
 
-                            Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(Spacing.medium))
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
@@ -118,7 +123,7 @@ fun RecentTransactionsSection(
                                     fontWeight = FontWeight.Bold,
                                     maxLines = 1
                                 )
-                                Spacer(modifier = Modifier.height(4.dp))
+                                Spacer(modifier = Modifier.height(Spacing.extraSmall))
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -141,7 +146,7 @@ fun RecentTransactionsSection(
                                         )
                                     }
                                 }
-                                Spacer(modifier = Modifier.height(2.dp))
+                                Spacer(modifier = Modifier.height(Spacing.extraSmall))
                                 Text(
                                     text = dateFormatter.format(Date(tx.transactionDate)),
                                     style = MaterialTheme.typography.labelSmall,
@@ -149,13 +154,13 @@ fun RecentTransactionsSection(
                                 )
                             }
 
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(Spacing.small))
 
                             Text(
                                 text = "${if (isExpense) "-" else "+"} Rp ${formatter.format(tx.amount)}",
-                                style = MaterialTheme.typography.bodyLarge,
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = if (isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                                color = if (isExpense) ExpenseRed else IncomeGreen
                             )
                         }
                     }

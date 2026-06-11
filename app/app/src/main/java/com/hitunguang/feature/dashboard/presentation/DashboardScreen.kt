@@ -40,10 +40,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import java.text.NumberFormat
 import java.util.Locale
 
+import com.hitunguang.core.designsystem.theme.Spacing
 import com.hitunguang.feature.dashboard.presentation.components.BalanceCard
 import com.hitunguang.feature.dashboard.presentation.components.BudgetSummaryCard
 import com.hitunguang.feature.dashboard.presentation.components.ExpenseChartCard
-import com.hitunguang.feature.dashboard.presentation.components.InsightCard
 import com.hitunguang.feature.dashboard.presentation.components.QuickActionsSection
 import com.hitunguang.feature.dashboard.presentation.components.RecentTransactionsSection
 import com.hitunguang.feature.transfer.presentation.components.TransferDialog
@@ -101,9 +101,9 @@ fun DashboardScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = Spacing.large)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(Spacing.doubleLarge)
             ) {
                 // Balance Card (Redesigned Hero Balance Card)
                 BalanceCard(
@@ -140,15 +140,6 @@ fun DashboardScreen(
                     expenseCategoriesDistribution = uiState.expenseCategoriesDistribution
                 )
 
-                // Insight Card
-                InsightCard(
-                    topExpenseCategory = uiState.topExpenseCategory,
-                    topExpenseAmount = uiState.topExpenseAmount,
-                    savingsRateMessage = uiState.savingsRateMessage,
-                    periodComparisonMessage = uiState.periodComparisonMessage,
-                    isExpenseIncreased = uiState.isExpenseIncreased
-                )
-
                 // Recent Transactions
                 RecentTransactionsSection(
                     transactions = uiState.recentTransactions,
@@ -156,7 +147,7 @@ fun DashboardScreen(
                     onTransactionClick = { selectedTransactionForDetail = it }
                 )
 
-                Spacer(modifier = Modifier.height(80.dp)) // Extra space for bottom nav
+                Spacer(modifier = Modifier.height(Spacing.huge)) // Extra space for bottom nav
             }
         }
     }

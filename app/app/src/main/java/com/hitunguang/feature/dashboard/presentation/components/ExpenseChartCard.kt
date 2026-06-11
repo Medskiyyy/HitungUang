@@ -30,6 +30,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.hitunguang.core.designsystem.theme.Elevation
+import com.hitunguang.core.designsystem.theme.Radius
+import com.hitunguang.core.designsystem.theme.Spacing
 import com.hitunguang.feature.category.domain.model.Category
 import java.text.NumberFormat
 import java.util.Locale
@@ -58,11 +61,11 @@ fun ExpenseChartCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(Radius.large),
+        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.medium)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(Spacing.large)
         ) {
             Text(
                 text = "Kategori Pengeluaran",
@@ -71,7 +74,7 @@ fun ExpenseChartCard(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Spacing.large))
 
             if (expenseCategoriesDistribution.isEmpty()) {
                 Box(
@@ -91,13 +94,13 @@ fun ExpenseChartCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.large),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
                             .size(160.dp)
-                            .padding(8.dp),
+                            .padding(Spacing.small),
                         contentAlignment = Alignment.Center
                     ) {
                         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -139,16 +142,16 @@ fun ExpenseChartCard(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
+                                    .padding(vertical = Spacing.extraSmall),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(10.dp)
+                                        .size(Spacing.small)
                                         .clip(CircleShape)
                                         .background(color)
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(Spacing.small))
                                 Column {
                                     Text(
                                         text = "${entry.key.name} ($percent%)",

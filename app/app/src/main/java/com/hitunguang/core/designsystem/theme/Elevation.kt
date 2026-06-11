@@ -6,4 +6,6 @@ object Elevation {
     val none = 0.dp
     val low = 1.dp
     val medium = 2.dp
+    val high = 4.dp
+    val extraHigh = 8.dp
 }
