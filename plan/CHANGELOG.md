@@ -14,6 +14,20 @@ All notable changes to the HitungUang project will be documented in this file.
   - Expanded spacing system with `none`, `extraHuge` (40dp), and `massive` (48dp).
   - Expanded corner radius system with `none`, `extraSmall` (8dp), `extraLarge` (28dp), and `full` (100dp).
   - Expanded elevation system with `high` (4dp) and `extraHigh` (8dp).
+- **Dashboard Redesign (Phase 2)**: Overhauled visual presentation of the main dashboard.
+  - Redesigned the Hero Balance Card with a modern primary-to-primary-container gradient and custom typography.
+  - Added a 2x2 grid of filled tonal buttons for quick actions.
+  - Modernized the active budget health overview card with a thicker progress bar and semantic status colors.
+  - Updated the spending category chart (donut chart Canvas stroke and inline category list).
+  - Restricted recent transactions list to the 5 most recent items.
+  - Completely removed the `InsightCard` from the dashboard layout.
+- **Transaction List Screen Redesign (Phase 3)**: Overhauled the transaction history screen.
+  - Set sorting chips to use `Radius.extraSmall` corner shape.
+  - Redesigned date headers to use bold `titleMedium` typography.
+  - Wrapped daily net totals in rounded, alpha-tinted semantic badges (`IncomeGreen` or `ExpenseRed`).
+  - Redesigned transaction rows inside the list to align with swipe background corners (`Radius.medium`) and styled the category icon circle (`Spacing.extraHuge`) with tinted backgrounds.
+  - Applied bold `titleMedium` to transaction amounts for tabular number alignment.
+  - Redesigned empty state to use a larger icon (`Spacing.massive`) and consistent typography.
 
 ## [1.9.0] - 2026-06-10
 

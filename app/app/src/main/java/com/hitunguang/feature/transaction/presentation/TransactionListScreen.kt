@@ -54,6 +54,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.hitunguang.core.designsystem.theme.Elevation
+import com.hitunguang.core.designsystem.theme.ExpenseRed
+import com.hitunguang.core.designsystem.theme.IncomeGreen
+import com.hitunguang.core.designsystem.theme.Radius
+import com.hitunguang.core.designsystem.theme.Spacing
 import com.hitunguang.feature.category.presentation.components.CategoryIconHelper
 import com.hitunguang.feature.transaction.domain.model.Attachment
 import com.hitunguang.feature.transaction.domain.model.TransactionWithDetails
@@ -156,20 +161,20 @@ fun TransactionListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = Spacing.large)
         ) {
             if (uiState.error != null) {
                 Text(
                     text = uiState.error!!,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = Spacing.large)
                 )
             }
 
             // Period Filters Row
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.small),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 items(periods) { (chipValue, label) ->
@@ -184,16 +189,17 @@ fun TransactionListScreen(
                                 viewModel.setPeriod(chipValue)
                             }
                         },
-                        label = { Text(displayLabel) }
+                        label = { Text(displayLabel) },
+                        shape = RoundedCornerShape(Radius.extraSmall)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(Spacing.extraSmall))
 
             // Sort Options Row
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.small),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 items(sorts) { (chipValue, label) ->
@@ -201,12 +207,13 @@ fun TransactionListScreen(
                     FilterChip(
                         selected = isSelected,
                         onClick = { viewModel.setSort(chipValue) },
-                        label = { Text(label) }
+                        label = { Text(label) },
+                        shape = RoundedCornerShape(Radius.extraSmall)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Spacing.large))
 
             if (transactions.isEmpty()) {
                 Column(
@@ -218,17 +225,18 @@ fun TransactionListScreen(
                         imageVector = Icons.Default.ReceiptLong,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.size(Spacing.massive)
                     )
+                    Spacer(modifier = Modifier.height(Spacing.large))
                     Text(
                         text = "Belum ada transaksi",
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             } else {
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.small),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     groupedTransactions.forEach { (dateHeader, dailyTxs) ->
@@ -236,25 +244,36 @@ fun TransactionListScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
+                                    .padding(top = Spacing.medium, bottom = Spacing.small),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     text = dateHeader,
-                                    style = MaterialTheme.typography.titleSmall,
+                                    style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 val net = dailyTxs.sumOf {
                                     if (it.transactionType == "INCOME") it.amount else -it.amount
                                 }
-                                Text(
-                                    text = "${if (net >= 0) "+" else "-"} Rp ${abs(net)}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = if (net >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                val isPositive = net >= 0
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(Radius.full))
+                                        .background(
+                                            if (isPositive) IncomeGreen.copy(alpha = 0.1f)
+                                            else ExpenseRed.copy(alpha = 0.1f)
+                                        )
+                                        .padding(horizontal = Spacing.small, vertical = Spacing.extraSmall)
+                                ) {
+                                    Text(
+                                        text = "${if (isPositive) "+" else "-"} Rp ${abs(net)}",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = if (isPositive) IncomeGreen else ExpenseRed,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                         }
 
@@ -297,9 +316,9 @@ fun TransactionListScreen(
                                     Box(
                                         Modifier
                                             .fillMaxSize()
-                                            .clip(RoundedCornerShape(12.dp))
+                                            .clip(RoundedCornerShape(Radius.medium))
                                             .background(color)
-                                            .padding(horizontal = 24.dp),
+                                            .padding(horizontal = Spacing.doubleLarge),
                                         contentAlignment = alignment
                                     ) {
                                         if (icon != null) {
@@ -319,41 +338,44 @@ fun TransactionListScreen(
                                     Card(
                                         modifier = Modifier
                                             .fillMaxWidth()
+                                            .clip(RoundedCornerShape(Radius.medium))
                                             .clickable { viewModel.showDetailsDialog(tx) },
-                                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                                        shape = RoundedCornerShape(Radius.medium),
+                                        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.low)
                                     ) {
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(16.dp),
+                                                .padding(Spacing.large),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             val iconVector = CategoryIconHelper.getIconByName(tx.categoryIcon)
                                             Box(
                                                 modifier = Modifier
-                                                    .size(40.dp)
+                                                    .size(Spacing.extraHuge)
                                                     .clip(CircleShape)
                                                     .background(
-                                                        if (isExpense) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
-                                                        else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
+                                                        if (isExpense) ExpenseRed.copy(alpha = 0.1f)
+                                                        else IncomeGreen.copy(alpha = 0.1f)
                                                     ),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Icon(
                                                     imageVector = iconVector,
                                                     contentDescription = null,
-                                                    tint = if (isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                                                    modifier = Modifier.size(20.dp)
+                                                    tint = if (isExpense) ExpenseRed else IncomeGreen,
+                                                    modifier = Modifier.size(Spacing.doubleLarge)
                                                 )
                                             }
 
-                                            Spacer(modifier = Modifier.width(12.dp))
+                                            Spacer(modifier = Modifier.width(Spacing.medium))
 
                                             Column(modifier = Modifier.weight(1f)) {
                                                 Text(
                                                     text = tx.title,
                                                     style = MaterialTheme.typography.titleMedium,
-                                                    fontWeight = FontWeight.Bold
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = MaterialTheme.colorScheme.onSurface
                                                 )
                                                 Row(
                                                     verticalAlignment = Alignment.CenterVertically
@@ -378,13 +400,13 @@ fun TransactionListScreen(
                                                 }
                                             }
 
-                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Spacer(modifier = Modifier.width(Spacing.small))
 
                                             Text(
                                                 text = "${if (isExpense) "-" else "+"} Rp ${tx.amount}",
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.Bold,
-                                                color = if (isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                                                color = if (isExpense) ExpenseRed else IncomeGreen
                                             )
                                         }
                                     }
@@ -394,7 +416,7 @@ fun TransactionListScreen(
                     }
 
                     item {
-                        Spacer(modifier = Modifier.height(80.dp))
+                        Spacer(modifier = Modifier.height(Spacing.massive * 2))
                     }
                 }
             }
