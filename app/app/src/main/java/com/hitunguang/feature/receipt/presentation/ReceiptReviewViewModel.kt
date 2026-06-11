@@ -81,7 +81,10 @@ class ReceiptReviewViewModel @Inject constructor(
                 items = parsedItems,
                 taxStr = taxVal.toString(),
                 subtotal = subtotalVal,
-                totalStr = totalVal.toString()
+                totalStr = totalVal.toString(),
+                isMerchantConfident = !parsed.merchantName.isNullOrBlank(),
+                isDateConfident = parsed.date != null,
+                isItemsConfident = parsedItems.isNotEmpty()
             )
         }
     }
