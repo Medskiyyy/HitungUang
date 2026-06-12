@@ -43,6 +43,16 @@ All notable changes to the HitungUang project will be documented in this file.
   - Integrated the full Settings menu directly into the scrollable screen layout below the wallet list, removing the need for a separate settings dialog.
   - Added direct navigation items for Theme Settings, Security (PIN/Biometric), Notifications, Backup & Restore, Receipt Archive, Category Management, and Recycle Bin.
   - Standardized the Floating Action Button shape and spacing to match the new design system tokens.
+- **Budget Screen Redesign (Phase 6)**: Redesigned budget health tracking and scannability.
+  - Implemented custom overall Circular Progress Gauge color-coded dynamically by usage threshold.
+  - Integrated category icons via `CategoryIconHelper.getIconByName` in rounded tinted wrappers.
+  - Redesigned active budget items with status badges and thicker M3 progress bars.
+- **OCR Review Screen Redesign (Phase 7)**: Overhauled visual presentation and interaction for scanned receipt review.
+  - Implemented collapsible image preview card utilizing `AnimatedVisibility` and `ContentScale.Fit`.
+  - Added real-time confidence indicator badges (checkmark/warning icons) to Merchant, Date, Wallet, and Category fields.
+  - Implemented interactive swipe-to-delete support (`SwipeToDismissBox`) for receipt item cards.
+  - Pinned a sticky bottom action bar containing standardized M3 save/dismiss buttons.
+
 
 ## [1.9.0] - 2026-06-10
 
