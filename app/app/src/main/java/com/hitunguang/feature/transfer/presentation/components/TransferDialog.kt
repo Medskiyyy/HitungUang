@@ -43,6 +43,7 @@ import java.util.Locale
 @Composable
 fun TransferDialog(
     onDismiss: () -> Unit,
+    showSnackbar: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TransferViewModel = hiltViewModel()
 ) {
@@ -52,11 +53,17 @@ fun TransferDialog(
     var fromAccountExpanded by remember { mutableStateOf(false) }
     var toAccountExpanded by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.success) {
         if (uiState.success) {
+            showSnackbar("Transfer berhasil disimpan")
             onDismiss()
         }
+    }
+
+    LaunchedEffect(uiState.error) {
+        showErrorDialog = uiState.error != null
     }
 
     AlertDialog(
@@ -69,14 +76,6 @@ fun TransferDialog(
                 modifier = modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                if (uiState.error != null) {
-                    Text(
-                        text = uiState.error!!,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-
                 // From Account Dropdown
                 Column {
                     Text("Dari Dompet *", style = MaterialTheme.typography.bodySmall)
@@ -215,5 +214,18 @@ fun TransferDialog(
         ) {
             DatePicker(state = datePickerState)
         }
+    }
+
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.clearError() },
+            title = { Text("Peringatan", fontWeight = FontWeight.Bold) },
+            text = { Text(uiState.error ?: "Terjadi kesalahan") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.clearError() }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 }

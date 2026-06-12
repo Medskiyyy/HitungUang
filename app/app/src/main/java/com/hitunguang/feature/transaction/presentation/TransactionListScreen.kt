@@ -1,7 +1,6 @@
 package com.hitunguang.feature.transaction.presentation
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,18 +13,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,6 +32,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -41,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDateRangePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -54,18 +54,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import com.hitunguang.core.common.util.CurrencyFormatter
-import com.hitunguang.core.designsystem.theme.Elevation
+import com.hitunguang.core.designsystem.components.HUTransactionCard
 import com.hitunguang.core.designsystem.theme.ExpenseRed
 import com.hitunguang.core.designsystem.theme.IncomeGreen
 import com.hitunguang.core.designsystem.theme.Radius
 import com.hitunguang.core.designsystem.theme.Spacing
-import com.hitunguang.feature.category.presentation.components.CategoryIconHelper
 import com.hitunguang.feature.transaction.domain.model.Attachment
 import com.hitunguang.feature.transaction.domain.model.TransactionWithDetails
 import com.hitunguang.feature.transaction.presentation.components.AttachmentPreviewDialog
@@ -75,13 +69,13 @@ import com.hitunguang.feature.transaction.presentation.components.TransactionFor
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionListScreen(
     onSearchClick: () -> Unit,
     onManageCategoriesClick: () -> Unit,
+    showSnackbar: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TransactionViewModel = hiltViewModel()
 ) {
@@ -181,7 +175,9 @@ fun TransactionListScreen(
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.small),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = Spacing.small),
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -276,7 +272,6 @@ fun TransactionListScreen(
                         }
 
                         items(dailyTxs, key = { it.id }) { tx ->
-                            val isExpense = tx.transactionType == "EXPENSE" || tx.transactionType == "TRANSFER_FEE"
                             val dismissState = rememberSwipeToDismissBoxState(
                                 confirmValueChange = { dismissValue ->
                                     when (dismissValue) {
@@ -333,81 +328,10 @@ fun TransactionListScreen(
                                     }
                                 },
                                 content = {
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(Radius.medium))
-                                            .clickable { viewModel.showDetailsDialog(tx) },
-                                        shape = RoundedCornerShape(Radius.medium),
-                                        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.low)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(Spacing.large),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            val iconVector = CategoryIconHelper.getIconByName(tx.categoryIcon)
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(Spacing.extraHuge)
-                                                    .clip(CircleShape)
-                                                    .background(
-                                                        if (isExpense) ExpenseRed.copy(alpha = 0.1f)
-                                                        else IncomeGreen.copy(alpha = 0.1f)
-                                                    ),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Icon(
-                                                    imageVector = iconVector,
-                                                    contentDescription = null,
-                                                    tint = if (isExpense) ExpenseRed else IncomeGreen,
-                                                    modifier = Modifier.size(Spacing.doubleLarge)
-                                                )
-                                            }
-
-                                            Spacer(modifier = Modifier.width(Spacing.medium))
-
-                                            Column(modifier = Modifier.weight(1f)) {
-                                                Text(
-                                                    text = tx.title,
-                                                    style = MaterialTheme.typography.titleMedium,
-                                                    fontWeight = FontWeight.SemiBold,
-                                                    color = MaterialTheme.colorScheme.onSurface
-                                                )
-                                                Row(
-                                                    verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                                    Text(
-                                                        text = tx.accountName,
-                                                        style = MaterialTheme.typography.bodySmall,
-                                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                    )
-                                                    if (tx.categoryName != null) {
-                                                        Text(
-                                                            text = " • ",
-                                                            style = MaterialTheme.typography.bodySmall,
-                                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                        )
-                                                        Text(
-                                                            text = tx.categoryName,
-                                                            style = MaterialTheme.typography.bodySmall,
-                                                            color = MaterialTheme.colorScheme.primary
-                                                        )
-                                                    }
-                                                }
-                                            }
-
-                                            Spacer(modifier = Modifier.width(Spacing.small))
-
-                                            Text(
-                                                text = CurrencyFormatter.format(if (isExpense) -tx.amount else tx.amount, showSign = true),
-                                                style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.Bold,
-                                                color = if (isExpense) ExpenseRed else IncomeGreen
-                                            )
-                                        }
-                                    }
+                                    HUTransactionCard(
+                                        transaction = tx,
+                                        onClick = { viewModel.showDetailsDialog(tx) }
+                                    )
                                 }
                             )
                         }
@@ -479,6 +403,7 @@ fun TransactionListScreen(
             onManageCategoriesClick = onManageCategoriesClick,
             onSave = { accountId, categoryId, type, title, note, amount, date ->
                 viewModel.createTransaction(accountId, categoryId, type, title, note, amount, date)
+                showSnackbar("Transaksi berhasil disimpan")
             }
         )
     }
@@ -513,6 +438,7 @@ fun TransactionListScreen(
                     transactionDate = date,
                     createdAt = uiState.transactionToEdit!!.createdAt
                 )
+                showSnackbar("Transaksi berhasil diperbarui")
             }
         )
     }
@@ -532,7 +458,10 @@ fun TransactionListScreen(
         DeleteTransactionDialog(
             transaction = uiState.transactionToDelete!!,
             onDismiss = { viewModel.hideDeleteDialog() },
-            onConfirm = { viewModel.deleteTransaction() }
+            onConfirm = {
+                viewModel.deleteTransaction()
+                showSnackbar("Transaksi berhasil dihapus")
+            }
         )
     }
 
@@ -568,7 +497,7 @@ fun TransactionListScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = Spacing.small)
                 )
-                
+
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -628,7 +557,7 @@ fun TransactionListScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = Spacing.small)
                 )
-                
+
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),

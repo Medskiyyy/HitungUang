@@ -1,17 +1,13 @@
 package com.hitunguang.feature.transaction.presentation
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
@@ -20,8 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,13 +37,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.hitunguang.core.designsystem.components.HUTransactionCard
 import com.hitunguang.feature.transaction.domain.model.TransactionWithDetails
 import com.hitunguang.feature.transaction.presentation.components.TransactionDetailDialog
-
-import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.clip
-import com.hitunguang.feature.category.presentation.components.CategoryIconHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -147,79 +137,10 @@ fun SearchScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(results, key = { it.id }) { tx ->
-                        val isExpense = tx.transactionType == "EXPENSE" || tx.transactionType == "TRANSFER_FEE"
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { selectedTransactionForDetail = tx },
-                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                val iconVector = CategoryIconHelper.getIconByName(tx.categoryIcon)
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            if (isExpense) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
-                                            else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = iconVector,
-                                        contentDescription = null,
-                                        tint = if (isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(12.dp))
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = tx.title,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = tx.accountName,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        if (tx.categoryName != null) {
-                                            Text(
-                                                text = " • ",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                            Text(
-                                                text = tx.categoryName,
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                Text(
-                                    text = "${if (isExpense) "-" else "+"} Rp ${tx.amount}",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
+                        HUTransactionCard(
+                            transaction = tx,
+                            onClick = { selectedTransactionForDetail = tx }
+                        )
                     }
                     item {
                         Spacer(modifier = Modifier.height(32.dp))
@@ -240,3 +161,4 @@ fun SearchScreen(
         )
     }
 }
+

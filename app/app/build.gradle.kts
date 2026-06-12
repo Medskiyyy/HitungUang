@@ -13,8 +13,8 @@ android {
         applicationId = "com.hitunguang"
         minSdk = 26
         targetSdk = 36
-        versionCode = 21
-        versionName = "2.1.0"
+        versionCode = 22
+        versionName = "2.1.1"
     }
 
     buildTypes {

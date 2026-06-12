@@ -58,6 +58,7 @@ fun DashboardScreen(
     onSettingsClick: () -> Unit,
     onAddTransactionClick: (type: String) -> Unit,
     onScanClick: () -> Unit,
+    showSnackbar: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
@@ -166,7 +167,8 @@ fun DashboardScreen(
 
     if (showTransferDialog) {
         TransferDialog(
-            onDismiss = { showTransferDialog = false }
+            onDismiss = { showTransferDialog = false },
+            showSnackbar = showSnackbar
         )
     }
 }

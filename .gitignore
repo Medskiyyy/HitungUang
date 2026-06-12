@@ -21,3 +21,4 @@ Thumbs.db
 # Exclude planning documents from repository
 /plan/
 CHANGELOG.md
+/Testing-APP/
