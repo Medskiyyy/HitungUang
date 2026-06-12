@@ -18,5 +18,7 @@ data class ReceiptReviewUiState(
     val isSaved: Boolean = false,
     val isMerchantConfident: Boolean = false,
     val isDateConfident: Boolean = false,
-    val isItemsConfident: Boolean = false
+    val isItemsConfident: Boolean = false,
+    val suggestedAccountId: String? = null,
+    val suggestedCategoryId: String? = null
 )

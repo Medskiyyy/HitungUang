@@ -28,6 +28,7 @@ import com.hitunguang.core.designsystem.theme.Elevation
 import com.hitunguang.core.designsystem.theme.Radius
 import com.hitunguang.core.designsystem.theme.Spacing
 import com.hitunguang.feature.dashboard.presentation.BudgetProgress
+import com.hitunguang.core.common.util.CurrencyFormatter
 import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -145,13 +146,13 @@ fun BudgetSummaryCard(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "Terpakai: Rp ${formatter.format(progress.spentAmount)}",
+                                    text = "Terpakai: ${CurrencyFormatter.format(progress.spentAmount)}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 val remaining = budget.amount - progress.spentAmount
                                 Text(
-                                    text = "Sisa Budget: Rp ${formatter.format(remaining)}",
+                                    text = "Sisa Budget: ${CurrencyFormatter.format(remaining)}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (remaining >= 0) BudgetSafe else BudgetDanger,
                                     fontWeight = FontWeight.Medium

@@ -30,12 +30,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
+import com.hitunguang.core.common.util.CurrencyFormatter
+import com.hitunguang.core.designsystem.theme.AutoResizeText
 import com.hitunguang.core.designsystem.theme.Elevation
 import com.hitunguang.core.designsystem.theme.Radius
 import com.hitunguang.core.designsystem.theme.Spacing
 import com.hitunguang.feature.category.domain.model.Category
-import java.text.NumberFormat
-import java.util.Locale
 import kotlin.math.roundToInt
 
 @Composable
@@ -43,8 +46,6 @@ fun ExpenseChartCard(
     expenseCategoriesDistribution: Map<Category, Long>,
     modifier: Modifier = Modifier
 ) {
-    val idLocale = Locale("in", "ID")
-    val formatter = NumberFormat.getIntegerInstance(idLocale)
     val totalExpense = expenseCategoriesDistribution.values.sum()
 
     // Harmonious modern HSL-based color palette
@@ -127,6 +128,26 @@ fun ExpenseChartCard(
                                 startAngle += sweepAngle
                             }
                         }
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text(
+                                text = "Total",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            AutoResizeText(
+                                text = CurrencyFormatter.format(totalExpense),
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                maxLines = 1,
+                                minFontSize = 10.sp
+                            )
+                        }
                     }
 
                     Column(
@@ -154,19 +175,47 @@ fun ExpenseChartCard(
                                 Spacer(modifier = Modifier.width(Spacing.small))
                                 Column {
                                     Text(
-                                        text = "${entry.key.name} ($percent%)",
+                                        text = entry.key.name,
                                         style = MaterialTheme.typography.bodySmall,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
-                                        text = "Rp ${formatter.format(entry.value)}",
+                                        text = "${CurrencyFormatter.format(entry.value)} (${percent}%)",
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
                             }
                         }
+                    }
+                }
+
+                val largestCategoryEntry = expenseCategoriesDistribution.entries.maxByOrNull { it.value }
+                if (largestCategoryEntry != null) {
+                    Spacer(modifier = Modifier.height(Spacing.medium))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                    Spacer(modifier = Modifier.height(Spacing.small))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Kategori Terbesar",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = largestCategoryEntry.key.name,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             }

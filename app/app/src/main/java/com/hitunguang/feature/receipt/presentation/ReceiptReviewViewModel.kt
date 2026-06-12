@@ -41,6 +41,10 @@ class ReceiptReviewViewModel @Inject constructor(
                 if (_uiState.value.accountId.isEmpty() && list.isNotEmpty()) {
                     _uiState.update { it.copy(accountId = list.first().id) }
                 }
+                ocrRawText?.let { raw ->
+                    val suggested = getSuggestedAccount(raw, list)
+                    _uiState.update { it.copy(suggestedAccountId = suggested?.id) }
+                }
             }
         }
 
@@ -52,7 +56,41 @@ class ReceiptReviewViewModel @Inject constructor(
                     val defaultCat = expenseCategories.find { it.name.lowercase() == "lainnya" } ?: expenseCategories.firstOrNull()
                     _uiState.update { it.copy(categoryId = defaultCat?.id) }
                 }
+                ocrRawText?.let { raw ->
+                    val suggested = getSuggestedCategory(raw, expenseCategories)
+                    _uiState.update { it.copy(suggestedCategoryId = suggested?.id) }
+                }
             }
+        }
+    }
+
+    private fun getSuggestedAccount(rawText: String, accounts: List<Account>): Account? {
+        val text = rawText.lowercase()
+        val hasBankKeyword = listOf("bca", "mandiri", "bri", "bni", "cimb", "debit", "kartu credit", "credit card", "visa", "mastercard").any { text.contains(it) }
+        val hasEWalletKeyword = listOf("gopay", "shopeepay", "ovo", "dana", "linkaja").any { text.contains(it) }
+        val hasCashKeyword = listOf("cash", "tunai", "kembalian").any { text.contains(it) }
+
+        return when {
+            hasEWalletKeyword -> accounts.find { it.accountType == "E_WALLET" } ?: accounts.find { it.accountType == "BANK" }
+            hasBankKeyword -> accounts.find { it.accountType == "BANK" }
+            hasCashKeyword -> accounts.find { it.accountType == "CASH" }
+            else -> null
+        }
+    }
+
+    private fun getSuggestedCategory(rawText: String, categories: List<Category>): Category? {
+        val text = rawText.lowercase()
+        val foodKeywords = listOf("makan", "minum", "resto", "cafe", "coffee", "kopi", "bakso", "mie", "nasi", "burger", "pizza", "teh", "susu", "restoran", "warung")
+        val shoppingKeywords = listOf("belanja", "mart", "indomaret", "alfamart", "supermarket", "mall", "toko", "baju", "celana", "sepatu")
+        val transportKeywords = listOf("gojek", "grab", "uber", "taxi", "bensin", "pertamina", "shell", "parkir", "tol", "ticket", "tiket")
+        val healthKeywords = listOf("apotek", "obat", "dokter", "klinik", "sakit", "vitamin", "rs", "rumah sakit")
+
+        return when {
+            foodKeywords.any { text.contains(it) } -> categories.find { it.name.lowercase().contains("makan") || it.name.lowercase().contains("kuliner") }
+            shoppingKeywords.any { text.contains(it) } -> categories.find { it.name.lowercase().contains("belanja") || it.name.lowercase().contains("shopping") }
+            transportKeywords.any { text.contains(it) } -> categories.find { it.name.lowercase().contains("transpor") || it.name.lowercase().contains("perjalanan") }
+            healthKeywords.any { text.contains(it) } -> categories.find { it.name.lowercase().contains("sehat") || it.name.lowercase().contains("kesehatan") }
+            else -> null
         }
     }
 
@@ -73,6 +111,9 @@ class ReceiptReviewViewModel @Inject constructor(
         val subtotalVal = parsedItems.sumOf { it.subtotal }
         val totalVal = parsed.total.coerceAtLeast(subtotalVal + taxVal)
 
+        val suggestedAcc = getSuggestedAccount(rawText, _accounts.value)
+        val suggestedCat = getSuggestedCategory(rawText, _categories.value)
+
         _uiState.update {
             it.copy(
                 imageUri = imageUri,
@@ -84,7 +125,9 @@ class ReceiptReviewViewModel @Inject constructor(
                 totalStr = totalVal.toString(),
                 isMerchantConfident = !parsed.merchantName.isNullOrBlank(),
                 isDateConfident = parsed.date != null,
-                isItemsConfident = parsedItems.isNotEmpty()
+                isItemsConfident = parsedItems.isNotEmpty(),
+                suggestedAccountId = suggestedAcc?.id,
+                suggestedCategoryId = suggestedCat?.id
             )
         }
     }

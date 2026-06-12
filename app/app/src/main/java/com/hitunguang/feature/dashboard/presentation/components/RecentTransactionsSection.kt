@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.hitunguang.feature.category.presentation.components.CategoryIconHelper
 import com.hitunguang.feature.transaction.domain.model.TransactionWithDetails
+import com.hitunguang.core.common.util.CurrencyFormatter
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -157,7 +158,7 @@ fun RecentTransactionsSection(
                             Spacer(modifier = Modifier.width(Spacing.small))
 
                             Text(
-                                text = "${if (isExpense) "-" else "+"} Rp ${formatter.format(tx.amount)}",
+                                text = "${if (isExpense) "-" else "+"}${CurrencyFormatter.format(tx.amount)}",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = if (isExpense) ExpenseRed else IncomeGreen

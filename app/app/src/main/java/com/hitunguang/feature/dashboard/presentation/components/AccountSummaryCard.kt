@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.hitunguang.feature.account.domain.model.Account
+import com.hitunguang.core.common.util.CurrencyFormatter
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -101,7 +102,7 @@ fun AccountSummaryCard(
                                     maxLines = 1
                                 )
                                 Text(
-                                    text = "Rp ${formatter.format(account.currentBalance)}",
+                                    text = CurrencyFormatter.format(account.currentBalance),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.SemiBold

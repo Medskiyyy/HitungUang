@@ -55,7 +55,10 @@ import com.hitunguang.core.designsystem.theme.Radius
 import com.hitunguang.core.designsystem.theme.Spacing
 import com.hitunguang.feature.budget.presentation.components.BudgetFormDialog
 import com.hitunguang.feature.category.presentation.components.CategoryIconHelper
-import java.text.NumberFormat
+import com.hitunguang.core.common.util.CurrencyFormatter
+import com.hitunguang.feature.budget.domain.model.Budget
+import com.hitunguang.feature.budget.presentation.BudgetWithProgress
+import com.hitunguang.feature.category.domain.model.Category
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -70,7 +73,6 @@ fun BudgetListScreen(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     val idLocale = remember { Locale("in", "ID") }
-    val formatter = remember { NumberFormat.getIntegerInstance(idLocale) }
 
     Scaffold(
         topBar = {
@@ -223,17 +225,17 @@ fun BudgetListScreen(
                                                 color = MaterialTheme.colorScheme.onSurface
                                             )
                                             Text(
-                                                text = "Limit: Rp ${formatter.format(totalLimit)}",
+                                                text = "Limit: ${CurrencyFormatter.format(totalLimit)}",
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                             Text(
-                                                text = "Terpakai: Rp ${formatter.format(totalSpent)}",
+                                                text = "Terpakai: ${CurrencyFormatter.format(totalSpent)}",
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                             Text(
-                                                text = "Sisa: Rp ${formatter.format(totalRemaining)}",
+                                                text = "Sisa: ${CurrencyFormatter.format(totalRemaining)}",
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 fontWeight = FontWeight.Bold,
                                                 color = if (totalRemaining <= 0L && totalLimit > 0) MaterialTheme.colorScheme.error else IncomeGreen
@@ -288,15 +290,13 @@ fun BudgetListScreen(
 @Composable
 fun BudgetProgressCard(
     budgetProgress: BudgetWithProgress,
-    categories: List<com.hitunguang.feature.category.domain.model.Category> = emptyList(),
-    onEditClick: (com.hitunguang.feature.budget.domain.model.Budget) -> Unit,
-    onDeleteClick: (com.hitunguang.feature.budget.domain.model.Budget) -> Unit,
+    categories: List<Category> = emptyList(),
+    onEditClick: (Budget) -> Unit,
+    onDeleteClick: (Budget) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val idLocale = Locale("in", "ID")
-    val formatter = NumberFormat.getIntegerInstance(idLocale)
     val dateFormatter = SimpleDateFormat("dd MMM yyyy", idLocale)
-
     val budget = budgetProgress.budget
     val title = if (budget.budgetType == "GLOBAL") "Anggaran Global" else budgetProgress.categoryName ?: "Kategori Kustom"
     val dateRangeText = "${dateFormatter.format(Date(budget.startDate))} - ${dateFormatter.format(Date(budget.endDate))}"
@@ -364,47 +364,11 @@ fun BudgetProgressCard(
                     Spacer(modifier = Modifier.width(Spacing.medium))
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = title,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.weight(1f, fill = false)
-                            )
-                            Spacer(modifier = Modifier.width(Spacing.small))
-
-                            val badgeText = when {
-                                budgetProgress.isOverBudget -> "Over Budget"
-                                budgetProgress.isThresholdReached -> "Warning"
-                                else -> "Aman"
-                            }
-                            val badgeBgColor = when {
-                                budgetProgress.isOverBudget -> MaterialTheme.colorScheme.errorContainer
-                                budgetProgress.isThresholdReached -> MaterialTheme.colorScheme.tertiaryContainer
-                                else -> MaterialTheme.colorScheme.primaryContainer
-                            }
-                            val badgeTextColor = when {
-                                budgetProgress.isOverBudget -> MaterialTheme.colorScheme.onErrorContainer
-                                budgetProgress.isThresholdReached -> MaterialTheme.colorScheme.onTertiaryContainer
-                                else -> MaterialTheme.colorScheme.onPrimaryContainer
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(Radius.extraSmall))
-                                    .background(badgeBgColor)
-                                    .padding(horizontal = Spacing.small, vertical = Spacing.extraSmall)
-                            ) {
-                                Text(
-                                    text = badgeText,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = badgeTextColor
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(Spacing.extraSmall))
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
                         Text(
                             text = dateRangeText,
                             style = MaterialTheme.typography.bodySmall,
@@ -433,47 +397,106 @@ fun BudgetProgressCard(
 
             Spacer(modifier = Modifier.height(Spacing.medium))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Terpakai: Rp ${formatter.format(budgetProgress.spentAmount)} / Rp ${formatter.format(budget.amount)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = "${String.format(Locale.US, "%.0f", budgetProgress.progressPercent)}%",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = progressColor
-                )
-            }
-
-            Spacer(modifier = Modifier.height(Spacing.small))
-
+            // Progress bar
             LinearProgressIndicator(
                 progress = { progressValue },
                 color = progressColor,
                 trackColor = MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(Spacing.small)
+                    .height(8.dp)
                     .clip(RoundedCornerShape(Radius.small))
             )
 
-            Spacer(modifier = Modifier.height(Spacing.small))
+            Spacer(modifier = Modifier.height(Spacing.medium))
 
-            Text(
-                text = if (budgetProgress.isOverBudget) {
-                    "Melebihi anggaran sebesar Rp ${formatter.format(budgetProgress.spentAmount - budget.amount)}!"
-                } else {
-                    "Sisa limit: Rp ${formatter.format(budgetProgress.remainingAmount)}"
-                },
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold,
-                color = if (budgetProgress.isOverBudget) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            // Breakdown Grid
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(Spacing.small)
+            ) {
+                // Row 1: Limit & Terpakai
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(
+                            text = "Limit Anggaran",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = CurrencyFormatter.format(budget.amount),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = "Terpakai",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = CurrencyFormatter.format(budgetProgress.spentAmount),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = progressColor
+                        )
+                    }
+                }
+
+                // Row 2: Status Sisa / Melebihi & Persentase
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        if (budgetProgress.isOverBudget) {
+                            Text(
+                                text = "Melebihi Anggaran",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            Text(
+                                text = CurrencyFormatter.format(budgetProgress.spentAmount - budget.amount),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        } else {
+                            Text(
+                                text = "Sisa Limit",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = CurrencyFormatter.format(budgetProgress.remainingAmount),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+
+                    // Percentage Badge
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(Radius.medium))
+                            .background(progressColor.copy(alpha = 0.1f))
+                            .padding(horizontal = Spacing.medium, vertical = Spacing.small)
+                    ) {
+                        Text(
+                            text = "${String.format(Locale.US, "%.0f", budgetProgress.progressPercent)}%",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = progressColor
+                        )
+                    }
+                }
+            }
         }
     }
 }

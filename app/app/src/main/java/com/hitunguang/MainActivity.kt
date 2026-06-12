@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,8 +32,14 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -299,44 +306,18 @@ fun MainAppScreen(
     } else {
         Scaffold(
             bottomBar = {
-                NavigationBar {
-                    NavigationBarItem(
-                        selected = currentTab == MainTab.DASHBOARD,
-                        onClick = { currentTab = MainTab.DASHBOARD },
-                        icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard") },
-                        label = { Text("Dashboard") }
-                    )
-                    NavigationBarItem(
-                        selected = currentTab == MainTab.TRANSACTIONS,
-                        onClick = { currentTab = MainTab.TRANSACTIONS },
-                        icon = { Icon(Icons.Default.ReceiptLong, contentDescription = "Transaksi") },
-                        label = { Text("Transaksi") }
-                    )
-                    NavigationBarItem(
-                        selected = false,
-                        onClick = { showScanScreen = true },
-                        icon = { Icon(Icons.Default.QrCodeScanner, contentDescription = "Scan") },
-                        label = { Text("Scan") }
-                    )
-                    NavigationBarItem(
-                        selected = currentTab == MainTab.ACCOUNTS,
-                        onClick = { currentTab = MainTab.ACCOUNTS },
-                        icon = { Icon(Icons.Default.Wallet, contentDescription = "Akun") },
-                        label = { Text("Akun") }
-                    )
-                    NavigationBarItem(
-                        selected = currentTab == MainTab.BUDGETS,
-                        onClick = { currentTab = MainTab.BUDGETS },
-                        icon = { Icon(Icons.Default.BarChart, contentDescription = "Budget") },
-                        label = { Text("Budget") }
-                    )
-                }
+                FloatingBottomNavigation(
+                    currentTab = currentTab,
+                    onTabSelected = { currentTab = it },
+                    onScanClick = { showScanScreen = true }
+                )
             }
         ) { paddingValues ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
+                    .padding(top = paddingValues.calculateTopPadding())
+                    .padding(bottom = 96.dp)
             ) {
                 AnimatedContent(
                     targetState = currentTab,
@@ -371,14 +352,8 @@ fun MainAppScreen(
                         }
                         MainTab.ACCOUNTS -> {
                             AccountListScreen(
-                                onNavigateToTransferHistory = { showTransferHistoryScreen = true },
-                                onNavigateToThemeSettings = { showThemeSettingsDialog = true },
-                                onNavigateToSecuritySettings = { showSecuritySettingsScreen = true },
-                                onNavigateToNotificationSettings = { showNotificationSettingsScreen = true },
-                                onNavigateToBackup = { showBackupScreen = true },
-                                onNavigateToCategoryManagement = { showCategoryListScreen = true },
-                                onNavigateToRecycleBin = { showRecycleBinScreen = true },
-                                onNavigateToReceiptArchive = { showReceiptArchiveScreen = true }
+                                onSettingsClick = { showSettingsPlaceholder = true },
+                                onNavigateToTransferHistory = { showTransferHistoryScreen = true }
                             )
                         }
                         MainTab.BUDGETS -> {
@@ -603,5 +578,146 @@ fun MainAppScreen(
         )
     }
 }
+
+@Composable
+fun FloatingBottomNavigation(
+    currentTab: MainTab,
+    onTabSelected: (MainTab) -> Unit,
+    onScanClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        shape = RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        tonalElevation = 3.dp,
+        shadowElevation = 4.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FloatingNavItem(
+                selected = currentTab == MainTab.DASHBOARD,
+                onClick = { onTabSelected(MainTab.DASHBOARD) },
+                icon = Icons.Default.Dashboard,
+                label = "Dashboard"
+            )
+            FloatingNavItem(
+                selected = currentTab == MainTab.TRANSACTIONS,
+                onClick = { onTabSelected(MainTab.TRANSACTIONS) },
+                icon = Icons.Default.ReceiptLong,
+                label = "Transaksi"
+            )
+            FloatingScanNavItem(
+                onClick = onScanClick
+            )
+            FloatingNavItem(
+                selected = currentTab == MainTab.ACCOUNTS,
+                onClick = { onTabSelected(MainTab.ACCOUNTS) },
+                icon = Icons.Default.Wallet,
+                label = "Akun"
+            )
+            FloatingNavItem(
+                selected = currentTab == MainTab.BUDGETS,
+                onClick = { onTabSelected(MainTab.BUDGETS) },
+                icon = Icons.Default.BarChart,
+                label = "Budget"
+            )
+        }
+    }
+}
+
+@Composable
+fun RowScope.FloatingNavItem(
+    selected: Boolean,
+    onClick: () -> Unit,
+    icon: ImageVector,
+    label: String
+) {
+    val contentColor = if (selected) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Column(
+        modifier = Modifier
+            .weight(1f)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
+            .padding(vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = contentColor,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+            color = contentColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+fun RowScope.FloatingScanNavItem(
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .weight(1.2f)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
+            .padding(vertical = 2.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.QrCodeScanner,
+                contentDescription = "Scan",
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(28.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = "Scan",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
 
 

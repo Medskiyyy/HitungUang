@@ -71,20 +71,14 @@ import com.hitunguang.feature.account.domain.model.Account
 import com.hitunguang.feature.account.presentation.components.AccountFormDialog
 import com.hitunguang.feature.account.presentation.components.DeleteAccountDialog
 import com.hitunguang.feature.transfer.presentation.components.TransferDialog
-import java.text.NumberFormat
-import java.util.Locale
+import androidx.compose.material.icons.filled.Settings
+import com.hitunguang.core.common.util.CurrencyFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountListScreen(
+    onSettingsClick: () -> Unit,
     onNavigateToTransferHistory: () -> Unit,
-    onNavigateToThemeSettings: () -> Unit,
-    onNavigateToSecuritySettings: () -> Unit,
-    onNavigateToNotificationSettings: () -> Unit,
-    onNavigateToBackup: () -> Unit,
-    onNavigateToCategoryManagement: () -> Unit,
-    onNavigateToRecycleBin: () -> Unit,
-    onNavigateToReceiptArchive: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AccountViewModel = hiltViewModel()
 ) {
@@ -92,8 +86,6 @@ fun AccountListScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showTransferDialog by remember { mutableStateOf(false) }
 
-    val idLocale = remember { Locale("in", "ID") }
-    val formatter = remember { NumberFormat.getIntegerInstance(idLocale) }
 
     val cashWallets = remember(accounts) { accounts.filter { it.accountType == "CASH" } }
     val bankWallets = remember(accounts) { accounts.filter { it.accountType == "BANK" } }
@@ -106,7 +98,15 @@ fun AccountListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Akun", fontWeight = FontWeight.Bold) }
+                title = { Text("Akun", fontWeight = FontWeight.Bold) },
+                actions = {
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Pengaturan"
+                        )
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -226,7 +226,7 @@ fun AccountListScreen(
                                 )
                             }
                             Text(
-                                text = "Rp ${formatter.format(cashWallets.sumOf { it.currentBalance })}",
+                                text = CurrencyFormatter.format(cashWallets.sumOf { it.currentBalance }),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontWeight = FontWeight.SemiBold
@@ -270,7 +270,7 @@ fun AccountListScreen(
                                 )
                             }
                             Text(
-                                text = "Rp ${formatter.format(bankWallets.sumOf { it.currentBalance })}",
+                                text = CurrencyFormatter.format(bankWallets.sumOf { it.currentBalance }),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontWeight = FontWeight.SemiBold
@@ -314,7 +314,7 @@ fun AccountListScreen(
                                 )
                             }
                             Text(
-                                text = "Rp ${formatter.format(eWalletWallets.sumOf { it.currentBalance })}",
+                                text = CurrencyFormatter.format(eWalletWallets.sumOf { it.currentBalance }),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontWeight = FontWeight.SemiBold
@@ -334,28 +334,7 @@ fun AccountListScreen(
                 }
             }
 
-            // Settings Section Header
-            item {
-                Text(
-                    text = "Pengaturan",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = Spacing.large, bottom = Spacing.small)
-                )
-            }
 
-            // Settings List
-            item {
-                SettingsSection(
-                    onNavigateToThemeSettings = onNavigateToThemeSettings,
-                    onNavigateToSecuritySettings = onNavigateToSecuritySettings,
-                    onNavigateToNotificationSettings = onNavigateToNotificationSettings,
-                    onNavigateToBackup = onNavigateToBackup,
-                    onNavigateToCategoryManagement = onNavigateToCategoryManagement,
-                    onNavigateToRecycleBin = onNavigateToRecycleBin,
-                    onNavigateToReceiptArchive = onNavigateToReceiptArchive
-                )
-            }
         }
     }
 
@@ -404,8 +383,7 @@ fun WalletSummaryCard(
     walletCount: Int,
     modifier: Modifier = Modifier
 ) {
-    val idLocale = Locale("in", "ID")
-    val formatter = NumberFormat.getIntegerInstance(idLocale)
+
 
     Card(
         modifier = modifier
@@ -434,7 +412,7 @@ fun WalletSummaryCard(
                 )
                 Spacer(modifier = Modifier.height(Spacing.extraSmall))
                 Text(
-                    text = "Rp ${formatter.format(totalBalance)}",
+                    text = CurrencyFormatter.format(totalBalance),
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimary
@@ -458,8 +436,7 @@ fun WalletListItem(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val idLocale = Locale("in", "ID")
-    val formatter = NumberFormat.getIntegerInstance(idLocale)
+
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -507,7 +484,7 @@ fun WalletListItem(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Saldo: Rp ${formatter.format(account.currentBalance)}",
+                        text = "Saldo: ${CurrencyFormatter.format(account.currentBalance)}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -558,113 +535,5 @@ fun EmptyWalletState() {
     }
 }
 
-@Composable
-fun SettingsSection(
-    onNavigateToThemeSettings: () -> Unit,
-    onNavigateToSecuritySettings: () -> Unit,
-    onNavigateToNotificationSettings: () -> Unit,
-    onNavigateToBackup: () -> Unit,
-    onNavigateToCategoryManagement: () -> Unit,
-    onNavigateToRecycleBin: () -> Unit,
-    onNavigateToReceiptArchive: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(Radius.medium),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        )
-    ) {
-        Column {
-            SettingsMenuItem(
-                icon = Icons.Default.Palette,
-                title = "Pengaturan Tampilan",
-                subtitle = "Tema Terang, Gelap, & Sistem",
-                onClick = onNavigateToThemeSettings
-            )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.medium), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
-            SettingsMenuItem(
-                icon = Icons.Default.Lock,
-                title = "Keamanan",
-                subtitle = "PIN & Biometrik",
-                onClick = onNavigateToSecuritySettings
-            )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.medium), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
-            SettingsMenuItem(
-                icon = Icons.Default.Notifications,
-                title = "Notifikasi",
-                subtitle = "Pengingat harian & Budget",
-                onClick = onNavigateToNotificationSettings
-            )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.medium), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
-            SettingsMenuItem(
-                icon = Icons.Default.Backup,
-                title = "Backup & Restore",
-                subtitle = "Cadangkan data Anda",
-                onClick = onNavigateToBackup
-            )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.medium), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
-            SettingsMenuItem(
-                icon = Icons.Default.Receipt,
-                title = "Arsip Struk Belanja",
-                subtitle = "Riwayat pemindaian struk",
-                onClick = onNavigateToReceiptArchive
-            )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.medium), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
-            SettingsMenuItem(
-                icon = Icons.Default.Category,
-                title = "Kelola Kategori",
-                subtitle = "Tambah & Edit kategori",
-                onClick = onNavigateToCategoryManagement
-            )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = Spacing.medium), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
-            SettingsMenuItem(
-                icon = Icons.Default.Delete,
-                title = "Tempat Sampah",
-                subtitle = "Pulihkan data terhapus",
-                onClick = onNavigateToRecycleBin
-            )
-        }
-    }
-}
 
-@Composable
-fun SettingsMenuItem(
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(Spacing.medium),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(24.dp)
-        )
-        Spacer(modifier = Modifier.width(Spacing.medium))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        Icon(
-            imageVector = Icons.Default.ChevronRight,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-        )
-    }
-}
+

@@ -115,11 +115,6 @@ fun DashboardScreen(
                     netDifference = uiState.netDifference
                 )
 
-                // Period Filter
-                PeriodFilterRow(
-                    selectedPeriod = uiState.selectedPeriod,
-                    onPeriodSelect = { viewModel.setDashboardPeriod(it) }
-                )
 
                 // Quick Actions Grid
                 QuickActionsSection(
@@ -176,33 +171,6 @@ fun DashboardScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PeriodFilterRow(
-    selectedPeriod: String,
-    onPeriodSelect: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val periods = listOf(
-        "TODAY" to "Hari Ini",
-        "WEEKLY" to "Minggu Ini",
-        "MONTHLY" to "Bulan Ini",
-        "YEARLY" to "Tahun Ini"
-    )
-
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        periods.forEach { (key, label) ->
-            FilterChip(
-                selected = selectedPeriod == key,
-                onClick = { onPeriodSelect(key) },
-                label = { Text(label) }
-            )
-        }
-    }
-}
 
 @Composable
 fun FinancialSummaryInfo(

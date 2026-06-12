@@ -246,6 +246,34 @@ object ReceiptParser {
             }
         }
 
+        // Pattern 1B: [Name] [Qty] x/X/@ [UnitPrice] (without trailing subtotal)
+        // E.g. "INDOMIE 2 x 3500" or "TELUR 1 x 25000"
+        val pattern1B = Pattern.compile("^(.*?)\\s+(\\d+(?:[.,]\\d+)?)\\s*[@xX]\\s*([\\d.,]+)\\s*$")
+        val matcher1B = pattern1B.matcher(line)
+        if (matcher1B.find()) {
+            val name = matcher1B.group(1)?.trim() ?: ""
+            val qty = matcher1B.group(2)?.replace(',', '.')?.toDoubleOrNull() ?: 1.0
+            val price = cleanAndParseAmount(matcher1B.group(3)) ?: 0L
+            val subtotal = (qty * price).toLong()
+            if (name.isNotEmpty() && subtotal >= 100L) {
+                return ParsedReceiptItem(name, qty, price, subtotal)
+            }
+        }
+
+        // Pattern 4: [Qty] [Name] [Subtotal] (restaurant / QRIS format)
+        // E.g. "1 NASI GORENG 25.000" or "2 ES TEH 10000"
+        val pattern4 = Pattern.compile("^(\\d+(?:[.,]\\d+)?)\\s+(.*?)\\s+([\\d.,]+)\\s*$")
+        val matcher4 = pattern4.matcher(line)
+        if (matcher4.find()) {
+            val qty = matcher4.group(1)?.replace(',', '.')?.toDoubleOrNull() ?: 1.0
+            val name = matcher4.group(2)?.trim() ?: ""
+            val subtotal = cleanAndParseAmount(matcher4.group(3)) ?: 0L
+            val price = if (qty > 0) (subtotal / qty).toLong() else subtotal
+            if (name.isNotEmpty() && subtotal >= 100L && name.any { it.isLetter() }) {
+                return ParsedReceiptItem(name, qty, price, subtotal)
+            }
+        }
+
         // Pattern 2: [Name] [Qty] [UnitPrice] [Subtotal] (without separator)
         // E.g. "AQUA 2 5.000 10.000"
         val pattern2 = Pattern.compile("^(.*?)\\s+(\\d+)\\s+([\\d.,]+)\\s+([\\d.,]+)\\s*$")

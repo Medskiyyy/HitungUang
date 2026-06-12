@@ -313,51 +313,80 @@ fun ReceiptReviewScreen(
                     // Wallet Selection
                     Box(modifier = Modifier.fillMaxWidth()) {
                         val currentAccount = accounts.find { it.id == uiState.accountId }
-                        Surface(
-                            onClick = { accountExpanded = true },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(Radius.medium),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                            color = MaterialTheme.colorScheme.surface
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(Spacing.medium),
-                                verticalAlignment = Alignment.CenterVertically
+                        val suggestedAccount = accounts.find { it.id == uiState.suggestedAccountId }
+
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Surface(
+                                onClick = { accountExpanded = true },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(Radius.medium),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                                color = MaterialTheme.colorScheme.surface
                             ) {
-                                Icon(
-                                    imageVector = when (currentAccount?.accountType) {
-                                        "BANK" -> Icons.Default.AccountBalance
-                                        "E_WALLET" -> Icons.Default.AccountBalanceWallet
-                                        else -> Icons.Default.Wallet
-                                    },
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                                Spacer(modifier = Modifier.width(Spacing.medium))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                Row(
+                                    modifier = Modifier.padding(Spacing.medium),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = when (currentAccount?.accountType) {
+                                            "BANK" -> Icons.Default.AccountBalance
+                                            "E_WALLET" -> Icons.Default.AccountBalanceWallet
+                                            else -> Icons.Default.Wallet
+                                        },
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.width(Spacing.medium))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                "Sumber Dana (Dompet)",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                            Spacer(modifier = Modifier.width(Spacing.small))
+                                            Icon(
+                                                imageVector = Icons.Default.CheckCircle,
+                                                contentDescription = "Valid",
+                                                tint = com.hitunguang.core.designsystem.theme.IncomeGreen,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                        }
                                         Text(
-                                            "Sumber Dana (Dompet)",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Spacer(modifier = Modifier.width(Spacing.small))
-                                        Icon(
-                                            imageVector = Icons.Default.CheckCircle,
-                                            contentDescription = "Valid",
-                                            tint = com.hitunguang.core.designsystem.theme.IncomeGreen,
-                                            modifier = Modifier.size(14.dp)
+                                            currentAccount?.name ?: "Pilih Dompet",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            fontWeight = FontWeight.Medium
                                         )
                                     }
+                                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                                }
+                            }
+
+                            if (suggestedAccount != null && suggestedAccount.id != uiState.accountId) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { viewModel.updateAccount(suggestedAccount.id) }
+                                        .padding(top = 4.dp, bottom = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Wallet,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        currentAccount?.name ?: "Pilih Dompet",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = FontWeight.Medium
+                                        text = "Saran: ${suggestedAccount.name} (Ketuk untuk pilih)",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold
                                     )
                                 }
-                                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                             }
                         }
+
                         DropdownMenu(
                             expanded = accountExpanded,
                             onDismissRequest = { accountExpanded = false },
@@ -377,62 +406,90 @@ fun ReceiptReviewScreen(
 
                     // Category Selection
                     val currentCategory = categories.find { it.id == uiState.categoryId }
-                    Surface(
-                        onClick = { showCategoryPicker = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(Radius.medium),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                        color = MaterialTheme.colorScheme.surface
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(Spacing.medium),
-                            verticalAlignment = Alignment.CenterVertically
+                    val suggestedCategory = categories.find { it.id == uiState.suggestedCategoryId }
+
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Surface(
+                            onClick = { showCategoryPicker = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(Radius.medium),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                            color = MaterialTheme.colorScheme.surface
                         ) {
-                            if (currentCategory != null) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
+                            Row(
+                                modifier = Modifier.padding(Spacing.medium),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                if (currentCategory != null) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = CategoryIconHelper.getIconByName(currentCategory.icon),
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                } else {
                                     Icon(
-                                        imageVector = CategoryIconHelper.getIconByName(currentCategory.icon),
+                                        imageVector = CategoryIconHelper.getIconByName("ic_category"),
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(40.dp)
                                     )
                                 }
-                            } else {
+                                Spacer(modifier = Modifier.width(Spacing.medium))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            "Kategori",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Spacer(modifier = Modifier.width(Spacing.small))
+                                        Icon(
+                                            imageVector = Icons.Default.CheckCircle,
+                                            contentDescription = "Valid",
+                                            tint = com.hitunguang.core.designsystem.theme.IncomeGreen,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                    Text(
+                                        currentCategory?.name ?: "Pilih Kategori",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                            }
+                        }
+
+                        if (suggestedCategory != null && suggestedCategory.id != uiState.categoryId) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { viewModel.updateCategory(suggestedCategory.id) }
+                                    .padding(top = 4.dp, bottom = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Icon(
-                                    imageVector = CategoryIconHelper.getIconByName("ic_category"),
+                                    imageVector = CategoryIconHelper.getIconByName(suggestedCategory.icon),
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(40.dp)
+                                    modifier = Modifier.size(14.dp)
                                 )
-                            }
-                            Spacer(modifier = Modifier.width(Spacing.medium))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        "Kategori",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Spacer(modifier = Modifier.width(Spacing.small))
-                                    Icon(
-                                        imageVector = Icons.Default.CheckCircle,
-                                        contentDescription = "Valid",
-                                        tint = com.hitunguang.core.designsystem.theme.IncomeGreen,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                }
+                                Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    currentCategory?.name ?: "Pilih Kategori",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Medium
+                                    text = "Saran: ${suggestedCategory.name} (Ketuk untuk pilih)",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                         }
                     }
                 }

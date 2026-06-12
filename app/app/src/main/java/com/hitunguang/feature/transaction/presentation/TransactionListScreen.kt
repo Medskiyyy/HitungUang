@@ -54,6 +54,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import com.hitunguang.core.common.util.CurrencyFormatter
 import com.hitunguang.core.designsystem.theme.Elevation
 import com.hitunguang.core.designsystem.theme.ExpenseRed
 import com.hitunguang.core.designsystem.theme.IncomeGreen
@@ -90,6 +96,8 @@ fun TransactionListScreen(
 
     var activePreviewAttachment by remember { mutableStateOf<Attachment?>(null) }
     var showDateRangePicker by remember { mutableStateOf(false) }
+    var showFilterBottomSheet by remember { mutableStateOf(false) }
+
 
     val groupedTransactions = remember(transactions) {
         val formatter = SimpleDateFormat("dd MMMM yyyy", Locale("in", "ID"))
@@ -172,48 +180,38 @@ fun TransactionListScreen(
                 )
             }
 
-            // Period Filters Row
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.small),
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.small),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                items(periods) { (chipValue, label) ->
-                    val isSelected = selectedPeriod == chipValue
-                    val displayLabel = if (chipValue == "CUSTOM") customRangeLabel else label
-                    FilterChip(
-                        selected = isSelected,
-                        onClick = {
-                            if (chipValue == "CUSTOM") {
-                                showDateRangePicker = true
-                            } else {
-                                viewModel.setPeriod(chipValue)
-                            }
-                        },
-                        label = { Text(displayLabel) },
-                        shape = RoundedCornerShape(Radius.extraSmall)
+                val currentPeriodLabel = periods.find { it.first == selectedPeriod }?.second ?: "Semua"
+                val currentSortLabel = sorts.find { it.first == selectedSort }?.second ?: "Terbaru"
+                val filterText = if (selectedPeriod == "ALL" && selectedSort == "NEWEST") {
+                    "Filter ▼"
+                } else {
+                    "Filter: $currentPeriodLabel • $currentSortLabel ▼"
+                }
+
+                Button(
+                    onClick = { showFilterBottomSheet = true },
+                    shape = RoundedCornerShape(Radius.medium),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FilterList,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(Spacing.small))
+                    Text(text = filterText, fontWeight = FontWeight.Bold)
                 }
             }
 
-            Spacer(modifier = Modifier.height(Spacing.extraSmall))
-
-            // Sort Options Row
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.small),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(sorts) { (chipValue, label) ->
-                    val isSelected = selectedSort == chipValue
-                    FilterChip(
-                        selected = isSelected,
-                        onClick = { viewModel.setSort(chipValue) },
-                        label = { Text(label) },
-                        shape = RoundedCornerShape(Radius.extraSmall)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(Spacing.large))
+            Spacer(modifier = Modifier.height(Spacing.medium))
 
             if (transactions.isEmpty()) {
                 Column(
@@ -268,7 +266,7 @@ fun TransactionListScreen(
                                         .padding(horizontal = Spacing.small, vertical = Spacing.extraSmall)
                                 ) {
                                     Text(
-                                        text = "${if (isPositive) "+" else "-"} Rp ${abs(net)}",
+                                        text = CurrencyFormatter.format(net, showSign = true),
                                         style = MaterialTheme.typography.labelMedium,
                                         color = if (isPositive) IncomeGreen else ExpenseRed,
                                         fontWeight = FontWeight.Bold
@@ -403,7 +401,7 @@ fun TransactionListScreen(
                                             Spacer(modifier = Modifier.width(Spacing.small))
 
                                             Text(
-                                                text = "${if (isExpense) "-" else "+"} Rp ${tx.amount}",
+                                                text = CurrencyFormatter.format(if (isExpense) -tx.amount else tx.amount, showSign = true),
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.Bold,
                                                 color = if (isExpense) ExpenseRed else IncomeGreen
@@ -543,5 +541,137 @@ fun TransactionListScreen(
             attachment = activePreviewAttachment!!,
             onDismissRequest = { activePreviewAttachment = null }
         )
+    }
+
+    if (showFilterBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showFilterBottomSheet = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(Spacing.large)
+            ) {
+                Text(
+                    text = "Filter Transaksi",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = Spacing.large)
+                )
+
+                // Period Section
+                Text(
+                    text = "Periode",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = Spacing.small)
+                )
+                
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.small)
+                    ) {
+                        periods.take(3).forEach { (chipValue, label) ->
+                            val isSelected = selectedPeriod == chipValue
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = {
+                                    if (chipValue == "CUSTOM") {
+                                        showDateRangePicker = true
+                                    } else {
+                                        viewModel.setPeriod(chipValue)
+                                    }
+                                },
+                                label = { Text(label) },
+                                shape = RoundedCornerShape(Radius.medium),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.small)
+                    ) {
+                        val remainingPeriods = periods.drop(3)
+                        remainingPeriods.forEach { (chipValue, label) ->
+                            val isSelected = selectedPeriod == chipValue
+                            val displayLabel = if (chipValue == "CUSTOM" && customDateRange != null) {
+                                "${sdf.format(Date(customDateRange!!.first))} - ${sdf.format(Date(customDateRange!!.second))}"
+                            } else label
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = {
+                                    if (chipValue == "CUSTOM") {
+                                        showDateRangePicker = true
+                                    } else {
+                                        viewModel.setPeriod(chipValue)
+                                    }
+                                },
+                                label = { Text(displayLabel) },
+                                shape = RoundedCornerShape(Radius.medium),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(Spacing.large))
+
+                // Sort Section
+                Text(
+                    text = "Urutkan Berdasarkan",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = Spacing.small)
+                )
+                
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.small)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.small)
+                    ) {
+                        sorts.take(2).forEach { (chipValue, label) ->
+                            val isSelected = selectedSort == chipValue
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = { viewModel.setSort(chipValue) },
+                                label = { Text(label) },
+                                shape = RoundedCornerShape(Radius.medium),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.small)
+                    ) {
+                        sorts.drop(2).forEach { (chipValue, label) ->
+                            val isSelected = selectedSort == chipValue
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = { viewModel.setSort(chipValue) },
+                                label = { Text(label) },
+                                shape = RoundedCornerShape(Radius.medium),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(Spacing.extraHuge))
+
+                Button(
+                    onClick = { showFilterBottomSheet = false },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(Radius.medium)
+                ) {
+                    Text("Terapkan", fontWeight = FontWeight.Bold)
+                }
+            }
+        }
     }
 }

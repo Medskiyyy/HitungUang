@@ -26,11 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.hitunguang.core.common.util.CurrencyFormatter
+import com.hitunguang.core.designsystem.theme.AutoResizeText
 import com.hitunguang.core.designsystem.theme.Elevation
 import com.hitunguang.core.designsystem.theme.Radius
 import com.hitunguang.core.designsystem.theme.Spacing
-import java.text.NumberFormat
-import java.util.Locale
 
 @Composable
 fun BalanceCard(
@@ -42,9 +42,7 @@ fun BalanceCard(
     netDifference: Long,
     modifier: Modifier = Modifier
 ) {
-    val idLocale = Locale("in", "ID")
-    val formatter = NumberFormat.getIntegerInstance(idLocale)
-    val formattedBalance = "Rp ${formatter.format(totalBalance)}"
+    val formattedBalance = CurrencyFormatter.format(totalBalance)
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -88,12 +86,23 @@ fun BalanceCard(
 
                 Spacer(modifier = Modifier.height(Spacing.extraSmall))
 
-                Text(
-                    text = if (hideBalance) "••••••" else formattedBalance,
-                    style = MaterialTheme.typography.displayMedium,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontWeight = FontWeight.Bold
-                )
+                if (hideBalance) {
+                    Text(
+                        text = "••••••",
+                        style = MaterialTheme.typography.displayMedium,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold
+                    )
+                } else {
+                    AutoResizeText(
+                        text = formattedBalance,
+                        style = MaterialTheme.typography.displayMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(Spacing.large))
 
@@ -119,7 +128,7 @@ fun BalanceCard(
                         )
                         Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         Text(
-                            text = if (hideBalance) "••••••" else "Rp ${formatter.format(totalIncome)}",
+                            text = if (hideBalance) "••••••" else CurrencyFormatter.format(totalIncome),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimary
@@ -137,7 +146,7 @@ fun BalanceCard(
                         )
                         Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         Text(
-                            text = if (hideBalance) "••••••" else "Rp ${formatter.format(totalExpense)}",
+                            text = if (hideBalance) "••••••" else CurrencyFormatter.format(totalExpense),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimary
@@ -154,9 +163,8 @@ fun BalanceCard(
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                         )
                         Spacer(modifier = Modifier.height(Spacing.extraSmall))
-                        val prefix = if (netDifference >= 0) "+" else ""
                         Text(
-                            text = if (hideBalance) "••••••" else "${prefix}Rp ${formatter.format(netDifference)}",
+                            text = if (hideBalance) "••••••" else CurrencyFormatter.format(netDifference, showSign = true),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimary

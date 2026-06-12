@@ -49,6 +49,16 @@ fun ReceiptScannerScreen(
     val uiState by viewModel.uiState.collectAsState()
     var tempPhotoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
+    val currentOnNavigateToReview by rememberUpdatedState(onNavigateToReview)
+    LaunchedEffect(uiState.rawText, uiState.imageUri) {
+        val rawText = uiState.rawText
+        val imageUri = uiState.imageUri
+        if (rawText != null && imageUri != null) {
+            currentOnNavigateToReview(imageUri, rawText)
+            viewModel.clearAll()
+        }
+    }
+
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
@@ -276,57 +286,7 @@ fun ReceiptScannerScreen(
                 }
             }
 
-            // Extracted text display area
-            uiState.rawText?.let { text ->
-                Text(
-                    text = "Hasil OCR Teks Mentah:",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.Start)
-                )
 
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        if (text.isBlank()) {
-                            Text(
-                                text = "Tidak ada teks yang terdeteksi pada struk ini.",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        } else {
-                            Text(
-                                text = text,
-                                style = MaterialTheme.typography.bodySmall,
-                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        uiState.imageUri?.let { uri ->
-                            onNavigateToReview(uri, text)
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Proses Struk")
-                }
-            }
         }
     }
 }
