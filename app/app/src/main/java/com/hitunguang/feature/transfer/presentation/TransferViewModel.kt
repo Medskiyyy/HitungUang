@@ -63,6 +63,10 @@ class TransferViewModel @Inject constructor(
         _uiState.update { it.copy(transferDate = date) }
     }
 
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
     fun executeTransfer() {
         val state = _uiState.value
         val fromAcc = state.fromAccount

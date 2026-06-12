@@ -77,6 +77,7 @@ import com.hitunguang.feature.category.presentation.components.CategoryPickerDia
 import com.hitunguang.feature.transaction.domain.model.Attachment
 import com.hitunguang.feature.transaction.domain.model.TransactionDraft
 import com.hitunguang.feature.transaction.domain.model.TransactionWithDetails
+import com.hitunguang.core.common.util.CurrencyFormatter
 import java.io.File
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -195,6 +196,10 @@ fun TransactionFormDialog(
     var showAttachmentSourceDialog by remember { mutableStateOf(false) }
 
     var titleError by remember { mutableStateOf<String?>(null) }
+    var showValidationDialog by remember { mutableStateOf(false) }
+    var validationMessage by remember { mutableStateOf("") }
+    var showInsufficientBalanceDialog by remember { mutableStateOf(false) }
+    var insufficientBalanceInfo by remember { mutableStateOf(0L to 0L) }
     var amountError by remember { mutableStateOf<String?>(null) }
     var accountError by remember { mutableStateOf<String?>(null) }
 
@@ -554,31 +559,39 @@ fun TransactionFormDialog(
                     Button(
                         onClick = {
                             val amount = amountStr.toLongOrNull() ?: 0L
-                            var hasError = false
-
-                            if (title.isBlank()) {
-                                titleError = "Judul tidak boleh kosong"
-                                hasError = true
-                            }
                             if (amount <= 0L) {
-                                amountError = "Nominal harus lebih besar dari 0"
-                                hasError = true
-                            }
-                            if (selectedAccountId.isBlank()) {
-                                accountError = "Harus memilih dompet"
-                                hasError = true
-                            }
-
-                            if (!hasError) {
-                                onSave(
-                                    selectedAccountId,
-                                    selectedCategoryId.ifBlank { null },
-                                    type,
-                                    title,
-                                    note.ifBlank { null },
-                                    amount,
-                                    dateInMillis
-                                )
+                                validationMessage = "Nominal belum diisi"
+                                showValidationDialog = true
+                            } else if (selectedAccountId.isBlank()) {
+                                validationMessage = "Silakan pilih akun terlebih dahulu"
+                                showValidationDialog = true
+                            } else if (selectedCategoryId.isBlank()) {
+                                validationMessage = "Silakan pilih kategori terlebih dahulu"
+                                showValidationDialog = true
+                            } else if (title.isBlank()) {
+                                validationMessage = "Nama transaksi belum diisi"
+                                showValidationDialog = true
+                            } else {
+                                var proceed = true
+                                if (type == "EXPENSE") {
+                                    val selectedAccount = accounts.find { it.id == selectedAccountId }
+                                    if (selectedAccount != null && selectedAccount.currentBalance < amount) {
+                                        insufficientBalanceInfo = selectedAccount.currentBalance to amount
+                                        showInsufficientBalanceDialog = true
+                                        proceed = false
+                                    }
+                                }
+                                if (proceed) {
+                                    onSave(
+                                        selectedAccountId,
+                                        selectedCategoryId.ifBlank { null },
+                                        type,
+                                        title,
+                                        note.ifBlank { null },
+                                        amount,
+                                        dateInMillis
+                                    )
+                                }
                             }
                         },
                         modifier = Modifier.weight(1f),
@@ -592,6 +605,52 @@ fun TransactionFormDialog(
                 }
             }
         }
+    }
+
+    if (showValidationDialog) {
+        AlertDialog(
+            onDismissRequest = { showValidationDialog = false },
+            title = { Text("Peringatan", fontWeight = FontWeight.Bold) },
+            text = { Text(validationMessage) },
+            confirmButton = {
+                TextButton(onClick = { showValidationDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    if (showInsufficientBalanceDialog) {
+        AlertDialog(
+            onDismissRequest = { showInsufficientBalanceDialog = false },
+            title = { Text("Saldo Tidak Mencukupi", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text("Saldo akun saat ini ${CurrencyFormatter.format(insufficientBalanceInfo.first)}")
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text("Transaksi membutuhkan ${CurrencyFormatter.format(insufficientBalanceInfo.second)}")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Silakan pilih akun lain atau kurangi nominal transaksi.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showInsufficientBalanceDialog = false }) {
+                    Text("Tutup")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showInsufficientBalanceDialog = false
+                    // Scroll to or focus account selector - just dismiss for now
+                }) {
+                    Text("Pilih Akun Lain")
+                }
+            }
+        )
     }
 
     if (showDatePicker) {

@@ -71,14 +71,13 @@ import com.hitunguang.feature.account.domain.model.Account
 import com.hitunguang.feature.account.presentation.components.AccountFormDialog
 import com.hitunguang.feature.account.presentation.components.DeleteAccountDialog
 import com.hitunguang.feature.transfer.presentation.components.TransferDialog
-import androidx.compose.material.icons.filled.Settings
 import com.hitunguang.core.common.util.CurrencyFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountListScreen(
-    onSettingsClick: () -> Unit,
     onNavigateToTransferHistory: () -> Unit,
+    showSnackbar: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AccountViewModel = hiltViewModel()
 ) {
@@ -98,15 +97,7 @@ fun AccountListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Akun", fontWeight = FontWeight.Bold) },
-                actions = {
-                    IconButton(onClick = onSettingsClick) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Pengaturan"
-                        )
-                    }
-                }
+                title = { Text("Akun", fontWeight = FontWeight.Bold) }
             )
         },
         floatingActionButton = {
@@ -344,6 +335,7 @@ fun AccountListScreen(
             onDismiss = { viewModel.hideCreateDialog() },
             onSave = { name, type, icon, balance ->
                 viewModel.createAccount(name, type, icon, balance)
+                showSnackbar("Akun berhasil dibuat")
             }
         )
     }
@@ -354,6 +346,7 @@ fun AccountListScreen(
             onDismiss = { viewModel.hideEditDialog() },
             onSave = { name, type, icon, _ ->
                 viewModel.updateAccount(uiState.accountToEdit!!, name, type, icon)
+                showSnackbar("Akun berhasil diperbarui")
             }
         )
     }
@@ -366,13 +359,15 @@ fun AccountListScreen(
             onDismiss = { viewModel.hideDeleteDialog() },
             onConfirm = { replacementId ->
                 viewModel.deleteAccount(replacementId)
+                showSnackbar("Akun berhasil dihapus")
             }
         )
     }
 
     if (showTransferDialog) {
         TransferDialog(
-            onDismiss = { showTransferDialog = false }
+            onDismiss = { showTransferDialog = false },
+            showSnackbar = showSnackbar
         )
     }
 }
@@ -534,6 +529,9 @@ fun EmptyWalletState() {
         )
     }
 }
+
+
+
 
 
 

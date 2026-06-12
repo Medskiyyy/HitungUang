@@ -41,6 +41,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -90,6 +92,16 @@ import com.hitunguang.core.notification.NotificationHelper
 import com.hitunguang.core.notification.NotificationScheduler
 import com.hitunguang.feature.settings.domain.repository.SettingsRepository
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material.icons.filled.ChevronRight
+import com.hitunguang.core.designsystem.theme.Radius
+import com.hitunguang.core.designsystem.theme.Spacing
+import androidx.compose.ui.unit.sp
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
@@ -230,6 +242,7 @@ enum class MainTab {
     DASHBOARD, TRANSACTIONS, ACCOUNTS, BUDGETS
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainAppScreen(
     settingsRepository: SettingsRepository,
@@ -241,6 +254,12 @@ fun MainAppScreen(
     var showThemeSettingsDialog by rememberSaveable { mutableStateOf(false) }
     var showCategoryListScreen by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val showSnackbar: (String) -> Unit = { message ->
+        scope.launch {
+            snackbarHostState.showSnackbar(message)
+        }
+    }
 
     var showSearchScreen by rememberSaveable { mutableStateOf(false) }
     var showRecycleBinScreen by rememberSaveable { mutableStateOf(false) }
@@ -305,6 +324,7 @@ fun MainAppScreen(
         )
     } else {
         Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             bottomBar = {
                 FloatingBottomNavigation(
                     currentTab = currentTab,
@@ -340,20 +360,22 @@ fun MainAppScreen(
                                 },
                                 onScanClick = {
                                     showScanScreen = true
-                                }
+                                },
+                                showSnackbar = showSnackbar
                             )
                         }
                         MainTab.TRANSACTIONS -> {
                             TransactionListScreen(
                                 onSearchClick = { showSearchScreen = true },
                                 onManageCategoriesClick = { showCategoryListScreen = true },
+                                showSnackbar = showSnackbar,
                                 viewModel = transactionViewModel
                             )
                         }
                         MainTab.ACCOUNTS -> {
                             AccountListScreen(
-                                onSettingsClick = { showSettingsPlaceholder = true },
-                                onNavigateToTransferHistory = { showTransferHistoryScreen = true }
+                                onNavigateToTransferHistory = { showTransferHistoryScreen = true },
+                                showSnackbar = showSnackbar
                             )
                         }
                         MainTab.BUDGETS -> {
@@ -379,138 +401,106 @@ fun MainAppScreen(
     }
 
     if (showSettingsPlaceholder) {
-        AlertDialog(
+        val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+        ModalBottomSheet(
             onDismissRequest = { showSettingsPlaceholder = false },
-            title = { Text("Pengaturan", fontWeight = FontWeight.Bold) },
-            text = {
-                Column {
-                    Text("Pilih menu pengaturan di bawah ini:")
-                    Spacer(modifier = Modifier.height(16.dp))
+            sheetState = bottomSheetState
+        ) {
+            Column(
+                modifier = Modifier.padding(Spacing.large)
+            ) {
+                Text(
+                    text = "Pengaturan",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Pilih menu pengaturan di bawah ini:",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Spacer(modifier = Modifier.height(Spacing.large))
 
-                    TextButton(
-                        onClick = {
-                            showSettingsPlaceholder = false
-                            showThemeSettingsDialog = true
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Palette,
-                            contentDescription = null
+                Card(
+                    shape = RoundedCornerShape(Radius.medium),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                    )
+                ) {
+                    Column {
+                        SettingsMenuItem(
+                            icon = Icons.Default.Palette,
+                            title = "Pengaturan Tampilan",
+                            subtitle = "Tema Terang, Gelap, & Sistem",
+                            onClick = {
+                                showSettingsPlaceholder = false
+                                showThemeSettingsDialog = true
+                            }
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Pengaturan Tampilan (Theme)", fontWeight = FontWeight.Bold)
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    TextButton(
-                        onClick = {
-                            showSettingsPlaceholder = false
-                            showSecuritySettingsScreen = true
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = null
+                        HorizontalDivider(thickness = 0.5.dp)
+                        SettingsMenuItem(
+                            icon = Icons.Default.Lock,
+                            title = "Keamanan",
+                            subtitle = "PIN & Biometrik",
+                            onClick = {
+                                showSettingsPlaceholder = false
+                                showSecuritySettingsScreen = true
+                            }
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Pengaturan Keamanan (PIN & Biometrik)", fontWeight = FontWeight.Bold)
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    TextButton(
-                        onClick = {
-                            showSettingsPlaceholder = false
-                            showNotificationSettingsScreen = true
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Notifications,
-                            contentDescription = null
+                        HorizontalDivider(thickness = 0.5.dp)
+                        SettingsMenuItem(
+                            icon = Icons.Default.Notifications,
+                            title = "Notifikasi",
+                            subtitle = "Pengingat harian & Budget",
+                            onClick = {
+                                showSettingsPlaceholder = false
+                                showNotificationSettingsScreen = true
+                            }
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Pengaturan Notifikasi", fontWeight = FontWeight.Bold)
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    TextButton(
-                        onClick = {
-                            showSettingsPlaceholder = false
-                            showBackupScreen = true
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Backup,
-                            contentDescription = null
+                        HorizontalDivider(thickness = 0.5.dp)
+                        SettingsMenuItem(
+                            icon = Icons.Default.Backup,
+                            title = "Backup & Restore",
+                            subtitle = "Cadangkan data Anda",
+                            onClick = {
+                                showSettingsPlaceholder = false
+                                showBackupScreen = true
+                            }
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Backup & Restore", fontWeight = FontWeight.Bold)
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    TextButton(
-                        onClick = {
-                            showSettingsPlaceholder = false
-                            showReceiptArchiveScreen = true
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Receipt,
-                            contentDescription = null
+                        HorizontalDivider(thickness = 0.5.dp)
+                        SettingsMenuItem(
+                            icon = Icons.Default.Receipt,
+                            title = "Arsip Struk Belanja",
+                            subtitle = "Riwayat pemindaian struk",
+                            onClick = {
+                                showSettingsPlaceholder = false
+                                showReceiptArchiveScreen = true
+                            }
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Arsip Struk Belanja", fontWeight = FontWeight.Bold)
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    TextButton(
-                        onClick = {
-                            showSettingsPlaceholder = false
-                            showCategoryListScreen = true
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Category,
-                            contentDescription = null
+                        HorizontalDivider(thickness = 0.5.dp)
+                        SettingsMenuItem(
+                            icon = Icons.Default.Category,
+                            title = "Kelola Kategori",
+                            subtitle = "Tambah & Edit kategori",
+                            onClick = {
+                                showSettingsPlaceholder = false
+                                showCategoryListScreen = true
+                            }
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Kelola Kategori", fontWeight = FontWeight.Bold)
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    TextButton(
-                        onClick = {
-                            showSettingsPlaceholder = false
-                            showRecycleBinScreen = true
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = null
+                        HorizontalDivider(thickness = 0.5.dp)
+                        SettingsMenuItem(
+                            icon = Icons.Default.Delete,
+                            title = "Tempat Sampah",
+                            subtitle = "Pulihkan data terhapus",
+                            onClick = {
+                                showSettingsPlaceholder = false
+                                showRecycleBinScreen = true
+                            }
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Buka Tempat Sampah", fontWeight = FontWeight.Bold)
                     }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showSettingsPlaceholder = false }) {
-                    Text("Tutup")
                 }
             }
-        )
+        }
     }
 
     if (showThemeSettingsDialog) {
@@ -666,7 +656,7 @@ fun RowScope.FloatingNavItem(
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
             color = contentColor,
             maxLines = 1,
@@ -719,5 +709,43 @@ fun RowScope.FloatingScanNavItem(
     }
 }
 
-
-
+@Composable
+private fun SettingsMenuItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(Spacing.medium),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(Spacing.medium))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Icon(
+            imageVector = Icons.Default.ChevronRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+        )
+    }
+}
