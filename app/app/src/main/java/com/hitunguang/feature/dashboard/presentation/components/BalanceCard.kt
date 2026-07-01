@@ -47,7 +47,7 @@ fun BalanceCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(Radius.extraLarge),
-        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.medium)
+        elevation = CardDefaults.cardElevation(defaultElevation = Elevation.low)
     ) {
         Box(
             modifier = Modifier
@@ -55,7 +55,7 @@ fun BalanceCard(
                     brush = Brush.linearGradient(
                         colors = listOf(
                             MaterialTheme.colorScheme.primary,
-                            MaterialTheme.colorScheme.primaryContainer
+                            MaterialTheme.colorScheme.secondary
                         )
                     )
                 )
@@ -147,24 +147,6 @@ fun BalanceCard(
                         Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         Text(
                             text = if (hideBalance) "••••••" else CurrencyFormatter.format(totalExpense),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = "Selisih",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
-                        )
-                        Spacer(modifier = Modifier.height(Spacing.extraSmall))
-                        Text(
-                            text = if (hideBalance) "••••••" else CurrencyFormatter.format(netDifference, showSign = true),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimary

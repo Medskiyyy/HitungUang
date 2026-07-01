@@ -29,7 +29,7 @@ val Typography = Typography(
         fontWeight = FontWeight.Bold,
         fontSize = 45.sp,
         lineHeight = 52.sp,
-        letterSpacing = 0.sp,
+        letterSpacing = (-0.25).sp, // tightened
         fontFeatureSettings = "tnum"
     ),
     displaySmall = TextStyle(
@@ -77,7 +77,7 @@ val Typography = Typography(
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.15.sp,
+        letterSpacing = 0.sp, // tightened
         fontFeatureSettings = "tnum"
     ),
     titleSmall = TextStyle(
@@ -85,7 +85,7 @@ val Typography = Typography(
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.1.sp,
+        letterSpacing = 0.sp, // tightened
         fontFeatureSettings = "tnum"
     ),
     bodyLarge = TextStyle(
@@ -93,41 +93,41 @@ val Typography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.1.sp // tightened
     ),
     bodyMedium = TextStyle(
         fontFamily = DMSans,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.25.sp
+        letterSpacing = 0.1.sp // tightened
     ),
     bodySmall = TextStyle(
         fontFamily = DMSans,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.4.sp
+        letterSpacing = 0.1.sp // tightened
     ),
     labelLarge = TextStyle(
         fontFamily = DMSans,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.1.sp
+        letterSpacing = 0.sp // tightened
     ),
     labelMedium = TextStyle(
         fontFamily = DMSans,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.sp // tightened
     ),
     labelSmall = TextStyle(
         fontFamily = DMSans,
         fontWeight = FontWeight.Medium,
         fontSize = 11.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.sp // tightened
     )
 )

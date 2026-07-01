@@ -52,12 +52,13 @@ fun HUTransactionCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(Radius.medium),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp) // Flat surface
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(Spacing.large),
+                .padding(horizontal = Spacing.large, vertical = Spacing.medium), // More compact vertically
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -67,18 +68,16 @@ fun HUTransactionCard(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(Spacing.huge)
+                        .size(40.dp) // Slightly smaller icon container
                         .clip(CircleShape)
-                        .background(
-                            (if (isExpense) ExpenseRed else IncomeGreen).copy(alpha = 0.1f)
-                        ),
+                        .background(MaterialTheme.colorScheme.surfaceVariant), // Neutral background
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = CategoryIconHelper.getIconByName(transaction.categoryIcon),
                         contentDescription = transaction.categoryName,
-                        tint = if (isExpense) ExpenseRed else IncomeGreen,
-                        modifier = Modifier.size(Spacing.extraLarge)
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant, // Neutral icon color
+                        modifier = Modifier.size(20.dp)
                     )
                 }
 
@@ -87,37 +86,40 @@ fun HUTransactionCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = transaction.title,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Spacer(modifier = Modifier.height(Spacing.extraSmall))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = if (transaction.categoryName != null) "${transaction.accountName} • ${transaction.categoryName}" else transaction.accountName,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(Spacing.extraSmall))
-                    Text(
-                        text = dateFormatter.format(Date(transaction.transactionDate)),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                     )
                 }
             }
 
             Spacer(modifier = Modifier.width(Spacing.small))
 
-            Text(
-                text = "${if (isExpense) "-" else "+"}${CurrencyFormatter.format(transaction.amount)}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = if (isExpense) ExpenseRed else IncomeGreen,
-                maxLines = 1
-            )
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "${if (isExpense) "-" else "+"}${CurrencyFormatter.format(transaction.amount)}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isExpense) ExpenseRed else IncomeGreen,
+                    maxLines = 1
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = dateFormatter.format(Date(transaction.transactionDate)),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                )
+            }
         }
     }
 }

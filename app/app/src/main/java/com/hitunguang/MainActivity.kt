@@ -683,9 +683,9 @@ fun RowScope.FloatingScanNavItem(
     ) {
         Box(
             modifier = Modifier
-                .size(48.dp)
+                .size(56.dp)
                 .background(
-                    color = MaterialTheme.colorScheme.primaryContainer,
+                    color = MaterialTheme.colorScheme.primary, // Stronger emphasis
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -693,7 +693,7 @@ fun RowScope.FloatingScanNavItem(
             Icon(
                 imageVector = Icons.Default.QrCodeScanner,
                 contentDescription = "Scan",
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(28.dp)
             )
         }

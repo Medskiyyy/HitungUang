@@ -55,7 +55,7 @@ fun RecentTransactionsSection(
             Column(
                 verticalArrangement = Arrangement.spacedBy(Spacing.small)
             ) {
-                transactions.take(5).forEach { tx ->
+                transactions.take(3).forEach { tx ->
                     HUTransactionCard(
                         transaction = tx,
                         onClick = { onTransactionClick(tx) }

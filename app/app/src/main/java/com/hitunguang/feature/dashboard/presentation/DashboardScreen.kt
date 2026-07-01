@@ -116,7 +116,6 @@ fun DashboardScreen(
                     netDifference = uiState.netDifference
                 )
 
-
                 // Quick Actions Grid
                 QuickActionsSection(
                     onAddExpenseClick = { onAddTransactionClick("EXPENSE") },
@@ -125,22 +124,22 @@ fun DashboardScreen(
                     onScanClick = onScanClick
                 )
 
-                // Budget Utilization Card
-                BudgetSummaryCard(
-                    budgetProgressList = uiState.budgetProgressList,
-                    onAddBudgetClick = onNavigateToBudgets
-                )
-
                 // Expense Distribution Chart
                 ExpenseChartCard(
                     expenseCategoriesDistribution = uiState.expenseCategoriesDistribution
                 )
 
-                // Recent Transactions
+                // Recent Transactions (Limited to 3)
                 RecentTransactionsSection(
                     transactions = uiState.recentTransactions,
                     onViewAllClick = onNavigateToTransactions,
                     onTransactionClick = { selectedTransactionForDetail = it }
+                )
+
+                // Budget Utilization Card
+                BudgetSummaryCard(
+                    budgetProgressList = uiState.budgetProgressList,
+                    onAddBudgetClick = onNavigateToBudgets
                 )
 
                 Spacer(modifier = Modifier.height(Spacing.huge)) // Extra space for bottom nav
