@@ -12,7 +12,6 @@ import com.hitunguang.feature.budget.domain.repository.BudgetRepository
 import com.hitunguang.feature.onboarding.domain.model.UserProfile
 import com.hitunguang.feature.onboarding.domain.repository.UserProfileRepository
 import com.hitunguang.feature.settings.domain.model.AppSettings
-import com.hitunguang.feature.settings.domain.model.BackupSettings
 import com.hitunguang.feature.settings.domain.model.NotificationSettings
 import com.hitunguang.feature.settings.domain.model.SecuritySettings
 import com.hitunguang.feature.settings.domain.repository.SettingsRepository
@@ -26,15 +25,17 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 
+/**
+ * Reduced from 8 steps → 6 steps (removed NOTIFICATION and BACKUP from onboarding).
+ * These settings are better discovered contextually in-app rather than forced up-front.
+ */
 enum class OnboardingStep {
     WELCOME,
     PROFILE,
     ACCOUNT,
     BUDGET,
-    NOTIFICATION,
     SECURITY,
-    BACKUP,
-    TUTORIAL
+    TUTORIAL,
 }
 
 data class AccountDraft(
@@ -46,6 +47,7 @@ data class AccountDraft(
 
 data class OnboardingUiState(
     val currentStep: OnboardingStep = OnboardingStep.WELCOME,
+    val totalSteps: Int = 6,
     val name: String = "",
     val nameError: String? = null,
     val occupation: String = "",
@@ -57,10 +59,7 @@ data class OnboardingUiState(
     val confirmPinError: String? = null,
     val isPinEnabled: Boolean = false,
     val biometricEnabled: Boolean = false,
-    val recoveryCode: String? = null,
-    val backupUri: String? = null,
-    val dailyReminderEnabled: Boolean = false,
-    val dailyReminderTime: String = "20:00"
+    val recoveryCode: String? = null
 )
 
 @HiltViewModel
@@ -74,6 +73,10 @@ class OnboardingViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(OnboardingUiState())
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
+
+    /** Current 1-based step index for progress indicators */
+    val currentStepIndex: Int
+        get() = _uiState.value.currentStep.ordinal + 1
 
     fun nextStep() {
         val currentState = _uiState.value
@@ -93,9 +96,6 @@ class OnboardingViewModel @Inject constructor(
                 updateStep(OnboardingStep.BUDGET)
             }
             OnboardingStep.BUDGET -> {
-                updateStep(OnboardingStep.NOTIFICATION)
-            }
-            OnboardingStep.NOTIFICATION -> {
                 updateStep(OnboardingStep.SECURITY)
             }
             OnboardingStep.SECURITY -> {
@@ -106,14 +106,11 @@ class OnboardingViewModel @Inject constructor(
                         _uiState.update { it.copy(confirmPinError = "PIN konfirmasi tidak cocok", pinError = null) }
                     } else {
                         _uiState.update { it.copy(pinError = null, confirmPinError = null) }
-                        updateStep(OnboardingStep.BACKUP)
+                        updateStep(OnboardingStep.TUTORIAL)
                     }
                 } else {
-                    updateStep(OnboardingStep.BACKUP)
+                    updateStep(OnboardingStep.TUTORIAL)
                 }
-            }
-            OnboardingStep.BACKUP -> {
-                updateStep(OnboardingStep.TUTORIAL)
             }
             OnboardingStep.TUTORIAL -> {
                 completeOnboarding()
@@ -128,16 +125,19 @@ class OnboardingViewModel @Inject constructor(
             OnboardingStep.PROFILE -> OnboardingStep.WELCOME
             OnboardingStep.ACCOUNT -> OnboardingStep.PROFILE
             OnboardingStep.BUDGET -> OnboardingStep.ACCOUNT
-            OnboardingStep.NOTIFICATION -> OnboardingStep.BUDGET
-            OnboardingStep.SECURITY -> OnboardingStep.NOTIFICATION
-            OnboardingStep.BACKUP -> OnboardingStep.SECURITY
-            OnboardingStep.TUTORIAL -> OnboardingStep.BACKUP
+            OnboardingStep.SECURITY -> OnboardingStep.BUDGET
+            OnboardingStep.TUTORIAL -> OnboardingStep.SECURITY
         }
         updateStep(prev)
     }
 
     private fun updateStep(step: OnboardingStep) {
         _uiState.update { it.copy(currentStep = step) }
+    }
+
+    fun skipBudget() {
+        _uiState.update { it.copy(budgetAmount = "") }
+        updateStep(OnboardingStep.SECURITY)
     }
 
     fun updateName(name: String) {
@@ -161,9 +161,9 @@ class OnboardingViewModel @Inject constructor(
     }
 
     fun setPinEnabled(enabled: Boolean) {
-        _uiState.update { 
+        _uiState.update {
             val recovery = if (enabled && it.recoveryCode == null) generateRecoveryCode() else it.recoveryCode
-            it.copy(isPinEnabled = enabled, recoveryCode = recovery) 
+            it.copy(isPinEnabled = enabled, recoveryCode = recovery)
         }
     }
 
@@ -171,30 +171,12 @@ class OnboardingViewModel @Inject constructor(
         _uiState.update { it.copy(biometricEnabled = enabled) }
     }
 
-    fun setNotificationEnabled(enabled: Boolean) {
-        _uiState.update { it.copy(dailyReminderEnabled = enabled) }
-    }
-
-    fun setBackupUri(uri: String?) {
-        if (uri != null) {
-            // Persist URI permission so the app can access the folder across reboots
-            try {
-                val parsedUri = Uri.parse(uri)
-                val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                context.contentResolver.takePersistableUriPermission(parsedUri, flags)
-            } catch (_: Exception) {
-                // Not all URIs support persistable permissions; proceed anyway
-            }
-        }
-        _uiState.update { it.copy(backupUri = uri) }
-    }
-
     fun addAccount(account: AccountDraft) {
         _uiState.update { it.copy(accounts = it.accounts + account) }
     }
 
     fun removeAccount(index: Int) {
-        _uiState.update { 
+        _uiState.update {
             val list = it.accounts.toMutableList()
             if (index in list.indices) {
                 list.removeAt(index)
@@ -269,11 +251,11 @@ class OnboardingViewModel @Inject constructor(
             )
             settingsRepository.saveSecuritySettings(securitySettings)
 
-            // 5. Save Notifications settings
+            // 5. Save default Notifications settings (opt-out, can change later in Settings)
             val notificationSettings = NotificationSettings(
                 id = "notification_settings",
-                dailyReminderEnabled = state.dailyReminderEnabled,
-                dailyReminderTime = if (state.dailyReminderEnabled) state.dailyReminderTime else null,
+                dailyReminderEnabled = false,
+                dailyReminderTime = "20:00",
                 weeklyReviewEnabled = false,
                 monthlyReviewEnabled = false,
                 createdAt = now,
@@ -281,19 +263,7 @@ class OnboardingViewModel @Inject constructor(
             )
             settingsRepository.saveNotificationSettings(notificationSettings)
 
-            // 6. Save Backup settings
-            val backupSettings = BackupSettings(
-                id = "backup_settings",
-                backupFolderUri = state.backupUri,
-                backupFrequency = "WEEKLY",
-                autoBackupEnabled = state.backupUri != null,
-                lastBackupAt = null,
-                createdAt = now,
-                updatedAt = now
-            )
-            settingsRepository.saveBackupSettings(backupSettings)
-
-            // 7. Save App settings
+            // 6. Save App settings
             val appSettings = AppSettings(
                 id = "app_settings",
                 themeMode = "SYSTEM",

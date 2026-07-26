@@ -21,3 +21,11 @@ data class ReceiptItem(
     val subtotal: Long,
     val createdAt: Long
 )
+
+/**
+ * Result from OCR text extraction with quality metadata.
+ */
+data class ScanReceiptResult(
+    val text: String,
+    val averageConfidence: Float?
+)

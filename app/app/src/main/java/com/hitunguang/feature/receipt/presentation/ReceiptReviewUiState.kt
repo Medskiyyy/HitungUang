@@ -19,6 +19,8 @@ data class ReceiptReviewUiState(
     val isMerchantConfident: Boolean = false,
     val isDateConfident: Boolean = false,
     val isItemsConfident: Boolean = false,
+    /** True when the parsed items do not add up to the total printed on the receipt. */
+    val isAmountMismatch: Boolean = false,
     val suggestedAccountId: String? = null,
     val suggestedCategoryId: String? = null
 )

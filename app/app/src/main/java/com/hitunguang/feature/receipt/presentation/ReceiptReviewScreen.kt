@@ -687,6 +687,15 @@ fun ReceiptReviewScreen(
                         Text("Total Belanja", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
                         Text("Rp ${formatAmount(uiState.totalStr)}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
+
+                    if (uiState.isAmountMismatch) {
+                        Text(
+                            text = "Rincian item tidak sama dengan total pada struk. Total mengikuti struk — periksa kembali daftar item.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(top = Spacing.small)
+                        )
+                    }
                 }
             }
         }

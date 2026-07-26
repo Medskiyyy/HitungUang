@@ -2,78 +2,122 @@ package com.hitunguang.core.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Light Colors (Soft & Approachable)
-val LightPrimary = Color(0xFF0D9488) // Teal-600
+// ============================================================================
+// HITUNGUANG BRAND PALETTE v2 — Designed to feel premium, human, and trustworthy
+// Replaced generic AI-slop Tailwind colors with a curated palette that evokes
+// financial confidence: deep forest greens + warm amber golds + cool slate.
+// ============================================================================
+
+// ------------------ LIGHT COLORS ------------------
+
+/** Main brand color — deep forest teal, calmer than generic Teal-600 */
+val LightPrimary = Color(0xFF0F6E62)
+/** On-primary text — crisp white */
 val LightOnPrimary = Color(0xFFFFFFFF)
-val LightPrimaryContainer = Color(0xFFCCFBF1) // Teal-100
-val LightOnPrimaryContainer = Color(0xFF115E59) // Teal-800
+/** Primary container — soft seafoam for hover/chip backgrounds */
+val LightPrimaryContainer = Color(0xFFD1F2EC)
+/** On-primary container — dark for text on primary container */
+val LightOnPrimaryContainer = Color(0xFF05443D)
 
-val LightSecondary = Color(0xFF059669) // Emerald-600
+/** Secondary — warm amber gold, suggests wealth/energy, avoids generic green */
+val LightSecondary = Color(0xFFD58A28)
 val LightOnSecondary = Color(0xFFFFFFFF)
-val LightSecondaryContainer = Color(0xFFD1FAE5) // Emerald-100
-val LightOnSecondaryContainer = Color(0xFF065F46) // Emerald-800
+val LightSecondaryContainer = Color(0xFFFDF0D5)
+val LightOnSecondaryContainer = Color(0xFF523600)
 
-val LightTertiary = Color(0xFF0F766E) // Teal-700
+/** Tertiary — muted slate for tertiary surfaces and accents */
+val LightTertiary = Color(0xFF4F5364)
 val LightOnTertiary = Color(0xFFFFFFFF)
-val LightTertiaryContainer = Color(0xFF99F6E4) // Teal-200
-val LightOnTertiaryContainer = Color(0xFF134E4A) // Teal-900
+val LightTertiaryContainer = Color(0xFFDDE1F0)
+val LightOnTertiaryContainer = Color(0xFF2D3142)
 
-val LightBackground = Color(0xFFFAFAFA) // Soft Neutral
-val LightOnBackground = Color(0xFF1F2937) // Gray-800
-val LightSurface = Color(0xFFF4F5F7) // Soft Surface
-val LightOnSurface = Color(0xFF1F2937) // Gray-800
-val LightSurfaceVariant = Color(0xFFE5E7EB) // Gray-200
-val LightOnSurfaceVariant = Color(0xFF4B5563) // Gray-600
+/** Background — very subtle cool grey-blue, cleaner than raw #FAFAFA */
+val LightBackground = Color(0xFFF8FAFC)
+val LightOnBackground = Color(0xFF1B1F23)
 
-// Light Surface Container Tones
-val LightSurfaceDim = Color(0xFFE5E7EB)
+/** Surface — pure white for cards, elevated elements */
+val LightSurface = Color(0xFFFFFFFF)
+val LightOnSurface = Color(0xFF1B1F23)
+val LightSurfaceVariant = Color(0xFFF1F5F9)
+val LightOnSurfaceVariant = Color(0xFF556170)
+
+// Light Surface Container Tones (Material 3 expressive surfaces)
+val LightSurfaceDim = Color(0xFFE2E8F0)
 val LightSurfaceBright = Color(0xFFFFFFFF)
 val LightSurfaceContainerLowest = Color(0xFFFFFFFF)
-val LightSurfaceContainerLow = Color(0xFFFAFAFA)
-val LightSurfaceContainer = Color(0xFFFFFFFF) // Card
-val LightSurfaceContainerHigh = Color(0xFFF4F5F7)
-val LightSurfaceContainerHighest = Color(0xFFE5E7EB)
+val LightSurfaceContainerLow = Color(0xFFF8FAFC)
+val LightSurfaceContainer = Color(0xFFFFFFFF)
+val LightSurfaceContainerHigh = Color(0xFFF1F5F9)
+val LightSurfaceContainerHighest = Color(0xFFE2E8F0)
 
-// Dark Colors (Calm & Elegant)
-val DarkPrimary = Color(0xFF2DD4BF) // Teal-400
-val DarkOnPrimary = Color(0xFF042F2E) // Teal-950
-val DarkPrimaryContainer = Color(0xFF115E59) // Teal-800
-val DarkOnPrimaryContainer = Color(0xFFCCFBF1) // Teal-100
+// Light Outline
+val LightOutline = Color(0xFFCBD5E1)
+val LightOutlineVariant = Color(0xFFE2E8F0)
 
-val DarkSecondary = Color(0xFF34D399) // Emerald-400
-val DarkOnSecondary = Color(0xFF022C22) // Emerald-950
-val DarkSecondaryContainer = Color(0xFF065F46) // Emerald-800
-val DarkOnSecondaryContainer = Color(0xFFD1FAE5) // Emerald-100
+// ------------------ DARK COLORS ------------------
 
-val DarkTertiary = Color(0xFF5EEAD4) // Teal-300
-val DarkOnTertiary = Color(0xFF134E4A) // Teal-900
-val DarkTertiaryContainer = Color(0xFF0F766E) // Teal-700
-val DarkOnTertiaryContainer = Color(0xFF99F6E4) // Teal-200
+/** Dark variant of primary — more luminous teal */
+val DarkPrimary = Color(0xFF5EEAD4)
+val DarkOnPrimary = Color(0xFF042F2E)
+val DarkPrimaryContainer = Color(0xFF0F6E62)
+val DarkOnPrimaryContainer = Color(0xFFD1F2EC)
 
-val DarkBackground = Color(0xFF171A1F) // Deep Calm Dark
-val DarkOnBackground = Color(0xFFF9FAFB) // Gray-50
-val DarkSurface = Color(0xFF22262D) // Dark Surface
-val DarkOnSurface = Color(0xFFF9FAFB) // Gray-50
-val DarkSurfaceVariant = Color(0xFF374151) // Gray-700
-val DarkOnSurfaceVariant = Color(0xFF9CA3AF) // Gray-400
+/** Dark secondary — warm amber remains */
+val DarkSecondary = Color(0xFFF8B868)
+val DarkOnSecondary = Color(0xFF412700)
+val DarkSecondaryContainer = Color(0xFFA6671E)
+val DarkOnSecondaryContainer = Color(0xFFFDF0D5)
+
+/** Dark tertiary — cool lavender-slate */
+val DarkTertiary = Color(0xFFB6BDD9)
+val DarkOnTertiary = Color(0xFF2D3142)
+val DarkTertiaryContainer = Color(0xFF4F5364)
+val DarkOnTertiaryContainer = Color(0xFFDDE1F0)
+
+/** Dark background — very dark subtle navy/charcoal */
+val DarkBackground = Color(0xFF0F1214)
+val DarkOnBackground = Color(0xFFF8FAFC)
+
+/** Dark surface */
+val DarkSurface = Color(0xFF181B1E)
+val DarkOnSurface = Color(0xFFF8FAFC)
+val DarkSurfaceVariant = Color(0xFF2A2E36)
+val DarkOnSurfaceVariant = Color(0xFF8C9AAA)
 
 // Dark Surface Container Tones
-val DarkSurfaceDim = Color(0xFF171A1F)
-val DarkSurfaceBright = Color(0xFF374151)
-val DarkSurfaceContainerLowest = Color(0xFF0F1115)
-val DarkSurfaceContainerLow = Color(0xFF171A1F)
-val DarkSurfaceContainer = Color(0xFF2A2F37) // Card
-val DarkSurfaceContainerHigh = Color(0xFF3A4049) // Divider
-val DarkSurfaceContainerHighest = Color(0xFF4B5563)
+val DarkSurfaceDim = Color(0xFF0F1214)
+val DarkSurfaceBright = Color(0xFF3A3E48)
+val DarkSurfaceContainerLowest = Color(0xFF090B0D)
+val DarkSurfaceContainerLow = Color(0xFF0F1214)
+val DarkSurfaceContainer = Color(0xFF181B1E)
+val DarkSurfaceContainerHigh = Color(0xFF22262D)
+val DarkSurfaceContainerHighest = Color(0xFF2A2E36)
 
-// Helper Status Colors
-val IncomeGreen = Color(0xFF10B981) // Emerald-500
-val ExpenseRed = Color(0xFFEF4444) // Red-500
-val TransferBlue = Color(0xFF3B82F6) // Blue-500
+// Dark Outline
+val DarkOutline = Color(0xFF3A3E48)
+val DarkOutlineVariant = Color(0xFF2A2E36)
+
+// ============================================================================
+// GRADIENT TOKENS (used for hero cards, balance cards, etc.)
+// ============================================================================
+
+/** Balance card light gradient — primary to secondary, warm financial feel */
+val BalanceGradientStartLight = Color(0xFF0F6E62)
+val BalanceGradientEndLight = Color(0xFFD58A28)
+
+/** Balance card dark gradient */
+val BalanceGradientStartDark = Color(0xFF0F6E62)
+val BalanceGradientEndDark = Color(0xFFF8B868)
+
+// ============================================================================
+// SEMANTIC STATUS COLORS
+// ============================================================================
+
+val IncomeGreen = Color(0xFF08916B)  // richer, less neon than old Emerald-500
+val ExpenseRed = Color(0xFFDC352B)   // slightly desaturated, more premium
+val TransferBlue = Color(0xFF2563EB)
 
 // Budget Status Colors
 val BudgetSafe = IncomeGreen
-val BudgetWarning = Color(0xFFF59E0B) // Amber-500
+val BudgetWarning = Color(0xFFF59E0B)   // amber stays recognizable
 val BudgetDanger = ExpenseRed
-
-

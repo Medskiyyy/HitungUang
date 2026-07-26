@@ -8,6 +8,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -35,7 +36,13 @@ private val DarkColorScheme = darkColorScheme(
     surfaceContainerLow = DarkSurfaceContainerLow,
     surfaceContainer = DarkSurfaceContainer,
     surfaceContainerHigh = DarkSurfaceContainerHigh,
-    surfaceContainerHighest = DarkSurfaceContainerHighest
+    surfaceContainerHighest = DarkSurfaceContainerHighest,
+    outline = DarkOutline,
+    outlineVariant = DarkOutlineVariant,
+    error = ExpenseRed,
+    onError = Color.White,
+    errorContainer = ExpenseRed.copy(alpha = 0.2f),
+    onErrorContainer = ExpenseRed
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -63,14 +70,22 @@ private val LightColorScheme = lightColorScheme(
     surfaceContainerLow = LightSurfaceContainerLow,
     surfaceContainer = LightSurfaceContainer,
     surfaceContainerHigh = LightSurfaceContainerHigh,
-    surfaceContainerHighest = LightSurfaceContainerHighest
+    surfaceContainerHighest = LightSurfaceContainerHighest,
+    outline = LightOutline,
+    outlineVariant = LightOutlineVariant,
+    error = ExpenseRed,
+    onError = Color.White,
+    errorContainer = ExpenseRed.copy(alpha = 0.12f),
+    onErrorContainer = ExpenseRed.copy(alpha = 0.8f)
 )
 
 @Composable
 fun HitungUangTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // When false, use our curated HitungUang brand palette instead of
+    // potentially clashing dynamic Material You colors. Default OFF so
+    // the carefully designed palette always wins.
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {

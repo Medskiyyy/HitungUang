@@ -7,6 +7,7 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.io.Closeable
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
@@ -14,26 +15,28 @@ import kotlin.coroutines.resumeWithException
 
 @Singleton
 class OcrManagerImpl @Inject constructor(
-    @ApplicationContext private val context: Context
-) : OcrManager {
+    @param:ApplicationContext private val context: Context
+) : OcrManager, Closeable {
 
-    private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    private val recognizer by lazy {
+        TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    }
 
-    override suspend fun recognizeText(imageUri: Uri): Result<String> {
+    override suspend fun recognizeText(imageUri: Uri): Result<OcrResult> {
         return try {
             val image = InputImage.fromFilePath(context, imageUri)
-            val text = processImage(image)
-            Result.success(text)
+            val result = processImage(image)
+            Result.success(result)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    private suspend fun processImage(image: InputImage): String = suspendCancellableCoroutine { continuation ->
+    private suspend fun processImage(image: InputImage): OcrResult = suspendCancellableCoroutine { continuation ->
         recognizer.process(image)
             .addOnSuccessListener { visionText ->
                 if (continuation.isActive) {
-                    continuation.resume(visionText.text)
+                    continuation.resume(OcrResult(text = visionText.text))
                 }
             }
             .addOnFailureListener { e ->
@@ -41,5 +44,9 @@ class OcrManagerImpl @Inject constructor(
                     continuation.resumeWithException(e)
                 }
             }
+    }
+
+    override fun close() {
+        recognizer.close()
     }
 }

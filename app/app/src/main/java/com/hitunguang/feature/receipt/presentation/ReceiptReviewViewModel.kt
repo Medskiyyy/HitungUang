@@ -108,8 +108,13 @@ class ReceiptReviewViewModel @Inject constructor(
         }
 
         val taxVal = parsed.tax ?: 0L
-        val subtotalVal = parsedItems.sumOf { it.subtotal }
-        val totalVal = parsed.total.coerceAtLeast(subtotalVal + taxVal)
+        val itemsSum = parsedItems.sumOf { it.subtotal }
+        // Amounts printed on the receipt win over the sum of the parsed items: a single
+        // misread item line must never inflate the total the user is about to save.
+        val subtotalVal = parsed.subtotal?.takeIf { it > 0L } ?: itemsSum
+        val totalVal = if (parsed.total > 0L) parsed.total else subtotalVal + taxVal
+        val isAmountMismatch = parsed.total > 0L && itemsSum > 0L &&
+            Math.abs(parsed.total - (itemsSum + taxVal)) > AMOUNT_TOLERANCE
 
         val suggestedAcc = getSuggestedAccount(rawText, _accounts.value)
         val suggestedCat = getSuggestedCategory(rawText, _categories.value)
@@ -126,6 +131,7 @@ class ReceiptReviewViewModel @Inject constructor(
                 isMerchantConfident = !parsed.merchantName.isNullOrBlank(),
                 isDateConfident = parsed.date != null,
                 isItemsConfident = parsedItems.isNotEmpty(),
+                isAmountMismatch = isAmountMismatch,
                 suggestedAccountId = suggestedAcc?.id,
                 suggestedCategoryId = suggestedCat?.id
             )
@@ -149,7 +155,8 @@ class ReceiptReviewViewModel @Inject constructor(
     }
 
     fun updateTax(tax: String) {
-        val taxVal = tax.toLongOrNull() ?: 0L
+        val parsedTax = tax.toLongOrNull() ?: 0L
+        val taxVal = if (parsedTax < 0) 0L else parsedTax
         _uiState.update {
             val sub = it.subtotal
             it.copy(
@@ -250,6 +257,17 @@ class ReceiptReviewViewModel @Inject constructor(
             return
         }
 
+        if (state.items.isEmpty()) {
+            _uiState.update { it.copy(errorMessage = "Minimal harus ada 1 item") }
+            return
+        }
+        state.items.forEachIndexed { idx, item ->
+            if (item.name.isBlank()) {
+                _uiState.update { it.copy(errorMessage = "Nama item ke-${idx + 1} tidak boleh kosong") }
+                return
+            }
+        }
+
         _uiState.update { it.copy(isSaving = true, errorMessage = null) }
 
         viewModelScope.launch {
@@ -276,5 +294,10 @@ class ReceiptReviewViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private companion object {
+        /** Rounding differences below this are normal on Indonesian receipts. */
+        const val AMOUNT_TOLERANCE = 100L
     }
 }

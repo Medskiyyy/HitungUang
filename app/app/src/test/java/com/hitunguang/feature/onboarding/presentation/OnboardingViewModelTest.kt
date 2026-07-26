@@ -111,11 +111,7 @@ class OnboardingViewModelTest {
         viewModel.nextStep()
         assertEquals(OnboardingStep.BUDGET, viewModel.uiState.value.currentStep)
 
-        // BUDGET -> NOTIFICATION
-        viewModel.nextStep()
-        assertEquals(OnboardingStep.NOTIFICATION, viewModel.uiState.value.currentStep)
-
-        // NOTIFICATION -> SECURITY
+        // BUDGET -> SECURITY (NOTIFICATION and BACKUP were removed from onboarding)
         viewModel.nextStep()
         assertEquals(OnboardingStep.SECURITY, viewModel.uiState.value.currentStep)
 
@@ -133,12 +129,8 @@ class OnboardingViewModelTest {
         assertEquals(OnboardingStep.SECURITY, viewModel.uiState.value.currentStep)
         assertNotNull(viewModel.uiState.value.confirmPinError)
 
-        // Match PINs, proceed to BACKUP
+        // Match PINs, proceed to TUTORIAL
         viewModel.updateConfirmPin("1234")
-        viewModel.nextStep()
-        assertEquals(OnboardingStep.BACKUP, viewModel.uiState.value.currentStep)
-
-        // BACKUP -> TUTORIAL
         viewModel.nextStep()
         assertEquals(OnboardingStep.TUTORIAL, viewModel.uiState.value.currentStep)
 

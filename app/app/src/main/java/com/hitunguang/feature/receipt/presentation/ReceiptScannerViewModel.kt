@@ -38,15 +38,19 @@ class ReceiptScannerViewModel @Inject constructor(
 
     fun startScan() {
         val uri = _uiState.value.imageUri ?: return
-        _uiState.update { it.copy(isScanning = true, errorMessage = null, rawText = null) }
+        _uiState.update {
+            it.copy(isScanning = true, errorMessage = null, rawText = null, scanQuality = ScanQuality.UNKNOWN)
+        }
 
         viewModelScope.launch {
             scanReceiptUseCase(uri)
-                .onSuccess { text ->
+                .onSuccess { result ->
+                    val quality = evaluateScanQuality(result.text, result.averageConfidence)
                     _uiState.update {
                         it.copy(
                             isScanning = false,
-                            rawText = text
+                            rawText = result.text,
+                            scanQuality = quality
                         )
                     }
                 }
@@ -63,5 +67,31 @@ class ReceiptScannerViewModel @Inject constructor(
 
     fun clearAll() {
         _uiState.value = ReceiptScannerUiState()
+    }
+
+    /**
+     * ML Kit's on-device recognizer reports no confidence score, so quality is derived
+     * from the shape of the extracted text: a usable receipt scan yields several lines
+     * containing digits. A blurred or dark photo yields little or no text.
+     */
+    private fun evaluateScanQuality(text: String, averageConfidence: Float?): ScanQuality {
+        if (averageConfidence != null) {
+            return if (averageConfidence >= 0.80f) ScanQuality.GOOD else ScanQuality.LOW
+        }
+        if (text.isBlank()) return ScanQuality.LOW
+
+        val lines = text.lines().filter { it.isNotBlank() }
+        val hasAmountLike = Regex("\\d[\\d.,]{2,}").containsMatchIn(text)
+
+        return if (lines.size >= MIN_QUALITY_LINES && text.length >= MIN_QUALITY_CHARS && hasAmountLike) {
+            ScanQuality.GOOD
+        } else {
+            ScanQuality.LOW
+        }
+    }
+
+    private companion object {
+        const val MIN_QUALITY_LINES = 4
+        const val MIN_QUALITY_CHARS = 40
     }
 }

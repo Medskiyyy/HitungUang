@@ -3,6 +3,7 @@ package com.hitunguang.feature.receipt
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import com.hitunguang.core.ocr.OcrManager
+import com.hitunguang.core.ocr.OcrResult
 import com.hitunguang.feature.receipt.domain.usecase.ScanReceiptUseCase
 import com.hitunguang.feature.receipt.presentation.ReceiptScannerViewModel
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +49,7 @@ class OcrModuleTest {
         val result = scanReceiptUseCase(dummyUri)
 
         assertTrue(result.isSuccess)
-        assertEquals(expectedText, result.getOrNull())
+        assertEquals(expectedText, result.getOrNull()?.text)
         assertEquals(dummyUri, fakeOcrManager.lastScannedUri)
     }
 
@@ -139,12 +140,12 @@ class OcrModuleTest {
         var shouldFail: Boolean = false
         var lastScannedUri: Uri? = null
 
-        override suspend fun recognizeText(imageUri: Uri): Result<String> {
+        override suspend fun recognizeText(imageUri: Uri): Result<OcrResult> {
             lastScannedUri = imageUri
             return if (shouldFail) {
                 Result.failure(Exception("OCR failed error"))
             } else {
-                Result.success(resultText)
+                Result.success(OcrResult(text = resultText))
             }
         }
     }

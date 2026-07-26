@@ -33,9 +33,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.hitunguang.core.designsystem.theme.Spacing
 
 data class TutorialPage(
     val title: String,
@@ -53,27 +55,27 @@ fun TutorialStep(
         listOf(
             TutorialPage(
                 title = "Dashboard Utama",
-                description = "Lihat total saldo, ringkasan pengeluaran bulanan, chart kategori, serta ringkasan budget secara real-time.",
+                description = "Pantau total saldo, ringkasan pengeluaran, grafik kategori, dan status budget bulanan secara real-time.",
                 icon = Icons.Default.Dashboard
             ),
             TutorialPage(
-                title = "Pencatatan Transaksi",
-                description = "Catat pengeluaran, pemasukan, dan transfer antar akun dengan cepat dan mudah dalam hitungan detik.",
+                title = "Pencatatan Cepat",
+                description = "Catat pengeluaran, pemasukan, dan transfer antar akun dengan mudah. Draft otomatis menyimpan input yang belum selesai.",
                 icon = Icons.Default.ReceiptLong
             ),
             TutorialPage(
                 title = "Pindai Struk (OCR)",
-                description = "Cukup foto struk belanjaan Anda, sistem akan secara otomatis memindai, mengenali teks, dan menjumlahkan item pengeluaran Anda.",
+                description = "Cukup foto struk belanja, sistem akan membaca teks secara offline, mengekstrak item, dan menghitung total otomatis.",
                 icon = Icons.Default.QrCodeScanner
             ),
             TutorialPage(
                 title = "Manajemen Budget",
-                description = "Batas pengeluaran bulanan yang terkontrol. Aplikasi akan mengirim notifikasi saat pengeluaran mendekati batas limit.",
+                description = "Atur batas pengeluaran per kategori. Dapatkan notifikasi jika mendekati atau melebihi batas.",
                 icon = Icons.Default.BarChart
             ),
             TutorialPage(
-                title = "Cadangan Otomatis",
-                description = "Data Anda dienkripsi dan dicadangkan secara otomatis dalam format ZIP ke folder lokal pilihan Anda.",
+                title = "Cadangan & Keamanan",
+                description = "Data dienkripsi dan dicadangkan ke folder pilihan Anda. Lengkapi dengan PIN atau sidik jari.",
                 icon = Icons.Default.Backup
             )
         )
@@ -85,7 +87,7 @@ fun TutorialStep(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(Spacing.doubleLarge),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -98,8 +100,12 @@ fun TutorialStep(
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
-            
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(Spacing.small))
+            Text(
+                text = "${currentPageIndex + 1} dari ${pages.size}",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
 
         Column(
@@ -109,23 +115,32 @@ fun TutorialStep(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = page.icon,
-                contentDescription = page.title,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(100.dp)
-            )
+            // Icon with branded background circle
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = page.icon,
+                    contentDescription = page.title,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(56.dp)
+                )
+            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(Spacing.huge))
 
             Text(
                 text = page.title,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Spacing.medium))
 
             Text(
                 text = page.description,
@@ -134,22 +149,26 @@ fun TutorialStep(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(Spacing.huge))
 
+            // Page indicator dots with animated fill
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 pages.forEachIndexed { index, _ ->
+                    val isSelected = index == currentPageIndex
+                    val isPast = index < currentPageIndex
                     Box(
                         modifier = Modifier
-                            .size(10.dp)
+                            .size(if (isSelected) 10.dp else 8.dp)
                             .clip(CircleShape)
                             .background(
-                                if (index == currentPageIndex)
-                                    MaterialTheme.colorScheme.primary
-                                else
-                                    MaterialTheme.colorScheme.surfaceVariant
+                                when {
+                                    isSelected -> MaterialTheme.colorScheme.primary
+                                    isPast -> MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                                    else -> MaterialTheme.colorScheme.surfaceVariant
+                                }
                             )
                     )
                 }
@@ -172,11 +191,13 @@ fun TutorialStep(
                     .weight(1f)
                     .height(50.dp)
             ) {
-                Text("Kembali")
+                Text(
+                    if (currentPageIndex > 0) "Sebelumnya" else "Kembali"
+                )
             }
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
+
+            Spacer(modifier = Modifier.width(Spacing.large))
+
             Button(
                 onClick = {
                     if (currentPageIndex < pages.lastIndex) {
@@ -189,7 +210,9 @@ fun TutorialStep(
                     .weight(1f)
                     .height(50.dp)
             ) {
-                Text(if (currentPageIndex == pages.lastIndex) "Selesai" else "Lanjut")
+                Text(
+                    if (currentPageIndex == pages.lastIndex) "Selesai" else "Lanjut"
+                )
             }
         }
     }
