@@ -146,6 +146,84 @@ class DashboardViewModelTest {
     }
 
     @Test
+    fun testDashboard_SetupChecklistCompletesAsDataIsAdded() = runBlocking {
+        val states = mutableListOf<DashboardUiState>()
+        val job = launch(UnconfinedTestDispatcher()) {
+            viewModel.uiState.collect { states.add(it) }
+        }
+
+        val now = System.currentTimeMillis()
+
+        // Fresh install: nothing done yet, so the checklist must be visible.
+        kotlinx.coroutines.delay(200)
+        var state = states.last()
+        assertFalse(state.hasWallet)
+        assertFalse(state.hasTransaction)
+        assertFalse(state.hasBudget)
+        assertFalse(state.isSetupComplete)
+
+        db.accountDao().insertAccount(
+            AccountEntity("acc-1", "Dompet", "CASH", "wallet", 100000L, 100000L, now, now)
+        )
+        kotlinx.coroutines.delay(200)
+        state = states.last()
+        assertTrue(state.hasWallet)
+        assertFalse(state.isSetupComplete)
+
+        db.categoryDao().insertCategory(
+            CategoryEntity("cat-expense", "Makanan", "EXPENSE", "food", isDefault = true, isPinned = true, now, now)
+        )
+        db.transactionDao().insertTransaction(
+            TransactionEntity("tx-1", "acc-1", "cat-expense", null, "EXPENSE", "Makan", null, 15000L, now, isDeleted = false, null, now, now)
+        )
+        kotlinx.coroutines.delay(200)
+        state = states.last()
+        assertTrue(state.hasTransaction)
+        assertFalse(state.isSetupComplete)
+
+        db.budgetDao().insertBudget(
+            BudgetEntity("budget-1", null, "GLOBAL", 500000L, 80, now - 10000L, now + 100000L, isActive = true, now, now)
+        )
+        kotlinx.coroutines.delay(200)
+        state = states.last()
+        assertTrue(state.hasBudget)
+        // All three done: the checklist disappears from the dashboard.
+        assertTrue(state.isSetupComplete)
+
+        job.cancel()
+    }
+
+    @Test
+    fun testDashboard_SetupChecklistCountsTransactionOutsideSelectedPeriod() = runBlocking {
+        val states = mutableListOf<DashboardUiState>()
+        val job = launch(UnconfinedTestDispatcher()) {
+            viewModel.uiState.collect { states.add(it) }
+        }
+
+        val now = System.currentTimeMillis()
+        val oneYearAgo = now - 365L * 24 * 60 * 60 * 1000
+
+        db.accountDao().insertAccount(
+            AccountEntity("acc-1", "Dompet", "CASH", "wallet", 100000L, 100000L, now, now)
+        )
+        db.categoryDao().insertCategory(
+            CategoryEntity("cat-expense", "Makanan", "EXPENSE", "food", isDefault = true, isPinned = true, now, now)
+        )
+        // Outside the default WEEKLY dashboard period, but the user has clearly
+        // recorded a transaction before - the checklist must not ask again.
+        db.transactionDao().insertTransaction(
+            TransactionEntity("tx-old", "acc-1", "cat-expense", null, "EXPENSE", "Lama", null, 15000L, oneYearAgo, isDeleted = false, null, now, now)
+        )
+
+        kotlinx.coroutines.delay(200)
+        val state = states.last()
+        assertEquals(0L, state.totalExpense)
+        assertTrue(state.hasTransaction)
+
+        job.cancel()
+    }
+
+    @Test
     fun testDashboard_PeriodFiltering_IncomeAndExpenseAggregation() = runBlocking {
         val states = mutableListOf<DashboardUiState>()
         val job = launch(UnconfinedTestDispatcher()) {

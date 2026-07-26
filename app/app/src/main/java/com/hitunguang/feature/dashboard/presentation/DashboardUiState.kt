@@ -35,5 +35,12 @@ data class DashboardUiState(
     val periodComparisonMessage: String? = null,
     val isExpenseIncreased: Boolean = false,
     val isLoading: Boolean = false,
-    val error: String? = null
-)
+    val error: String? = null,
+    // First-run guidance. Derived from real data, not from a stored flag, so the
+    // checklist disappears by itself and never returns for an established user.
+    val hasWallet: Boolean = false,
+    val hasTransaction: Boolean = false,
+    val hasBudget: Boolean = false
+) {
+    val isSetupComplete: Boolean get() = hasWallet && hasTransaction && hasBudget
+}

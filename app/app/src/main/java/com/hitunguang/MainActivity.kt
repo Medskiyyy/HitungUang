@@ -351,6 +351,7 @@ fun MainAppScreen(
                             DashboardScreen(
                                 onNavigateToTransactions = { currentTab = MainTab.TRANSACTIONS },
                                 onNavigateToBudgets = { currentTab = MainTab.BUDGETS },
+                                onNavigateToAccounts = { currentTab = MainTab.ACCOUNTS },
                                 onSettingsClick = { showSettingsPlaceholder = true },
                                 onAddTransactionClick = { type ->
                                     currentTab = MainTab.TRANSACTIONS

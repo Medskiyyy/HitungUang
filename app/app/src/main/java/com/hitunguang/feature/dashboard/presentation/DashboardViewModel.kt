@@ -235,7 +235,12 @@ class DashboardViewModel @Inject constructor(
             previousTotalExpense = previousTotalExpense,
             periodComparisonMessage = periodComparisonMessage,
             isExpenseIncreased = isExpenseIncreased,
-            isLoading = false
+            isLoading = false,
+            // Checked against all data, not the selected period: a transaction recorded
+            // last month still counts as "already done".
+            hasWallet = accounts.isNotEmpty(),
+            hasTransaction = transactions.any { !it.isDeleted },
+            hasBudget = budgets.isNotEmpty()
         )
     }
         .stateIn(

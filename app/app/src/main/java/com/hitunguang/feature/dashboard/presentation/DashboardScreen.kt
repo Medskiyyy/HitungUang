@@ -45,6 +45,7 @@ import com.hitunguang.feature.dashboard.presentation.components.BalanceCard
 import com.hitunguang.feature.dashboard.presentation.components.BudgetSummaryCard
 import com.hitunguang.feature.dashboard.presentation.components.ExpenseChartCard
 import com.hitunguang.feature.dashboard.presentation.components.QuickActionsSection
+import com.hitunguang.feature.dashboard.presentation.components.SetupChecklistCard
 import com.hitunguang.feature.dashboard.presentation.components.RecentTransactionsSection
 import com.hitunguang.feature.transfer.presentation.components.TransferDialog
 import com.hitunguang.feature.transaction.domain.model.TransactionWithDetails
@@ -55,6 +56,7 @@ import com.hitunguang.feature.transaction.presentation.components.TransactionDet
 fun DashboardScreen(
     onNavigateToTransactions: () -> Unit,
     onNavigateToBudgets: () -> Unit,
+    onNavigateToAccounts: () -> Unit,
     onSettingsClick: () -> Unit,
     onAddTransactionClick: (type: String) -> Unit,
     onScanClick: () -> Unit,
@@ -115,6 +117,18 @@ fun DashboardScreen(
                     totalExpense = uiState.totalExpense,
                     netDifference = uiState.netDifference
                 )
+
+                // First-run guidance: disappears once wallet, transaction and budget exist
+                if (!uiState.isSetupComplete) {
+                    SetupChecklistCard(
+                        hasWallet = uiState.hasWallet,
+                        hasTransaction = uiState.hasTransaction,
+                        hasBudget = uiState.hasBudget,
+                        onCreateWalletClick = onNavigateToAccounts,
+                        onAddTransactionClick = { onAddTransactionClick("EXPENSE") },
+                        onCreateBudgetClick = onNavigateToBudgets
+                    )
+                }
 
                 // Quick Actions Grid
                 QuickActionsSection(
