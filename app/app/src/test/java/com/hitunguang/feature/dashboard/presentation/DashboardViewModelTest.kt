@@ -9,10 +9,12 @@ import com.hitunguang.core.database.entity.AccountEntity
 import com.hitunguang.core.database.entity.BudgetEntity
 import com.hitunguang.core.database.entity.CategoryEntity
 import com.hitunguang.core.database.entity.TransactionEntity
+import com.hitunguang.core.database.entity.TransferEntity
 import com.hitunguang.core.database.entity.UserProfileEntity
 import com.hitunguang.core.datastore.SettingsDataStore
 import com.hitunguang.feature.account.data.repository.AccountRepositoryImpl
 import com.hitunguang.feature.budget.data.repository.BudgetRepositoryImpl
+import com.hitunguang.feature.budget.domain.usecase.AutoResetBudgetsUseCase
 import com.hitunguang.feature.category.data.repository.CategoryRepositoryImpl
 import com.hitunguang.feature.onboarding.data.repository.UserProfileRepositoryImpl
 import com.hitunguang.feature.settings.data.repository.SettingsRepositoryImpl
@@ -83,7 +85,8 @@ class DashboardViewModelTest {
             categoryRepository = categoryRepo,
             transactionRepository = transactionRepo,
             budgetRepository = budgetRepo,
-            settingsRepository = settingsRepo
+            settingsRepository = settingsRepo,
+            autoResetBudgetsUseCase = AutoResetBudgetsUseCase(budgetRepo)
         )
     }
 
@@ -358,6 +361,45 @@ class DashboardViewModelTest {
         assertEquals("budget-global", progress.budget.id)
         assertEquals(25000L, progress.spentAmount)
         assertEquals(25f, progress.progressPercent)
+
+        job.cancel()
+    }
+
+    @Test
+    fun testDashboard_ExpiredBudgetHiddenAndAdminFeesCounted() = runBlocking {
+        val states = mutableListOf<DashboardUiState>()
+        val job = launch(UnconfinedTestDispatcher()) {
+            viewModel.uiState.collect { states.add(it) }
+        }
+
+        val now = System.currentTimeMillis()
+
+        db.accountDao().insertAccount(AccountEntity("acc-1", "Dompet", "CASH", "wallet", 100000L, 100000L, now, now))
+        db.accountDao().insertAccount(AccountEntity("acc-2", "Bank", "BANK", "bank", 0L, 0L, now, now))
+        db.categoryDao().insertCategory(CategoryEntity("cat-food", "Makanan", "EXPENSE", "food", isDefault = true, isPinned = true, now, now))
+
+        // Still flagged active but its period is over: must not be shown as current
+        db.budgetDao().insertBudget(
+            BudgetEntity("budget-expired", null, "GLOBAL", 100000L, 80, now - 200000L, now - 100000L, isActive = true, now, now)
+        )
+        db.budgetDao().insertBudget(
+            BudgetEntity("budget-current", null, "GLOBAL", 100000L, 80, now - 10000L, now + 100000L, isActive = true, now, now)
+        )
+
+        db.transactionDao().insertTransaction(
+            TransactionEntity("tx-1", "acc-1", "cat-food", null, "EXPENSE", "Soto Ayam", null, 25000L, now, isDeleted = false, null, now, now)
+        )
+        db.transferDao().insertTransfer(
+            TransferEntity("tf-1", "acc-1", "acc-2", 10000L, 2500L, null, now, now, now)
+        )
+
+        kotlinx.coroutines.delay(200)
+        val state = states.last()
+
+        assertEquals(listOf("budget-current"), state.budgetProgressList.map { it.budget.id })
+        // Admin fee counts toward the global budget and the period expense total
+        assertEquals(27500L, state.budgetProgressList[0].spentAmount)
+        assertEquals(27500L, state.totalExpense)
 
         job.cancel()
     }

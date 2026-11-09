@@ -17,6 +17,7 @@ data class DashboardUiState(
     val totalBalance: Long = 0L,
     val hideBalance: Boolean = false,
     val selectedPeriod: String = "WEEKLY", // TODAY, WEEKLY, MONTHLY, YEARLY, CUSTOM
+    val currentPeriodLabel: String = "minggu ini", // e.g. "bulan ini", for "Pemasukan bulan ini"
     val customStartDate: Long? = null,
     val customEndDate: Long? = null,
     val totalIncome: Long = 0L,
