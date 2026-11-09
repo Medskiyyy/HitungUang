@@ -123,12 +123,17 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun deleteAccount(replacementAccountId: String? = null) {
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
+    fun deleteAccount(replacementAccountId: String? = null, onSuccess: () -> Unit = {}) {
         val account = _uiState.value.accountToDelete ?: return
         viewModelScope.launch {
             try {
                 deleteAccountUseCase(account, replacementAccountId)
                 hideDeleteDialog()
+                onSuccess()
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             }

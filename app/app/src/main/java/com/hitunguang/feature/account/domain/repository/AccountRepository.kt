@@ -8,7 +8,7 @@ interface AccountRepository {
     fun getAccountById(id: String): Flow<Account?>
     suspend fun insertAccount(account: Account)
     suspend fun updateAccount(account: Account)
-    suspend fun deleteAccount(account: Account)
+    suspend fun deleteAccount(account: Account, replacementAccountId: String? = null)
     suspend fun getTransactionCountForAccount(accountId: String): Int
     suspend fun getTransferCountForAccount(accountId: String): Int
     suspend fun transferAccountData(oldAccountId: String, newAccountId: String, balanceToTransfer: Long)

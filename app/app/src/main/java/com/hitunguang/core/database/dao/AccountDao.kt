@@ -8,7 +8,9 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.hitunguang.core.database.entity.AccountEntity
+import com.hitunguang.core.database.entity.RecycleBinEntity
 import kotlinx.coroutines.flow.Flow
+import java.util.UUID
 
 @Dao
 interface AccountDao {
@@ -23,6 +25,9 @@ interface AccountDao {
 
     @Update
     suspend fun updateAccount(account: AccountEntity)
+
+    @Query("UPDATE accounts SET name = :name, account_type = :accountType, icon = :icon, updated_at = :updatedAt WHERE id = :id")
+    suspend fun updateAccountDetails(id: String, name: String, accountType: String, icon: String?, updatedAt: Long)
 
     @Query("UPDATE accounts SET is_deleted = 1, deleted_at = :now, updated_at = :now WHERE id = :id")
     suspend fun softDeleteAccount(id: String, now: Long)
@@ -57,11 +62,35 @@ interface AccountDao {
     @Query("UPDATE transfers SET to_account_id = :newAccountId, updated_at = :updatedAt WHERE to_account_id = :oldAccountId")
     suspend fun migrateTransfersTo(oldAccountId: String, newAccountId: String, updatedAt: Long)
 
+    @Query("UPDATE accounts SET current_balance = 0, initial_balance = 0, updated_at = :updatedAt WHERE id = :id")
+    suspend fun clearBalances(id: String, updatedAt: Long)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertRecycleBinEntry(entry: RecycleBinEntity)
+
     @Transaction
     suspend fun transferAccountData(oldAccountId: String, newAccountId: String, balanceToTransfer: Long, updatedAt: Long) {
         migrateTransactions(oldAccountId, newAccountId, updatedAt)
         migrateTransfersFrom(oldAccountId, newAccountId, updatedAt)
         migrateTransfersTo(oldAccountId, newAccountId, updatedAt)
         adjustBalance(newAccountId, balanceToTransfer, updatedAt)
+        clearBalances(oldAccountId, updatedAt)
+    }
+
+    @Transaction
+    suspend fun deleteAccountAndMoveData(accountId: String, replacementAccountId: String?, now: Long) {
+        if (replacementAccountId != null) {
+            transferAccountData(accountId, replacementAccountId, getAccountBalance(accountId), now)
+        }
+        softDeleteAccount(accountId, now)
+        insertRecycleBinEntry(
+            RecycleBinEntity(
+                id = UUID.randomUUID().toString(),
+                entityType = "WALLET",
+                entityId = accountId,
+                deletedAt = now,
+                expireAt = now + 30L * 24 * 60 * 60 * 1000L
+            )
+        )
     }
 }

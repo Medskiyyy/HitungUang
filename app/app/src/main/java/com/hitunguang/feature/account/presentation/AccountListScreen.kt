@@ -50,6 +50,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -85,6 +86,12 @@ fun AccountListScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showTransferDialog by remember { mutableStateOf(false) }
 
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            showSnackbar(it)
+            viewModel.clearError()
+        }
+    }
 
     val cashWallets = remember(accounts) { accounts.filter { it.accountType == "CASH" } }
     val bankWallets = remember(accounts) { accounts.filter { it.accountType == "BANK" } }
@@ -358,8 +365,9 @@ fun AccountListScreen(
             availableAccounts = accounts,
             onDismiss = { viewModel.hideDeleteDialog() },
             onConfirm = { replacementId ->
-                viewModel.deleteAccount(replacementId)
-                showSnackbar("Akun berhasil dihapus")
+                viewModel.deleteAccount(replacementId) {
+                    showSnackbar("Akun berhasil dihapus")
+                }
             }
         )
     }

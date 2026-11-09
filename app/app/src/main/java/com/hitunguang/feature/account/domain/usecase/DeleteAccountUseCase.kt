@@ -11,15 +11,12 @@ class DeleteAccountUseCase @Inject constructor(
         val txCount = accountRepository.getTransactionCountForAccount(account.id)
         val transferCount = accountRepository.getTransferCountForAccount(account.id)
         
-        if (txCount > 0 || transferCount > 0) {
-            if (replacementAccountId == null) {
-                throw IllegalStateException("Akun memiliki transaksi/transfer dan membutuhkan akun pengganti.")
-            }
-            // Migrate data first
-            accountRepository.transferAccountData(account.id, replacementAccountId, account.currentBalance)
+        val hasData = txCount > 0 || transferCount > 0
+        if (hasData && replacementAccountId == null) {
+            throw IllegalStateException("Akun memiliki transaksi/transfer dan membutuhkan akun pengganti.")
         }
-        
-        // Delete the account
-        accountRepository.deleteAccount(account)
+
+        // Migrate data (if any) and delete the account in one DB transaction
+        accountRepository.deleteAccount(account, if (hasData) replacementAccountId else null)
     }
 }
