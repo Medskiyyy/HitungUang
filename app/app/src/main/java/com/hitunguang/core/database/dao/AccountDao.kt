@@ -62,6 +62,22 @@ interface AccountDao {
     @Query("UPDATE transfers SET to_account_id = :newAccountId, updated_at = :updatedAt WHERE to_account_id = :oldAccountId")
     suspend fun migrateTransfersTo(oldAccountId: String, newAccountId: String, updatedAt: Long)
 
+    @Query("UPDATE recurring_transactions SET account_id = :newAccountId, updated_at = :updatedAt WHERE account_id = :oldAccountId")
+    suspend fun migrateRecurringTransactions(oldAccountId: String, newAccountId: String, updatedAt: Long)
+
+    @Query("UPDATE recurring_transactions SET is_active = 0, updated_at = :updatedAt WHERE account_id = :accountId")
+    suspend fun deactivateRecurringTransactions(accountId: String, updatedAt: Long)
+
+    @Query("DELETE FROM recurring_transactions WHERE account_id = :accountId")
+    suspend fun deleteRecurringTransactionsForAccount(accountId: String)
+
+    @Transaction
+    suspend fun hardDeleteAccountWithRecurring(id: String) {
+        // recurring_transactions.account_id is RESTRICT: its rules have to go first
+        deleteRecurringTransactionsForAccount(id)
+        hardDeleteAccount(id)
+    }
+
     @Query("UPDATE accounts SET current_balance = 0, initial_balance = 0, updated_at = :updatedAt WHERE id = :id")
     suspend fun clearBalances(id: String, updatedAt: Long)
 
@@ -81,6 +97,10 @@ interface AccountDao {
     suspend fun deleteAccountAndMoveData(accountId: String, replacementAccountId: String?, now: Long) {
         if (replacementAccountId != null) {
             transferAccountData(accountId, replacementAccountId, getAccountBalance(accountId), now)
+            migrateRecurringTransactions(accountId, replacementAccountId, now)
+        } else {
+            // No wallet to post into anymore; restoring the wallet lets the user resume them
+            deactivateRecurringTransactions(accountId, now)
         }
         softDeleteAccount(accountId, now)
         insertRecycleBinEntry(

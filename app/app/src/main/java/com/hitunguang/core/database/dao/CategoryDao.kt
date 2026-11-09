@@ -61,9 +61,14 @@ interface CategoryDao {
     @Query("UPDATE transactions SET category_id = NULL, updated_at = :now WHERE category_id = :categoryId")
     suspend fun detachTransactionsFromCategory(categoryId: String, now: Long)
 
+    @Query("UPDATE recurring_transactions SET category_id = NULL, updated_at = :now WHERE category_id = :categoryId")
+    suspend fun detachRecurringTransactionsFromCategory(categoryId: String, now: Long)
+
     @Transaction
     suspend fun hardDeleteCategoryKeepingTransactions(id: String, now: Long) {
         detachTransactionsFromCategory(id, now)
+        // The FK would cascade and silently delete recurring rules too: keep them uncategorized
+        detachRecurringTransactionsFromCategory(id, now)
         hardDeleteCategory(id)
     }
 

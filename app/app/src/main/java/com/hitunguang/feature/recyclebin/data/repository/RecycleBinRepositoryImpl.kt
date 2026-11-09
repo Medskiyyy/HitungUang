@@ -132,7 +132,7 @@ class RecycleBinRepositoryImpl @Inject constructor(
                         database.categoryDao().hardDeleteCategoryKeepingTransactions(entityId, System.currentTimeMillis())
                     }
                 }
-                "WALLET" -> database.accountDao().hardDeleteAccount(entityId)
+                "WALLET" -> database.accountDao().hardDeleteAccountWithRecurring(entityId)
                 "BUDGET" -> database.budgetDao().hardDeleteBudget(entityId)
             }
 
