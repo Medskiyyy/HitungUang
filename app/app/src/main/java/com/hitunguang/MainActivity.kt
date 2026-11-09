@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.SystemClock
 import android.view.WindowManager
 import androidx.fragment.app.FragmentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.activity.enableEdgeToEdge
@@ -301,6 +302,20 @@ fun MainAppScreen(
     var showReceiptArchiveScreen by rememberSaveable { mutableStateOf(false) }
     var showTransferHistoryScreen by rememberSaveable { mutableStateOf(false) }
 
+    BackHandler(enabled = showSearchScreen) { showSearchScreen = false }
+    BackHandler(enabled = showCategoryListScreen) { showCategoryListScreen = false }
+    BackHandler(enabled = showRecycleBinScreen) { showRecycleBinScreen = false }
+    BackHandler(enabled = showSecuritySettingsScreen) { showSecuritySettingsScreen = false }
+    BackHandler(enabled = showNotificationSettingsScreen) { showNotificationSettingsScreen = false }
+    BackHandler(enabled = showBackupScreen) { showBackupScreen = false }
+    BackHandler(enabled = showScanScreen) { showScanScreen = false }
+    BackHandler(enabled = showReviewScreen) {
+        showReviewScreen = false
+        showScanScreen = true
+    }
+    BackHandler(enabled = showReceiptArchiveScreen) { showReceiptArchiveScreen = false }
+    BackHandler(enabled = showTransferHistoryScreen) { showTransferHistoryScreen = false }
+
     // Scoped to activity / parent level to allow quick add pre-population
     val transactionViewModel: TransactionViewModel = hiltViewModel()
 
@@ -555,7 +570,7 @@ fun MainAppScreen(
                                             themeMode = "SYSTEM",
                                             hideBalance = false,
                                             receiptAutoDeleteDays = 30,
-                                            dashboardPeriod = "WEEKLY",
+                                            dashboardPeriod = "MONTHLY",
                                             createdAt = System.currentTimeMillis(),
                                             updatedAt = System.currentTimeMillis()
                                         )
@@ -574,7 +589,7 @@ fun MainAppScreen(
                                             themeMode = "SYSTEM",
                                             hideBalance = false,
                                             receiptAutoDeleteDays = 30,
-                                            dashboardPeriod = "WEEKLY",
+                                            dashboardPeriod = "MONTHLY",
                                             createdAt = System.currentTimeMillis(),
                                             updatedAt = System.currentTimeMillis()
                                         )
