@@ -7,6 +7,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.hitunguang.core.notification.worker.BudgetRolloverWorker
+import com.hitunguang.core.notification.worker.RecurringTransactionWorker
 import com.hitunguang.core.notification.worker.ReminderWorker
 import com.hitunguang.core.notification.worker.ReviewWorker
 import com.hitunguang.feature.budget.domain.util.BudgetDates
@@ -33,6 +34,7 @@ class NotificationScheduler @Inject constructor(
         const val WORK_NAME_WEEKLY = "WeeklyReviewWork"
         const val WORK_NAME_MONTHLY = "MonthlyReviewWork"
         const val WORK_NAME_BUDGET_ROLLOVER = "BudgetRolloverWork"
+        const val WORK_NAME_RECURRING = "RecurringTransactionWork"
     }
 
     fun scheduleAll(settings: NotificationSettings) {
@@ -40,6 +42,7 @@ class NotificationScheduler @Inject constructor(
         scheduleWeeklyReview(settings.weeklyReviewEnabled)
         scheduleMonthlyReview(settings.monthlyReviewEnabled)
         scheduleBudgetRollover()
+        scheduleRecurringTransactions()
     }
 
     fun scheduleBudgetRollover() {
@@ -52,6 +55,27 @@ class NotificationScheduler @Inject constructor(
 
         workManager.enqueueUniquePeriodicWork(
             WORK_NAME_BUDGET_ROLLOVER,
+            ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+    }
+
+    fun scheduleRecurringTransactions() {
+        // Runs shortly after 07:00 local, the time recurring occurrences are dated
+        val zoneId = ZoneId.systemDefault()
+        val now = LocalDateTime.now(zoneId)
+        var next = now.with(LocalTime.of(7, 5))
+        if (!next.isAfter(now)) {
+            next = next.plusDays(1)
+        }
+        val initialDelay = next.atZone(zoneId).toInstant().toEpochMilli() - System.currentTimeMillis()
+        val workRequest = PeriodicWorkRequestBuilder<RecurringTransactionWorker>(1, TimeUnit.DAYS)
+            .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
+            .addTag("recurring_transactions")
+            .build()
+
+        workManager.enqueueUniquePeriodicWork(
+            WORK_NAME_RECURRING,
             ExistingPeriodicWorkPolicy.KEEP,
             workRequest
         )

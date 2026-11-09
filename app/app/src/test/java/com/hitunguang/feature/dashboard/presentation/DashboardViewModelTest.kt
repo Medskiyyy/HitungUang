@@ -23,6 +23,12 @@ import com.hitunguang.feature.category.data.repository.CategoryRepositoryImpl
 import com.hitunguang.feature.onboarding.data.repository.UserProfileRepositoryImpl
 import com.hitunguang.feature.settings.data.repository.SettingsRepositoryImpl
 import com.hitunguang.feature.transaction.data.repository.TransactionRepositoryImpl
+import com.hitunguang.core.notification.NotificationHelper
+import com.hitunguang.core.notification.RecurringFailureStore
+import com.hitunguang.feature.budget.domain.usecase.CheckBudgetThresholdUseCase
+import com.hitunguang.feature.recurring.data.repository.RecurringTransactionRepositoryImpl
+import com.hitunguang.feature.recurring.domain.usecase.ProcessDueRecurringUseCase
+import com.hitunguang.feature.transaction.domain.usecase.CreateTransactionUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -94,7 +100,19 @@ class DashboardViewModelTest {
             transactionRepository = transactionRepo,
             budgetRepository = budgetRepo,
             settingsRepository = settingsRepo,
-            autoResetBudgetsUseCase = AutoResetBudgetsUseCase(budgetRepo)
+            autoResetBudgetsUseCase = AutoResetBudgetsUseCase(budgetRepo),
+            processDueRecurringUseCase = ProcessDueRecurringUseCase(
+                repository = RecurringTransactionRepositoryImpl(db, db.recurringTransactionDao()),
+                accountRepository = accountRepo,
+                categoryRepository = categoryRepo,
+                createTransactionUseCase = CreateTransactionUseCase(
+                    transactionRepo,
+                    db.accountDao(),
+                    CheckBudgetThresholdUseCase(budgetRepo, context)
+                ),
+                failureStore = RecurringFailureStore(context),
+                notificationHelper = NotificationHelper(context)
+            )
         )
     }
 

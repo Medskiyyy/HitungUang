@@ -13,6 +13,7 @@ import com.hitunguang.feature.budget.domain.util.BudgetSpending
 import com.hitunguang.feature.category.domain.model.Category
 import com.hitunguang.feature.category.domain.repository.CategoryRepository
 import com.hitunguang.feature.onboarding.domain.repository.UserProfileRepository
+import com.hitunguang.feature.recurring.domain.usecase.ProcessDueRecurringUseCase
 import com.hitunguang.feature.settings.domain.model.AppSettings
 import com.hitunguang.feature.settings.domain.repository.SettingsRepository
 import com.hitunguang.feature.transaction.domain.model.TransactionWithDetails
@@ -45,7 +46,8 @@ class DashboardViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val budgetRepository: BudgetRepository,
     private val settingsRepository: SettingsRepository,
-    private val autoResetBudgetsUseCase: AutoResetBudgetsUseCase
+    private val autoResetBudgetsUseCase: AutoResetBudgetsUseCase,
+    private val processDueRecurringUseCase: ProcessDueRecurringUseCase
 ) : ViewModel() {
 
     private data class DashboardData(
@@ -62,6 +64,14 @@ class DashboardViewModel @Inject constructor(
                 autoResetBudgetsUseCase()
             } catch (e: Exception) {
                 // Rollover is retried by the daily worker
+            }
+        }
+        // Post due recurring transactions once per dashboard load (the daily worker covers the rest)
+        viewModelScope.launch {
+            try {
+                processDueRecurringUseCase()
+            } catch (e: Exception) {
+                // Retried by the daily worker
             }
         }
     }

@@ -21,6 +21,7 @@ class NotificationHelper @Inject constructor(
         const val CHANNEL_REMINDER = "reminder_channel"
         const val CHANNEL_BUDGET = "budget_channel"
         const val CHANNEL_REVIEW = "review_channel"
+        const val CHANNEL_RECURRING = "recurring_channel"
 
         const val ID_REMINDER = 1001
         const val ID_BUDGET = 1002
@@ -55,7 +56,15 @@ class NotificationHelper @Inject constructor(
                 description = "Mengirimkan ringkasan keuangan mingguan dan bulanan"
             }
 
-            manager.createNotificationChannels(listOf(reminderChannel, budgetChannel, reviewChannel))
+            val recurringChannel = NotificationChannel(
+                CHANNEL_RECURRING,
+                "Transaksi Berulang",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Mengabari kalau transaksi berulang gagal dicatat"
+            }
+
+            manager.createNotificationChannels(listOf(reminderChannel, budgetChannel, reviewChannel, recurringChannel))
         }
     }
 
