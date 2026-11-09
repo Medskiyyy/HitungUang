@@ -36,7 +36,7 @@ class CreateTransactionUseCase @Inject constructor(
 
         if (transaction.transactionType == "EXPENSE") {
             try {
-                checkBudgetThresholdUseCase(transaction.categoryId)
+                checkBudgetThresholdUseCase(transaction.categoryId, transaction.transactionDate)
             } catch (e: Exception) {
                 // Ignore background trigger errors in unit tests or runtime
             }

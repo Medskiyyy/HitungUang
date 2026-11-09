@@ -3,8 +3,12 @@ package com.hitunguang.core.notification.worker
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.hitunguang.core.common.util.CurrencyFormatter
+import com.hitunguang.core.notification.BudgetAlertLevel
+import com.hitunguang.core.notification.BudgetAlertStore
 import com.hitunguang.core.notification.NotificationHelper
 import com.hitunguang.feature.budget.domain.repository.BudgetRepository
+import com.hitunguang.feature.budget.domain.util.BudgetSpending
 import com.hitunguang.feature.category.domain.repository.CategoryRepository
 import com.hitunguang.feature.transaction.domain.repository.TransactionRepository
 import dagger.hilt.EntryPoint
@@ -49,19 +53,18 @@ class BudgetWorker(
                 return Result.success()
             }
 
-            val transactions = transactionRepository.getAllTransactions().firstOrNull() ?: emptyList()
+            val transactions = transactionRepository.getAllTransactionsWithDetails().firstOrNull() ?: emptyList()
+            val transferFees = budgetRepository.getTransferFees().firstOrNull() ?: emptyList()
+            val spentAmount = BudgetSpending.spentAmount(budget, transactions, transferFees)
 
-            // Filter transactions inside budget range
-            val spentAmount = transactions
-                .filter { tx ->
-                    tx.transactionType == "EXPENSE" &&
-                    !tx.isDeleted &&
-                    tx.transactionDate in budget.startDate..budget.endDate &&
-                    (budget.categoryId == null || tx.categoryId == budget.categoryId)
-                }
-                .sumOf { it.amount }
-
-            val thresholdAmount = budget.amount * (budget.thresholdPercent / 100.0)
+            // Notify only when the alert level goes up since the last check of this budget
+            val alertStore = BudgetAlertStore(applicationContext)
+            val previousLevel = alertStore.lastLevel(budget)
+            val currentLevel = BudgetAlertLevel.of(spentAmount, budget.amount, budget.thresholdPercent)
+            alertStore.saveLevel(budget, currentLevel)
+            if (!BudgetAlertLevel.shouldNotify(previousLevel, currentLevel)) {
+                return Result.success()
+            }
 
             val categoryName = if (budget.categoryId != null) {
                 val categories = categoryRepository.getAllCategories().firstOrNull() ?: emptyList()
@@ -73,19 +76,22 @@ class BudgetWorker(
             val budgetName = if (budget.categoryId != null) "Kategori $categoryName" else "Global"
             val notificationId = budget.id.hashCode()
 
-            if (spentAmount >= budget.amount) {
+            val spentText = CurrencyFormatter.format(spentAmount)
+            val limitText = CurrencyFormatter.format(budget.amount)
+
+            if (currentLevel == BudgetAlertLevel.EXCEEDED) {
                 notificationHelper.showNotification(
                     channelId = NotificationHelper.CHANNEL_BUDGET,
                     notificationId = notificationId,
                     title = "Anggaran Habis!",
-                    message = "Anggaran $budgetName Anda telah habis (Rp $spentAmount dari Rp ${budget.amount})."
+                    message = "Anggaran $budgetName Anda telah habis ($spentText dari $limitText)."
                 )
-            } else if (spentAmount >= thresholdAmount) {
+            } else {
                 notificationHelper.showNotification(
                     channelId = NotificationHelper.CHANNEL_BUDGET,
                     notificationId = notificationId,
                     title = "Anggaran Hampir Habis!",
-                    message = "Anggaran $budgetName Anda telah melewati batas threshold ${budget.thresholdPercent}% (Rp $spentAmount dari Rp ${budget.amount})."
+                    message = "Anggaran $budgetName Anda telah melewati batas threshold ${budget.thresholdPercent}% ($spentText dari $limitText)."
                 )
             }
 
