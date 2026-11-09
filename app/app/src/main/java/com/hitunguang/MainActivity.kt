@@ -1,8 +1,11 @@
 package com.hitunguang
 
 import android.os.Bundle
+import android.os.SystemClock
+import android.view.WindowManager
 import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -104,6 +107,8 @@ import com.hitunguang.core.designsystem.theme.Spacing
 import androidx.compose.ui.unit.sp
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -127,9 +132,29 @@ class MainActivity : FragmentActivity() {
     @Inject
     lateinit var settingsRepository: SettingsRepository
 
+    private val securityViewModel: SecurityViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        lifecycle.addObserver(LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_STOP -> securityViewModel.onAppStopped(SystemClock.elapsedRealtime())
+                Lifecycle.Event.ON_START -> securityViewModel.onAppStarted(SystemClock.elapsedRealtime())
+                else -> {}
+            }
+        })
+
+        lifecycleScope.launch {
+            settingsRepository.getSecuritySettings().collect { settings ->
+                if (settings?.pinHash != null) {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                } else {
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                }
+            }
+        }
 
         try {
             notificationHelper.createNotificationChannels()
@@ -186,10 +211,13 @@ class MainActivity : FragmentActivity() {
                             )
                         }
                         is UserProfile -> {
-                            val securityViewModel: SecurityViewModel = hiltViewModel()
                             val securityState by securityViewModel.uiState.collectAsState()
 
-                            if (securityState.isAppLocked) {
+                            if (!securityState.isLockStateKnown) {
+                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator()
+                                }
+                            } else if (securityState.isAppLocked) {
                                 LockScreen(
                                     onBiometricPromptTrigger = { showBiometricPrompt(securityViewModel) },
                                     viewModel = securityViewModel
