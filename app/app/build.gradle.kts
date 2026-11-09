@@ -20,8 +20,8 @@ android {
         applicationId = "com.hitunguang"
         minSdk = 26
         targetSdk = 36
-        versionCode = 24
-        versionName = "2.3.0"
+        versionCode = 25
+        versionName = "2.4.0"
     }
 
     signingConfigs {
