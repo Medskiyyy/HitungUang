@@ -1,6 +1,9 @@
 package com.hitunguang.feature.receipt.domain.usecase
 
 import android.net.Uri
+import androidx.room.withTransaction
+import com.hitunguang.core.database.HitungUangDatabase
+import com.hitunguang.core.database.dao.AccountDao
 import com.hitunguang.core.filemanager.ReceiptFileManager
 import com.hitunguang.feature.receipt.domain.model.Receipt
 import com.hitunguang.feature.receipt.domain.model.ReceiptItem
@@ -13,7 +16,9 @@ import javax.inject.Inject
 class SaveReceiptUseCase @Inject constructor(
     private val receiptRepository: ReceiptRepository,
     private val receiptFileManager: ReceiptFileManager,
-    private val createTransactionUseCase: CreateTransactionUseCase
+    private val createTransactionUseCase: CreateTransactionUseCase,
+    private val accountDao: AccountDao,
+    private val database: HitungUangDatabase
 ) {
     suspend operator fun invoke(
         tempImageUri: Uri,
@@ -27,6 +32,13 @@ class SaveReceiptUseCase @Inject constructor(
         categoryId: String?,
         items: List<ParsedItemInput>
     ) {
+        // Same rule as CreateTransactionUseCase, checked before any file or row is written
+        // so a rejected save leaves nothing behind and can simply be retried.
+        val currentBalance = accountDao.getAccountBalance(accountId)
+        if (currentBalance < total) {
+            throw IllegalStateException("Saldo tidak mencukupi. Saldo saat ini: $currentBalance, dibutuhkan: $total.")
+        }
+
         val receiptId = UUID.randomUUID().toString()
         val savedFile = receiptFileManager.saveReceiptImage(tempImageUri)
         
@@ -54,8 +66,6 @@ class SaveReceiptUseCase @Inject constructor(
             )
         }
         
-        receiptRepository.saveReceipt(receipt, receiptItems)
-        
         val noteSummary = receiptItems.joinToString("\n") { item ->
             val qtyStr = if (item.quantity != null) "${item.quantity}x " else ""
             "- ${item.itemName} (${qtyStr}Rp ${item.unitPrice})"
@@ -77,7 +87,17 @@ class SaveReceiptUseCase @Inject constructor(
             updatedAt = System.currentTimeMillis()
         )
         
-        createTransactionUseCase(transaction)
+        // Receipt, items and transaction are committed together or not at all.
+        try {
+            database.withTransaction {
+                receiptRepository.saveReceipt(receipt, receiptItems)
+                createTransactionUseCase(transaction)
+            }
+        } catch (e: Exception) {
+            receiptFileManager.deleteFile(savedFile.absolutePath)
+            throw e
+        }
+        receiptFileManager.deleteTempFileIfNeeded(tempImageUri)
     }
 }
 

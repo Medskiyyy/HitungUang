@@ -81,7 +81,7 @@ class ReceiptManagementTest {
         createTransactionUseCase = CreateTransactionUseCase(transactionRepository, db.accountDao(), checkBudgetThresholdUseCase)
         deleteTransactionUseCase = DeleteTransactionUseCase(transactionRepository)
         
-        saveReceiptUseCase = SaveReceiptUseCase(receiptRepository, fileManager, createTransactionUseCase)
+        saveReceiptUseCase = SaveReceiptUseCase(receiptRepository, fileManager, createTransactionUseCase, db.accountDao(), db)
         deleteReceiptUseCase = DeleteReceiptUseCase(receiptRepository, transactionRepository, deleteTransactionUseCase)
         autoDeleteReceiptsUseCase = AutoDeleteReceiptsUseCase(receiptRepository, settingsDataStore)
 
@@ -287,5 +287,37 @@ class ReceiptManagementTest {
         assertNotNull(freshTx)
         assertEquals(10000L, oldTx?.amount)
         assertEquals(5000L, freshTx?.amount)
+    }
+
+    @Test
+    fun testFailedSaveLeavesNoReceiptOrImage() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val tempFile = File(context.cacheDir, "camera_photo_test.jpg")
+        Bitmap.createBitmap(50, 50, Bitmap.Config.ARGB_8888).let { bitmap ->
+            FileOutputStream(tempFile).use { bitmap.compress(Bitmap.CompressFormat.JPEG, 80, it) }
+        }
+
+        // Balance is 100.000, so a 150.000 expense must be rejected.
+        val result = runCatching {
+            saveReceiptUseCase(
+                tempImageUri = Uri.fromFile(tempFile),
+                merchantName = "Toko Mahal",
+                receiptDate = System.currentTimeMillis(),
+                subtotal = 150000L,
+                tax = 0L,
+                total = 150000L,
+                ocrRawText = "Mahal",
+                accountId = "acc-1",
+                categoryId = "cat-1",
+                items = listOf(ParsedItemInput("Barang", 1.0, 150000L, 150000L))
+            )
+        }
+
+        assertTrue(result.isFailure)
+        assertTrue(receiptRepository.getAllReceipts().first().isEmpty())
+        assertTrue(fileManager.receiptsDir.listFiles().isNullOrEmpty())
+        // The photo is kept so the user can fix the amount and retry.
+        assertTrue(tempFile.exists())
+        tempFile.delete()
     }
 }

@@ -36,8 +36,6 @@ class ReceiptFileManager @Inject constructor(
         }
         finalBitmap.recycle()
 
-        deleteTempFileIfNeeded(sourceUri)
-
         outputFile
     }
 
@@ -60,7 +58,8 @@ class ReceiptFileManager @Inject constructor(
         return scaledBitmap
     }
 
-    private fun deleteTempFileIfNeeded(sourceUri: Uri) {
+    /** Deletes [sourceUri] when it points at one of this app's camera temp files. */
+    fun deleteTempFileIfNeeded(sourceUri: Uri) {
         try {
             if (sourceUri.scheme == "file") {
                 val file = sourceUri.path?.let { File(it) }
