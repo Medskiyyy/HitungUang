@@ -3,9 +3,9 @@ package com.hitunguang.core.backup
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import com.hitunguang.core.database.HitungUangDatabase
 import com.hitunguang.core.datastore.SettingsDataStore
 import com.hitunguang.feature.settings.domain.model.AppSettings
-import com.hitunguang.feature.settings.domain.model.BackupSettings
 import com.hitunguang.feature.settings.domain.model.NotificationSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
@@ -19,21 +19,23 @@ import javax.inject.Singleton
 @Singleton
 class RestoreManager @Inject constructor(
     private val context: Context,
-    private val settingsDataStore: SettingsDataStore
+    private val settingsDataStore: SettingsDataStore,
+    private val database: HitungUangDatabase
 ) {
     /**
      * Restores the app from a ZIP backup file pointed to by [zipUri].
      * Steps:
      * 1. Validate the ZIP has a database entry.
-     * 2. Extract ZIP to a temp directory.
-     * 3. Copy DB files to the databases directory.
-     * 4. Copy attachments to filesDir/attachments.
+     * 2. Extract ZIP to a staging directory (zip-slip protected).
+     * 3. Validate the extracted database before touching live data.
+     * 4. Close Room, back up live data to a rollback dir, swap files (rollback on failure).
      * 5. Restore non-security settings from settings.json.
      * 6. Restart the app.
      */
     suspend fun restore(zipUri: Uri): Result<Unit> = withContext(Dispatchers.IO) {
-        return@withContext try {
-            // 1. Validate: check the ZIP contains the database entry
+        val stagingDir = File(context.cacheDir, "restore_staging")
+        val rollbackDir = File(context.cacheDir, "restore_rollback")
+        try {
             val valid = context.contentResolver.openInputStream(zipUri)?.use { inputStream ->
                 ZipHelper.containsEntry(inputStream, BackupManager.DB_ENTRY)
             } ?: false
@@ -44,60 +46,37 @@ class RestoreManager @Inject constructor(
                 )
             }
 
-            // 2. Extract to temp directory
-            val tempDir = File(context.cacheDir, "restore_temp_${System.currentTimeMillis()}")
-            tempDir.mkdirs()
-
+            stagingDir.deleteRecursively()
             context.contentResolver.openInputStream(zipUri)?.use { inputStream ->
-                ZipHelper.extractZip(inputStream, tempDir)
+                ZipHelper.extractZip(inputStream, stagingDir)
             }
 
-            // 3. Copy database files
-            val dbDir = context.getDatabasePath("hitunguang.db").parentFile
-            dbDir?.mkdirs()
+            val stagedDb = File(stagingDir, BackupManager.DB_ENTRY)
+            File(stagedDb.parentFile, "${RestoreFiles.DB_NAME}-wal").delete()
+            File(stagedDb.parentFile, "${RestoreFiles.DB_NAME}-shm").delete()
+            RestoreFiles.validateDatabase(stagedDb)
 
-            val tempDbDir = File(tempDir, "database")
-            listOf("hitunguang.db", "hitunguang.db-wal", "hitunguang.db-shm").forEach { dbFileName ->
-                val src = File(tempDbDir, dbFileName)
-                if (src.exists()) {
-                    src.copyTo(File(dbDir, dbFileName), overwrite = true)
-                }
-            }
+            database.close()
+            val dbDir = context.getDatabasePath(RestoreFiles.DB_NAME).parentFile!!
+            RestoreFiles.swap(stagingDir, dbDir, context.filesDir, rollbackDir)
 
-            // 4. Copy attachments
-            val tempAttachments = File(tempDir, "attachments")
-            if (tempAttachments.exists() && tempAttachments.isDirectory) {
-                val targetAttachments = File(context.filesDir, "attachments")
-                targetAttachments.deleteRecursively()
-                tempAttachments.copyRecursively(targetAttachments, overwrite = true)
-            }
-
-            // Copy receipts
-            val tempReceipts = File(tempDir, "receipts")
-            if (tempReceipts.exists() && tempReceipts.isDirectory) {
-                val targetReceipts = File(context.filesDir, "receipts")
-                targetReceipts.deleteRecursively()
-                tempReceipts.copyRecursively(targetReceipts, overwrite = true)
-            }
-
-            // 5. Restore settings from settings.json (excluding SecuritySettings)
-            val settingsJsonFile = File(tempDir, "settings.json")
+            val settingsJsonFile = File(stagingDir, "settings.json")
             if (settingsJsonFile.exists()) {
                 restoreSettingsFromJson(settingsJsonFile.readText())
             }
 
-            // 6. Clean up temp directory
-            tempDir.deleteRecursively()
-
+            stagingDir.deleteRecursively()
+            rollbackDir.deleteRecursively()
             Timber.i("Restore berhasil. Memulai ulang aplikasi...")
-
-            // 7. Restart the app
             restartApp()
 
             Result.success(Unit)
         } catch (e: Exception) {
             Timber.e(e, "Restore gagal")
             Result.failure(e)
+        } finally {
+            stagingDir.deleteRecursively()
+            rollbackDir.deleteRecursively()
         }
     }
 
@@ -118,23 +97,6 @@ class RestoreManager @Inject constructor(
                         receiptAutoDeleteDays = obj.optInt("receiptAutoDeleteDays", 30),
                         dashboardPeriod = obj.optString("dashboardPeriod", "MONTHLY"),
                         createdAt = existingApp?.createdAt ?: now,
-                        updatedAt = now
-                    )
-                )
-            }
-
-            // Restore BackupSettings
-            if (root.has("backupSettings")) {
-                val obj = root.getJSONObject("backupSettings")
-                val existingBackup = settingsDataStore.backupSettings.firstOrNull()
-                settingsDataStore.saveBackupSettings(
-                    BackupSettings(
-                        id = existingBackup?.id ?: "backup_settings",
-                        backupFolderUri = if (obj.isNull("backupFolderUri")) null else obj.optString("backupFolderUri"),
-                        backupFrequency = obj.optString("backupFrequency", "WEEKLY"),
-                        autoBackupEnabled = obj.optBoolean("autoBackupEnabled", false),
-                        lastBackupAt = null,
-                        createdAt = existingBackup?.createdAt ?: now,
                         updatedAt = now
                     )
                 )

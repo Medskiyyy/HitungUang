@@ -1,5 +1,7 @@
 package com.hitunguang.feature.backup.presentation
 
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -22,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,13 +41,29 @@ fun BackupScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     // Folder picker
     val folderPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
         uri?.let {
-            viewModel.onFolderSelected(it.toString())
+            val resolver = context.contentResolver
+            val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            try {
+                resolver.takePersistableUriPermission(it, flags)
+                uiState.backupFolderUri?.let { old ->
+                    if (old != it.toString()) {
+                        try {
+                            resolver.releasePersistableUriPermission(Uri.parse(old), flags)
+                        } catch (_: SecurityException) {
+                        }
+                    }
+                }
+                viewModel.onFolderSelected(it.toString())
+            } catch (_: SecurityException) {
+                viewModel.onFolderPermissionFailed()
+            }
         }
     }
 
@@ -198,14 +217,13 @@ fun BackupScreen(
                                     modifier = Modifier.padding(bottom = 8.dp)
                                 )
                                 val frequencies = listOf(
-                                    "REALTIME" to "Real-Time (Setiap transaksi)",
                                     "DAILY" to "Harian",
                                     "WEEKLY" to "Mingguan"
                                 )
                                 frequencies.forEach { (value, label) ->
                                     FrequencyOption(
                                         label = label,
-                                        selected = uiState.backupFrequency == value,
+                                        selected = (if (uiState.backupFrequency == "REALTIME") "DAILY" else uiState.backupFrequency) == value,
                                         onClick = { viewModel.onFrequencyChanged(value) }
                                     )
                                     if (value != "WEEKLY") Spacer(Modifier.height(4.dp))
