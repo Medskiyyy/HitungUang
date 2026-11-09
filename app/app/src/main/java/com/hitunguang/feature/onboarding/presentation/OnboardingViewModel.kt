@@ -5,6 +5,9 @@ import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.room.withTransaction
+import com.hitunguang.core.database.HitungUangDatabase
+import com.hitunguang.core.security.PinHasher
 import com.hitunguang.feature.account.domain.model.Account
 import com.hitunguang.feature.account.domain.repository.AccountRepository
 import com.hitunguang.feature.budget.domain.model.Budget
@@ -15,15 +18,27 @@ import com.hitunguang.feature.settings.domain.model.AppSettings
 import com.hitunguang.feature.settings.domain.model.NotificationSettings
 import com.hitunguang.feature.settings.domain.model.SecuritySettings
 import com.hitunguang.feature.settings.domain.repository.SettingsRepository
+import com.hitunguang.feature.settings.presentation.SecurityViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.UUID
 import javax.inject.Inject
+
+internal fun monthRangeMillis(today: LocalDate, zone: ZoneId): Pair<Long, Long> {
+    val firstDay = today.withDayOfMonth(1)
+    val start = firstDay.atStartOfDay(zone).toInstant().toEpochMilli()
+    val end = firstDay.plusMonths(1).atStartOfDay(zone).toInstant().toEpochMilli() - 1
+    return start to end
+}
 
 /**
  * Reduced from 8 steps → 6 steps (removed NOTIFICATION and BACKUP from onboarding).
@@ -59,7 +74,8 @@ data class OnboardingUiState(
     val confirmPinError: String? = null,
     val isPinEnabled: Boolean = false,
     val biometricEnabled: Boolean = false,
-    val recoveryCode: String? = null
+    val recoveryCode: String? = null,
+    val isCompleting: Boolean = false
 )
 
 @HiltViewModel
@@ -68,7 +84,8 @@ class OnboardingViewModel @Inject constructor(
     private val userProfileRepository: UserProfileRepository,
     private val accountRepository: AccountRepository,
     private val budgetRepository: BudgetRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val database: HitungUangDatabase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OnboardingUiState())
@@ -100,8 +117,8 @@ class OnboardingViewModel @Inject constructor(
             }
             OnboardingStep.SECURITY -> {
                 if (currentState.isPinEnabled) {
-                    if (currentState.pin.length < 4) {
-                        _uiState.update { it.copy(pinError = "PIN minimal 4 angka") }
+                    if (!SecurityViewModel.isValidPinFormat(currentState.pin)) {
+                        _uiState.update { it.copy(pinError = "PIN harus 4-6 angka") }
                     } else if (currentState.pin != currentState.confirmPin) {
                         _uiState.update { it.copy(confirmPinError = "PIN konfirmasi tidak cocok", pinError = null) }
                     } else {
@@ -191,19 +208,59 @@ class OnboardingViewModel @Inject constructor(
 
     private fun completeOnboarding() {
         val state = _uiState.value
+        if (state.isCompleting) return
+        _uiState.update { it.copy(isCompleting = true) }
         viewModelScope.launch {
-            val now = System.currentTimeMillis()
-            // 1. Save User Profile
-            val profile = UserProfile(
-                id = UUID.randomUUID().toString(),
-                name = state.name,
-                occupation = state.occupation.ifBlank { null },
-                createdAt = now,
-                updatedAt = now
-            )
-            userProfileRepository.saveUserProfile(profile)
+            try {
+                saveOnboardingData(state)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isCompleting = false) }
+            }
+        }
+    }
 
-            // 2. Save Accounts (if empty, save default Dompet Cash account)
+    private suspend fun saveOnboardingData(state: OnboardingUiState) {
+        val now = System.currentTimeMillis()
+
+        // 1. Save Security settings
+        val pinEnabled = state.isPinEnabled && state.pin.isNotBlank()
+        val securitySettings = SecuritySettings(
+            id = "security_settings",
+            pinHash = if (pinEnabled) hashPin(state.pin) else null,
+            biometricEnabled = state.biometricEnabled,
+            recoveryCodeHash = if (pinEnabled && state.recoveryCode != null) hashPin(state.recoveryCode) else null,
+            createdAt = now,
+            updatedAt = now,
+            pinLength = if (pinEnabled) state.pin.length else null
+        )
+        settingsRepository.saveSecuritySettings(securitySettings)
+
+        // 2. Save default Notifications settings (opt-out, can change later in Settings)
+        val notificationSettings = NotificationSettings(
+            id = "notification_settings",
+            dailyReminderEnabled = false,
+            dailyReminderTime = "20:00",
+            weeklyReviewEnabled = false,
+            monthlyReviewEnabled = false,
+            createdAt = now,
+            updatedAt = now
+        )
+        settingsRepository.saveNotificationSettings(notificationSettings)
+
+        // 3. Save App settings
+        val appSettings = AppSettings(
+            id = "app_settings",
+            themeMode = "SYSTEM",
+            hideBalance = false,
+            receiptAutoDeleteDays = 30,
+            dashboardPeriod = "MONTHLY",
+            createdAt = now,
+            updatedAt = now
+        )
+        settingsRepository.saveAppSettings(appSettings)
+
+        database.withTransaction {
+            // 4. Save Accounts (if empty, save default Dompet Cash account)
             val accountsToSave = state.accounts.ifEmpty {
                 listOf(AccountDraft("Dompet Utama", "CASH", "wallet", 0L))
             }
@@ -221,17 +278,18 @@ class OnboardingViewModel @Inject constructor(
                 accountRepository.insertAccount(account)
             }
 
-            // 3. Save Budget if configured
+            // 5. Save Budget for the current calendar month if configured
             state.budgetAmount.toLongOrNull()?.let { amount ->
                 if (amount > 0L) {
+                    val (startDate, endDate) = monthRangeMillis(LocalDate.now(), ZoneId.systemDefault())
                     val budget = Budget(
                         id = UUID.randomUUID().toString(),
                         categoryId = null,
                         budgetType = "GLOBAL",
                         amount = amount,
                         thresholdPercent = 80,
-                        startDate = now,
-                        endDate = now + 30L * 24 * 60 * 60 * 1000, // 30 days
+                        startDate = startDate,
+                        endDate = endDate,
                         isActive = true,
                         createdAt = now,
                         updatedAt = now
@@ -240,44 +298,19 @@ class OnboardingViewModel @Inject constructor(
                 }
             }
 
-            // 4. Save Security settings
-            val securitySettings = SecuritySettings(
-                id = "security_settings",
-                pinHash = if (state.isPinEnabled && state.pin.isNotBlank()) hashPin(state.pin) else null,
-                biometricEnabled = state.biometricEnabled,
-                recoveryCodeHash = if (state.isPinEnabled && state.recoveryCode != null) hashPin(state.recoveryCode) else null,
+            // 6. Save User Profile last: it switches the app to the main screen
+            val profile = UserProfile(
+                id = UUID.randomUUID().toString(),
+                name = state.name,
+                occupation = state.occupation.ifBlank { null },
                 createdAt = now,
                 updatedAt = now
             )
-            settingsRepository.saveSecuritySettings(securitySettings)
-
-            // 5. Save default Notifications settings (opt-out, can change later in Settings)
-            val notificationSettings = NotificationSettings(
-                id = "notification_settings",
-                dailyReminderEnabled = false,
-                dailyReminderTime = "20:00",
-                weeklyReviewEnabled = false,
-                monthlyReviewEnabled = false,
-                createdAt = now,
-                updatedAt = now
-            )
-            settingsRepository.saveNotificationSettings(notificationSettings)
-
-            // 6. Save App settings
-            val appSettings = AppSettings(
-                id = "app_settings",
-                themeMode = "SYSTEM",
-                hideBalance = false,
-                receiptAutoDeleteDays = 30,
-                dashboardPeriod = "MONTHLY",
-                createdAt = now,
-                updatedAt = now
-            )
-            settingsRepository.saveAppSettings(appSettings)
+            userProfileRepository.saveUserProfile(profile)
         }
     }
 
-    private fun hashPin(pin: String): String {
-        return com.hitunguang.core.security.PinHasher.hash(pin)
+    private suspend fun hashPin(pin: String): String = withContext(Dispatchers.Default) {
+        PinHasher.hash(pin)
     }
 }

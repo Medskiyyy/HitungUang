@@ -3,9 +3,11 @@ package com.hitunguang.core.backup
 import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
+import com.hitunguang.core.database.HitungUangDatabase
 import com.hitunguang.core.datastore.SettingsDataStore
-import com.hitunguang.feature.settings.domain.model.BackupSettings
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import java.text.SimpleDateFormat
@@ -15,19 +17,21 @@ import java.util.zip.ZipOutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
+class BackupFolderPermissionException : Exception(
+    "Izin ke folder backup sudah hilang. Pilih folder backup lagi ya."
+)
+
 @Singleton
 class BackupManager @Inject constructor(
     private val context: Context,
-    private val settingsDataStore: SettingsDataStore
+    private val settingsDataStore: SettingsDataStore,
+    private val database: HitungUangDatabase
 ) {
     companion object {
         const val DB_ENTRY = "database/hitunguang.db"
-        const val DB_WAL_ENTRY = "database/hitunguang.db-wal"
-        const val DB_SHM_ENTRY = "database/hitunguang.db-shm"
         const val ATTACHMENTS_PREFIX = "attachments/"
         const val RECEIPTS_PREFIX = "receipts/"
         const val SETTINGS_ENTRY = "settings.json"
-        private val DATE_FORMAT = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
     }
 
     /**
@@ -35,12 +39,21 @@ class BackupManager @Inject constructor(
      * Writes the ZIP file to the user-configured SAF folder.
      * @return Result.success(filename) on success, Result.failure(exception) on error.
      */
-    suspend fun createBackup(folderUri: String): Result<String> {
-        return try {
-            // 1. Checkpoint WAL so the .db file is up-to-date before copy
-            checkpointWal()
+    suspend fun createBackup(folderUri: String): Result<String> = withContext(Dispatchers.IO) {
+        var snapshot: File? = null
+        try {
+            if (!hasPersistedPermission(folderUri)) {
+                return@withContext Result.failure(BackupFolderPermissionException())
+            }
 
-            val timestamp = DATE_FORMAT.format(Date())
+            // 1. Consistent single-file snapshot of the live database
+            val snapshotFile = File(context.cacheDir, "backup_snapshot_${System.currentTimeMillis()}.db")
+            snapshot = snapshotFile
+            snapshotFile.delete()
+            val snapshotPath = snapshotFile.absolutePath.replace("'", "''")
+            database.openHelper.writableDatabase.execSQL("VACUUM INTO '$snapshotPath'")
+
+            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
             val fileName = "hitunguang_backup_$timestamp.zip"
 
             // 2. Resolve the SAF folder and create the ZIP file
@@ -53,15 +66,12 @@ class BackupManager @Inject constructor(
                 folderDocUri,
                 "application/zip",
                 fileName
-            ) ?: return Result.failure(IllegalStateException("Gagal membuat file backup di folder tujuan."))
+            ) ?: return@withContext Result.failure(IllegalStateException("Gagal membuat file backup di folder tujuan."))
 
             context.contentResolver.openOutputStream(zipUri)?.use { outputStream ->
                 ZipOutputStream(outputStream.buffered()).use { zip ->
-                    // 4. Add database files
-                    val dbDir = context.getDatabasePath("hitunguang.db").parentFile
-                    ZipHelper.addFileToZip(zip, File(dbDir, "hitunguang.db"), DB_ENTRY)
-                    ZipHelper.addFileToZip(zip, File(dbDir, "hitunguang.db-wal"), DB_WAL_ENTRY)
-                    ZipHelper.addFileToZip(zip, File(dbDir, "hitunguang.db-shm"), DB_SHM_ENTRY)
+                    // 4. Add database snapshot
+                    ZipHelper.addFileToZip(zip, snapshotFile, DB_ENTRY)
 
                     // 5. Add attachments directory
                     val attachmentsDir = File(context.filesDir, "attachments")
@@ -77,7 +87,7 @@ class BackupManager @Inject constructor(
                     zip.write(settingsJson.toByteArray(Charsets.UTF_8))
                     zip.closeEntry()
                 }
-            } ?: return Result.failure(IllegalStateException("Tidak dapat membuka output stream ke folder backup."))
+            } ?: return@withContext Result.failure(IllegalStateException("Tidak dapat membuka output stream ke folder backup."))
 
             // 7. Update lastBackupAt timestamp
             val currentSettings = settingsDataStore.backupSettings.firstOrNull()
@@ -95,20 +105,15 @@ class BackupManager @Inject constructor(
         } catch (e: Exception) {
             Timber.e(e, "Backup gagal")
             Result.failure(e)
+        } finally {
+            snapshot?.delete()
         }
     }
 
-    private fun checkpointWal() {
-        try {
-            val db = context.getDatabasePath("hitunguang.db")
-            if (!db.exists()) return
-            // Use SQLiteDatabase API to issue WAL checkpoint
-            val sqliteDb = android.database.sqlite.SQLiteDatabase.openDatabase(
-                db.absolutePath, null, android.database.sqlite.SQLiteDatabase.OPEN_READWRITE
-            )
-            sqliteDb.use { it.execSQL("PRAGMA wal_checkpoint(FULL)") }
-        } catch (e: Exception) {
-            Timber.w(e, "WAL checkpoint gagal — backup tetap dilanjutkan")
+    private fun hasPersistedPermission(folderUri: String): Boolean {
+        val uri = Uri.parse(folderUri)
+        return context.contentResolver.persistedUriPermissions.any {
+            it.uri == uri && it.isReadPermission && it.isWritePermission
         }
     }
 

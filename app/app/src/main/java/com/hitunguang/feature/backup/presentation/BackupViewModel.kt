@@ -74,6 +74,10 @@ class BackupViewModel @Inject constructor(
         }
     }
 
+    fun onFolderPermissionFailed() {
+        _uiState.update { it.copy(errorMessage = "Folder nggak bisa diakses. Coba pilih folder lain ya.") }
+    }
+
     fun onBackupNow() {
         val folderUri = _uiState.value.backupFolderUri ?: run {
             _uiState.update { it.copy(errorMessage = "Pilih folder backup terlebih dahulu.") }

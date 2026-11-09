@@ -3,6 +3,7 @@ package com.hitunguang.core.backup.di
 import android.content.Context
 import com.hitunguang.core.backup.BackupManager
 import com.hitunguang.core.backup.RestoreManager
+import com.hitunguang.core.database.HitungUangDatabase
 import com.hitunguang.core.datastore.SettingsDataStore
 import dagger.Module
 import dagger.Provides
@@ -19,13 +20,15 @@ object BackupModule {
     @Singleton
     fun provideBackupManager(
         @ApplicationContext context: Context,
-        settingsDataStore: SettingsDataStore
-    ): BackupManager = BackupManager(context, settingsDataStore)
+        settingsDataStore: SettingsDataStore,
+        database: HitungUangDatabase
+    ): BackupManager = BackupManager(context, settingsDataStore, database)
 
     @Provides
     @Singleton
     fun provideRestoreManager(
         @ApplicationContext context: Context,
-        settingsDataStore: SettingsDataStore
-    ): RestoreManager = RestoreManager(context, settingsDataStore)
+        settingsDataStore: SettingsDataStore,
+        database: HitungUangDatabase
+    ): RestoreManager = RestoreManager(context, settingsDataStore, database)
 }

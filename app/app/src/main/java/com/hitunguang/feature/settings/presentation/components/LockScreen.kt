@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,6 +39,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.hitunguang.feature.settings.presentation.SecurityViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun LockScreen(
@@ -71,6 +77,8 @@ fun LockScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .systemBarsPadding()
+                .imePadding()
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -120,8 +128,8 @@ fun LockScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Supposed length is 4 or 6, let's render 6 dots if pinInput is longer than 4, otherwise 4
-                        val dotsCount = if (uiState.pinInput.length > 4) 6 else 4
+                        val dotsCount = uiState.securitySettings?.pinLength
+                            ?: if (uiState.pinInput.length > 4) 6 else 4
                         repeat(dotsCount) { index ->
                             val isFilled = index < uiState.pinInput.length
                             Box(
@@ -146,15 +154,28 @@ fun LockScreen(
 
                     if (uiState.pinError != null && !uiState.isLockedOut) {
                         Text(
-                            text = "${uiState.pinError} (Sisa ${uiState.remainingAttempts} percobaan)",
+                            text = if (uiState.remainingAttempts > 0) {
+                                "${uiState.pinError} (Sisa ${uiState.remainingAttempts} percobaan)"
+                            } else {
+                                uiState.pinError ?: ""
+                            },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error
                         )
                     }
 
                     if (uiState.isLockedOut) {
+                        var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+                        LaunchedEffect(uiState.lockoutUntil) {
+                            now = System.currentTimeMillis()
+                            while (now < uiState.lockoutUntil) {
+                                delay(1_000)
+                                now = System.currentTimeMillis()
+                            }
+                        }
+                        val secondsLeft = ((uiState.lockoutUntil - now + 999) / 1000).coerceAtLeast(0)
                         Text(
-                            text = "Silakan gunakan Kode Pemulihan Anda untuk membuka kunci.",
+                            text = "Coba lagi dalam $secondsLeft detik, atau pakai kode pemulihan kamu.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center,
@@ -313,6 +334,10 @@ fun LockScreen(
                 }
             }
         }
+    }
+
+    if (uiState.isRecoveryReset) {
+        PinSetupDialogs(uiState = uiState, viewModel = viewModel)
     }
 }
 

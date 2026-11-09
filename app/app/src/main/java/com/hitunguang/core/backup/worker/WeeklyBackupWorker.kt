@@ -3,6 +3,7 @@ package com.hitunguang.core.backup.worker
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.hitunguang.core.backup.BackupFolderPermissionException
 import com.hitunguang.feature.backup.domain.usecase.CreateBackupUseCase
 import com.hitunguang.feature.backup.domain.usecase.GetBackupSettingsUseCase
 import dagger.hilt.EntryPoint
@@ -45,7 +46,7 @@ class WeeklyBackupWorker(
                 },
                 onFailure = {
                     Timber.e(it, "Weekly backup gagal")
-                    Result.retry()
+                    if (it is BackupFolderPermissionException) Result.failure() else Result.retry()
                 }
             )
         } catch (e: Exception) {
