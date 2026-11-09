@@ -39,7 +39,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -51,6 +50,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -105,7 +108,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material.icons.filled.ChevronRight
 import com.hitunguang.core.designsystem.theme.Radius
 import com.hitunguang.core.designsystem.theme.Spacing
-import androidx.compose.ui.unit.sp
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -380,6 +382,7 @@ fun MainAppScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = paddingValues.calculateTopPadding())
+                    .navigationBarsPadding()
                     .padding(bottom = 96.dp)
             ) {
                 AnimatedContent(
@@ -622,7 +625,8 @@ fun FloatingBottomNavigation(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .navigationBarsPadding()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         shape = RoundedCornerShape(28.dp),
         color = MaterialTheme.colorScheme.surfaceVariant,
         tonalElevation = 3.dp,
@@ -633,13 +637,13 @@ fun FloatingBottomNavigation(
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Bottom
         ) {
             FloatingNavItem(
                 selected = currentTab == MainTab.DASHBOARD,
                 onClick = { onTabSelected(MainTab.DASHBOARD) },
                 icon = Icons.Default.Dashboard,
-                label = "Dashboard"
+                label = "Beranda"
             )
             FloatingNavItem(
                 selected = currentTab == MainTab.TRANSACTIONS,
@@ -654,13 +658,13 @@ fun FloatingBottomNavigation(
                 selected = currentTab == MainTab.ACCOUNTS,
                 onClick = { onTabSelected(MainTab.ACCOUNTS) },
                 icon = Icons.Default.Wallet,
-                label = "Akun"
+                label = "Dompet"
             )
             FloatingNavItem(
                 selected = currentTab == MainTab.BUDGETS,
                 onClick = { onTabSelected(MainTab.BUDGETS) },
                 icon = Icons.Default.BarChart,
-                label = "Budget"
+                label = "Anggaran"
             )
         }
     }
@@ -682,25 +686,22 @@ fun RowScope.FloatingNavItem(
     Column(
         modifier = Modifier
             .weight(1f)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
-            )
+            .clip(RoundedCornerShape(16.dp))
+            .selectable(selected = selected, onClick = onClick, role = Role.Tab)
             .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = label,
+            contentDescription = null,
             tint = contentColor,
             modifier = Modifier.size(24.dp)
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+            style = MaterialTheme.typography.labelSmall,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
             color = contentColor,
             maxLines = 1,
@@ -716,12 +717,9 @@ fun RowScope.FloatingScanNavItem(
     Column(
         modifier = Modifier
             .weight(1.2f)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
-            )
-            .padding(vertical = 2.dp),
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClickLabel = "Pindai struk", role = Role.Button, onClick = onClick)
+            .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -736,15 +734,15 @@ fun RowScope.FloatingScanNavItem(
         ) {
             Icon(
                 imageVector = Icons.Default.QrCodeScanner,
-                contentDescription = "Scan",
+                contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(28.dp)
             )
         }
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "Scan",
-            style = MaterialTheme.typography.labelMedium,
+            text = "Pindai",
+            style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
             maxLines = 1,
