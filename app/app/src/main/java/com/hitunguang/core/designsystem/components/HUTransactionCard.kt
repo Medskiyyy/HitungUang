@@ -45,7 +45,7 @@ fun HUTransactionCard(
     modifier: Modifier = Modifier
 ) {
     val isExpense = transaction.transactionType == "EXPENSE" || transaction.transactionType == "TRANSFER_FEE"
-    val dateFormatter = remember { SimpleDateFormat("dd MMM yyyy", Locale("in", "ID")) }
+    val dateFormatter = remember { SimpleDateFormat("d MMM yyyy", Locale("id", "ID")) }
 
     Card(
         modifier = modifier

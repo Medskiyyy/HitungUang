@@ -33,7 +33,7 @@ fun TransactionDetailDialog(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val dateFormatter = SimpleDateFormat("dd MMMM yyyy", Locale("in", "ID"))
+    val dateFormatter = SimpleDateFormat("d MMMM yyyy", Locale("id", "ID"))
     val isExpense = transaction.transactionType == "EXPENSE" || transaction.transactionType == "TRANSFER_FEE"
 
     AlertDialog(
@@ -73,7 +73,7 @@ fun TransactionDetailDialog(
 
                 Column {
                     Text("Kategori", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(transaction.categoryName ?: "Tidak ada", style = MaterialTheme.typography.bodyMedium)
+                    Text(transaction.categoryName ?: "Tanpa kategori", style = MaterialTheme.typography.bodyMedium)
                 }
 
                 Column {

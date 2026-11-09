@@ -80,17 +80,17 @@ class BackupViewModel @Inject constructor(
 
     fun onBackupNow() {
         val folderUri = _uiState.value.backupFolderUri ?: run {
-            _uiState.update { it.copy(errorMessage = "Pilih folder backup terlebih dahulu.") }
+            _uiState.update { it.copy(errorMessage = "Pilih folder cadangan dulu.") }
             return
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isBackingUp = true, errorMessage = null, successMessage = null) }
             createBackupUseCase(folderUri).fold(
                 onSuccess = { fileName ->
-                    _uiState.update { it.copy(isBackingUp = false, successMessage = "Backup berhasil: $fileName") }
+                    _uiState.update { it.copy(isBackingUp = false, successMessage = "Berhasil dicadangkan: $fileName") }
                 },
                 onFailure = { error ->
-                    _uiState.update { it.copy(isBackingUp = false, errorMessage = error.message ?: "Backup gagal.") }
+                    _uiState.update { it.copy(isBackingUp = false, errorMessage = error.message ?: "Gagal mencadangkan. Cek folder tujuan, lalu coba lagi.") }
                 }
             )
         }
@@ -107,7 +107,7 @@ class BackupViewModel @Inject constructor(
         _uiState.update { it.copy(showRestoreConfirmDialog = false, pendingRestoreUri = null, isRestoring = true) }
         viewModelScope.launch {
             restoreBackupUseCase(uri).onFailure { error ->
-                _uiState.update { it.copy(isRestoring = false, errorMessage = error.message ?: "Restore gagal.") }
+                _uiState.update { it.copy(isRestoring = false, errorMessage = error.message ?: "Gagal memulihkan. Cek file cadangannya, lalu coba lagi.") }
             }
             // On success, app will restart automatically
         }

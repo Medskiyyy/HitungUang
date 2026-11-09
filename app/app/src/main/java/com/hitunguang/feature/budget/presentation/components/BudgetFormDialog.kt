@@ -80,13 +80,13 @@ fun BudgetFormDialog(
     }
 
     val isEditMode = budget != null
-    val dateFormatter = SimpleDateFormat("dd MMMM yyyy", Locale("in", "ID"))
+    val dateFormatter = SimpleDateFormat("d MMM yyyy", Locale("id", "ID"))
 
     AlertDialog(
         onDismissRequest = onDismiss,
         shape = RoundedCornerShape(Radius.large),
         title = {
-            Text(if (isEditMode) "Edit Anggaran" else "Tambah Anggaran", fontWeight = FontWeight.Bold)
+            Text(if (isEditMode) "Edit anggaran" else "Tambah anggaran", fontWeight = FontWeight.Bold)
         },
         text = {
             Column(
@@ -95,7 +95,7 @@ fun BudgetFormDialog(
             ) {
                 // Tipe Budget
                 Column {
-                    Text("Tipe Anggaran", style = MaterialTheme.typography.bodySmall)
+                    Text("Tipe anggaran", style = MaterialTheme.typography.bodySmall)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -104,7 +104,7 @@ fun BudgetFormDialog(
                             selected = budgetType == "GLOBAL",
                             onClick = { budgetType = "GLOBAL"; selectedCategoryId = "" }
                         )
-                        Text("Global")
+                        Text("Semua kategori")
 
                         Spacer(modifier = Modifier.width(Spacing.medium))
 
@@ -128,7 +128,7 @@ fun BudgetFormDialog(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(Radius.medium)
                             ) {
-                                Text(currentCategory?.name ?: "Pilih Kategori")
+                                Text(currentCategory?.name ?: "Pilih kategori")
                             }
                             DropdownMenu(
                                 expanded = categoryExpanded,
@@ -161,7 +161,7 @@ fun BudgetFormDialog(
                         val v = it.toLongOrNull() ?: 0L
                         amountError = if (v <= 0L) "Nominal harus lebih besar dari 0" else null
                     },
-                    label = { Text("Nominal Anggaran *") },
+                    label = { Text("Nominal anggaran *") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     isError = amountError != null,
                     supportingText = { amountError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
@@ -176,9 +176,9 @@ fun BudgetFormDialog(
                     onValueChange = {
                         thresholdStr = it
                         val v = it.toIntOrNull() ?: 0
-                        thresholdError = if (v !in 1..100) "Threshold harus berada di antara 1 dan 100%" else null
+                        thresholdError = if (v !in 1..100) "Isi angka 1–100" else null
                     },
-                    label = { Text("Threshold Notifikasi (%)") },
+                    label = { Text("Ingatkan saat terpakai (%)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     isError = thresholdError != null,
                     supportingText = { thresholdError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
@@ -193,7 +193,7 @@ fun BudgetFormDialog(
                     horizontalArrangement = Arrangement.spacedBy(Spacing.small)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Mulai Tanggal", style = MaterialTheme.typography.bodySmall)
+                        Text("Mulai tanggal", style = MaterialTheme.typography.bodySmall)
                         Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         OutlinedButton(
                             onClick = { showStartDatePicker = true },
@@ -204,7 +204,7 @@ fun BudgetFormDialog(
                         }
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Sampai Tanggal", style = MaterialTheme.typography.bodySmall)
+                        Text("Sampai tanggal", style = MaterialTheme.typography.bodySmall)
                         Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         OutlinedButton(
                             onClick = { showEndDatePicker = true },
@@ -235,15 +235,15 @@ fun BudgetFormDialog(
                         hasError = true
                     }
                     if (threshold !in 1..100) {
-                        thresholdError = "Threshold harus berada di antara 1 dan 100%"
+                        thresholdError = "Isi angka 1–100"
                         hasError = true
                     }
                     if (budgetType == "CATEGORY" && selectedCategoryId.isBlank()) {
-                        categoryError = "Kategori harus dipilih"
+                        categoryError = "Kategori belum dipilih"
                         hasError = true
                     }
                     if (startDateMillis > endDateMillis) {
-                        dateError = "Tanggal mulai tidak boleh melebihi tanggal selesai"
+                        dateError = "Tanggal mulai nggak boleh lewat dari tanggal selesai"
                         hasError = true
                     } else {
                         dateError = null

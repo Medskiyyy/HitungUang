@@ -92,7 +92,7 @@ fun BalanceCard(
                     ) {
                         Icon(
                             imageVector = if (hideBalance) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = if (hideBalance) "Tampilkan Saldo" else "Sembunyikan Saldo",
+                            contentDescription = if (hideBalance) "Tampilkan saldo" else "Sembunyikan saldo",
                             tint = HeroOnGradient.copy(alpha = 0.9f),
                             modifier = Modifier.size(20.dp)
                         )

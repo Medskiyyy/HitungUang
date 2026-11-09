@@ -41,8 +41,8 @@ class TransferHistoryViewModel @Inject constructor(
         val mappedTransfers = transfers.map { transfer ->
             TransferWithAccountNames(
                 transfer = transfer,
-                fromAccountName = accountMap[transfer.fromAccountId]?.name ?: "Akun Terhapus",
-                toAccountName = accountMap[transfer.toAccountId]?.name ?: "Akun Terhapus"
+                fromAccountName = accountMap[transfer.fromAccountId]?.name ?: "Dompet terhapus",
+                toAccountName = accountMap[transfer.toAccountId]?.name ?: "Dompet terhapus"
             )
         }
         TransferHistoryUiState(

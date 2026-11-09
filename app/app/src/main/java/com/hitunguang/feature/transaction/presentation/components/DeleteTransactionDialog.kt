@@ -19,10 +19,10 @@ fun DeleteTransactionDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Hapus Transaksi")
+            Text("Hapus transaksi?")
         },
         text = {
-            Text("Apakah Anda yakin ingin menghapus transaksi \"${transaction.title}\"? Nominal saldo dompet Anda akan disesuaikan kembali.")
+            Text("Hapus \"${transaction.title}\"? Saldo dompet akan dikembalikan. Transaksinya masuk Tempat Sampah dan bisa dipulihkan dalam 30 hari.")
         },
         confirmButton = {
             TextButton(

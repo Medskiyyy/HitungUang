@@ -50,7 +50,7 @@ fun BackupStep(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = "Pencadangan Data Lokal",
+                text = "Cadangkan Data",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -58,7 +58,7 @@ fun BackupStep(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "Karena data Anda disimpan secara lokal di perangkat ini, kami sangat merekomendasikan untuk memilih folder guna pencadangan otomatis (berupa file ZIP mingguan) agar data tidak hilang jika aplikasi terhapus.",
+                text = "Data kamu cuma ada di HP ini. Pilih folder buat cadangan otomatis tiap minggu, biar aman kalau aplikasinya kehapus. Lebih aman lagi kalau foldernya kamu salin ke Drive atau PC.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -69,13 +69,13 @@ fun BackupStep(
                 onClick = { folderPickerLauncher.launch(null) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(if (backupUri != null) "Ubah Folder Cadangan" else "Pilih Folder Cadangan")
+                Text(if (backupUri != null) "Ubah folder cadangan" else "Pilih folder cadangan")
             }
 
             if (backupUri != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Folder Terpilih:",
+                    text = "Folder terpilih:",
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(
@@ -86,7 +86,7 @@ fun BackupStep(
             } else {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Folder belum dipilih. Pencadangan otomatis dinonaktifkan.",
+                    text = "Folder belum dipilih, jadi cadangan otomatis mati.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )

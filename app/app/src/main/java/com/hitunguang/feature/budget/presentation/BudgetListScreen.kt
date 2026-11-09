@@ -161,7 +161,7 @@ fun BudgetListScreen(
                         )
                         Spacer(modifier = Modifier.height(Spacing.medium))
                         Text(
-                            text = if (selectedTabIndex == 0) "Belum ada anggaran aktif" else "Belum ada riwayat anggaran",
+                            text = if (selectedTabIndex == 0) "Belum ada anggaran aktif. Ketuk + buat bikin yang pertama." else "Belum ada riwayat anggaran",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

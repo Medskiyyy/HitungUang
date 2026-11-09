@@ -114,7 +114,7 @@ fun LockScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = if (uiState.isLockedOut) "Terlalu banyak percobaan salah" else "Masukkan PIN Anda",
+                        text = if (uiState.isLockedOut) "Terlalu banyak percobaan salah" else "Masukkan PIN kamu",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = if (uiState.isLockedOut || uiState.pinError != null) MaterialTheme.colorScheme.error 
@@ -234,7 +234,7 @@ fun LockScreen(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Fingerprint,
-                                            contentDescription = "Autentikasi Sidik Jari",
+                                            contentDescription = "Buka dengan sidik jari",
                                             tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.size(28.dp)
                                         )
@@ -284,13 +284,13 @@ fun LockScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Pemulihan Keamanan",
+                            text = "Pulihkan Akses",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Masukkan 16-karakter Kode Pemulihan Anda di bawah ini untuk meriset PIN.",
+                            text = "Masukkan 16 karakter kode pemulihan buat bikin PIN baru.",
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onSurfaceVariant

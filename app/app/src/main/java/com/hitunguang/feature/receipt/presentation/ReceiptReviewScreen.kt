@@ -81,7 +81,7 @@ fun ReceiptReviewScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tinjau Hasil Scan", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
+                title = { Text("Cek Hasil Pindai", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Kembali")
@@ -116,7 +116,7 @@ fun ReceiptReviewScreen(
                             )
                         } else {
                             Text(
-                                "Simpan Transaksi",
+                                "Simpan transaksi",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -233,7 +233,7 @@ fun ReceiptReviewScreen(
                     OutlinedTextField(
                         value = uiState.merchantName,
                         onValueChange = { viewModel.updateMerchantName(it) },
-                        label = { Text("Nama Toko / Merchant") },
+                        label = { Text("Nama toko") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(Radius.medium),
@@ -247,7 +247,7 @@ fun ReceiptReviewScreen(
                             } else {
                                 Icon(
                                     imageVector = Icons.Default.Warning,
-                                    contentDescription = "Cek Manual",
+                                    contentDescription = "Perlu dicek",
                                     tint = MaterialTheme.colorScheme.tertiary
                                 )
                             }
@@ -255,7 +255,7 @@ fun ReceiptReviewScreen(
                     )
 
                     // Date Selection
-                    val dateFormatter = SimpleDateFormat("dd MMMM yyyy", Locale("in", "ID"))
+                    val dateFormatter = SimpleDateFormat("d MMM yyyy", Locale("id", "ID"))
                     Surface(
                         onClick = { showDatePicker = true },
                         modifier = Modifier.fillMaxWidth(),
@@ -276,7 +276,7 @@ fun ReceiptReviewScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        "Tanggal Transaksi",
+                                        "Tanggal transaksi",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -291,7 +291,7 @@ fun ReceiptReviewScreen(
                                     } else {
                                         Icon(
                                             imageVector = Icons.Default.Warning,
-                                            contentDescription = "Cek Manual",
+                                            contentDescription = "Perlu dicek",
                                             tint = MaterialTheme.colorScheme.tertiary,
                                             modifier = Modifier.size(14.dp)
                                         )
@@ -336,20 +336,20 @@ fun ReceiptReviewScreen(
                                     Column(modifier = Modifier.weight(1f)) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Text(
-                                                "Sumber Dana (Dompet)",
+                                                "Dompet",
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                             Spacer(modifier = Modifier.width(Spacing.small))
                                             Icon(
                                                 imageVector = Icons.Default.CheckCircle,
-                                                contentDescription = "Valid",
+                                                contentDescription = "Oke",
                                                 tint = com.hitunguang.core.designsystem.theme.IncomeGreen,
                                                 modifier = Modifier.size(14.dp)
                                             )
                                         }
                                         Text(
-                                            currentAccount?.name ?: "Pilih Dompet",
+                                            currentAccount?.name ?: "Pilih dompet",
                                             style = MaterialTheme.typography.bodyLarge,
                                             fontWeight = FontWeight.Medium
                                         )
@@ -374,7 +374,7 @@ fun ReceiptReviewScreen(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "Saran: ${suggestedAccount.name} (Ketuk untuk pilih)",
+                                        text = "Saran: ${suggestedAccount.name}. Ketuk buat pilih.",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.primary,
                                         fontWeight = FontWeight.Bold
@@ -449,13 +449,13 @@ fun ReceiptReviewScreen(
                                         Spacer(modifier = Modifier.width(Spacing.small))
                                         Icon(
                                             imageVector = Icons.Default.CheckCircle,
-                                            contentDescription = "Valid",
+                                            contentDescription = "Oke",
                                             tint = com.hitunguang.core.designsystem.theme.IncomeGreen,
                                             modifier = Modifier.size(14.dp)
                                         )
                                     }
                                     Text(
-                                        currentCategory?.name ?: "Pilih Kategori",
+                                        currentCategory?.name ?: "Pilih kategori",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Medium
                                     )
@@ -480,7 +480,7 @@ fun ReceiptReviewScreen(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "Saran: ${suggestedCategory.name} (Ketuk untuk pilih)",
+                                    text = "Saran: ${suggestedCategory.name}. Ketuk buat pilih.",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold
@@ -503,11 +503,11 @@ fun ReceiptReviewScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Daftar Item", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text("Daftar Barang", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     TextButton(onClick = { viewModel.addItem() }) {
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Tambah Item", fontWeight = FontWeight.Bold)
+                        Text("Tambah barang", fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -542,7 +542,7 @@ fun ReceiptReviewScreen(
                                     if (dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
-                                            contentDescription = "Hapus Item",
+                                            contentDescription = "Hapus barang",
                                             tint = MaterialTheme.colorScheme.onErrorContainer
                                         )
                                     }
@@ -565,14 +565,14 @@ fun ReceiptReviewScreen(
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Text("Item #${index + 1}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Text("Barang ke-${index + 1}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                             IconButton(
                                                 onClick = { viewModel.removeItem(index) },
                                                 modifier = Modifier.size(24.dp)
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Delete,
-                                                    contentDescription = "Hapus Item",
+                                                    contentDescription = "Hapus barang",
                                                     tint = MaterialTheme.colorScheme.error,
                                                     modifier = Modifier.size(20.dp)
                                                 )
@@ -582,7 +582,7 @@ fun ReceiptReviewScreen(
                                         OutlinedTextField(
                                             value = item.name,
                                             onValueChange = { viewModel.updateItemName(index, it) },
-                                            label = { Text("Nama Barang") },
+                                            label = { Text("Nama barang") },
                                             singleLine = true,
                                             modifier = Modifier.fillMaxWidth(),
                                             shape = RoundedCornerShape(Radius.small)
@@ -595,7 +595,7 @@ fun ReceiptReviewScreen(
                                             OutlinedTextField(
                                                 value = item.quantity?.toString()?.replace(Regex("\\.0$"), "") ?: "",
                                                 onValueChange = { viewModel.updateItemQty(index, it) },
-                                                label = { Text("Qty") },
+                                                label = { Text("Jumlah") },
                                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                                 singleLine = true,
                                                 modifier = Modifier.weight(1f),
@@ -605,7 +605,7 @@ fun ReceiptReviewScreen(
                                             OutlinedTextField(
                                                 value = if (item.unitPrice == 0L) "" else formatAmount(item.unitPrice.toString()),
                                                 onValueChange = { viewModel.updateItemUnitPrice(index, it) },
-                                                label = { Text("Harga Satuan") },
+                                                label = { Text("Harga satuan") },
                                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                                 singleLine = true,
                                                 modifier = Modifier.weight(2f),
@@ -658,7 +658,7 @@ fun ReceiptReviewScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Pajak / PPN", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text("Pajak (PPN)", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
                         OutlinedTextField(
                             value = formatAmount(uiState.taxStr),
                             onValueChange = { viewModel.updateTax(it) },
@@ -699,7 +699,7 @@ fun ReceiptReviewScreen(
 
                     if (uiState.isAmountMismatch) {
                         Text(
-                            text = "Rincian item tidak sama dengan total pada struk. Total tetap sesuai yang kamu isi atau yang ada di struk, jadi cek lagi daftar itemnya ya.",
+                            text = "Rincian barang nggak sama dengan total di struk. Totalnya tetap sesuai isianmu atau yang ada di struk, jadi cek lagi daftar barangnya, ya.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.padding(top = Spacing.small)

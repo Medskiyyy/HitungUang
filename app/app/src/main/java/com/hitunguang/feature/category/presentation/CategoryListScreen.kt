@@ -80,7 +80,7 @@ fun CategoryListScreen(
                     IconButton(onClick = { viewModel.restoreDefaultCategories() }) {
                         Icon(
                             imageVector = Icons.Default.Restore,
-                            contentDescription = "Pulihkan Kategori Bawaan",
+                            contentDescription = "Pulihkan kategori bawaan",
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -138,7 +138,7 @@ fun CategoryListScreen(
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                     Text(
-                        text = "Belum ada kategori",
+                        text = "Belum ada kategori. Ketuk + buat bikin yang pertama.",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

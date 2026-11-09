@@ -75,8 +75,8 @@ fun SetupChecklistCard(
             onClick = onAddTransactionClick
         ),
         SetupTask(
-            title = "Atur budget bulanan",
-            description = "Tetapkan batas pengeluaran biar tidak kebablasan.",
+            title = "Atur anggaran bulanan",
+            description = "Tetapkan batas pengeluaran biar nggak kebablasan.",
             icon = Icons.Default.PieChart,
             isDone = hasBudget,
             onClick = onCreateBudgetClick

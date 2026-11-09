@@ -260,9 +260,9 @@ class MainActivity : FragmentActivity() {
         )
 
         val promptInfo = androidx.biometric.BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Autentikasi Biometrik")
-            .setSubtitle("Gunakan sidik jari Anda untuk masuk")
-            .setNegativeButtonText("Gunakan PIN")
+            .setTitle("Buka HitungUang")
+            .setSubtitle("Pakai sidik jari buat masuk")
+            .setNegativeButtonText("Pakai PIN")
             .build()
 
         biometricPrompt.authenticate(promptInfo)
@@ -449,7 +449,7 @@ fun MainAppScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Pilih menu pengaturan di bawah ini:",
+                    text = "Pilih pengaturan:",
                     style = MaterialTheme.typography.bodySmall
                 )
                 Spacer(modifier = Modifier.height(Spacing.large))
@@ -464,7 +464,7 @@ fun MainAppScreen(
                         SettingsMenuItem(
                             icon = Icons.Default.Palette,
                             title = "Pengaturan Tampilan",
-                            subtitle = "Tema Terang, Gelap, & Sistem",
+                            subtitle = "Tema terang, gelap, atau ikut sistem",
                             onClick = {
                                 showSettingsPlaceholder = false
                                 showThemeSettingsDialog = true
@@ -474,7 +474,7 @@ fun MainAppScreen(
                         SettingsMenuItem(
                             icon = Icons.Default.Lock,
                             title = "Keamanan",
-                            subtitle = "PIN & Biometrik",
+                            subtitle = "PIN dan sidik jari",
                             onClick = {
                                 showSettingsPlaceholder = false
                                 showSecuritySettingsScreen = true
@@ -484,7 +484,7 @@ fun MainAppScreen(
                         SettingsMenuItem(
                             icon = Icons.Default.Notifications,
                             title = "Notifikasi",
-                            subtitle = "Pengingat harian & Budget",
+                            subtitle = "Pengingat harian dan anggaran",
                             onClick = {
                                 showSettingsPlaceholder = false
                                 showNotificationSettingsScreen = true
@@ -493,8 +493,8 @@ fun MainAppScreen(
                         HorizontalDivider(thickness = 0.5.dp)
                         SettingsMenuItem(
                             icon = Icons.Default.Backup,
-                            title = "Backup & Restore",
-                            subtitle = "Cadangkan data Anda",
+                            title = "Cadangan & Pemulihan",
+                            subtitle = "Cadangkan dan pulihkan data",
                             onClick = {
                                 showSettingsPlaceholder = false
                                 showBackupScreen = true
@@ -514,7 +514,7 @@ fun MainAppScreen(
                         SettingsMenuItem(
                             icon = Icons.Default.Category,
                             title = "Kelola Kategori",
-                            subtitle = "Tambah & Edit kategori",
+                            subtitle = "Tambah dan ubah kategori",
                             onClick = {
                                 showSettingsPlaceholder = false
                                 showCategoryListScreen = true
@@ -540,13 +540,13 @@ fun MainAppScreen(
         val currentTheme = appSettings?.themeMode ?: "SYSTEM"
         AlertDialog(
             onDismissRequest = { showThemeSettingsDialog = false },
-            title = { Text("Pilih Tema Tampilan", fontWeight = FontWeight.Bold) },
+            title = { Text("Pilih tema", fontWeight = FontWeight.Bold) },
             text = {
                 Column {
                     listOf(
                         "SYSTEM" to "Ikuti Sistem",
-                        "LIGHT" to "Terang (Light)",
-                        "DARK" to "Gelap (Dark)"
+                        "LIGHT" to "Terang",
+                        "DARK" to "Gelap"
                     ).forEach { (mode, label) ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

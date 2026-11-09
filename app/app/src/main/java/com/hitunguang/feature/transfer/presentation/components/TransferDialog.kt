@@ -70,7 +70,7 @@ fun TransferDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Transfer Antar Akun", fontWeight = FontWeight.Bold)
+            Text("Transfer Saldo", fontWeight = FontWeight.Bold)
         },
         text = {
             Column(
@@ -86,7 +86,7 @@ fun TransferDialog(
                             onClick = { fromAccountExpanded = true },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(uiState.fromAccount?.name ?: "Pilih Dompet Asal")
+                            Text(uiState.fromAccount?.name ?: "Pilih dompet asal")
                         }
                         DropdownMenu(
                             expanded = fromAccountExpanded,
@@ -115,7 +115,7 @@ fun TransferDialog(
                             onClick = { toAccountExpanded = true },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(uiState.toAccount?.name ?: "Pilih Dompet Tujuan")
+                            Text(uiState.toAccount?.name ?: "Pilih dompet tujuan")
                         }
                         DropdownMenu(
                             expanded = toAccountExpanded,
@@ -139,7 +139,7 @@ fun TransferDialog(
                 OutlinedTextField(
                     value = uiState.amount,
                     onValueChange = { viewModel.onAmountChanged(it) },
-                    label = { Text("Nominal Transfer *") },
+                    label = { Text("Nominal transfer *") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
@@ -149,7 +149,7 @@ fun TransferDialog(
                 OutlinedTextField(
                     value = uiState.adminFee,
                     onValueChange = { viewModel.onAdminFeeChanged(it) },
-                    label = { Text("Biaya Admin") },
+                    label = { Text("Biaya admin") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
@@ -157,9 +157,9 @@ fun TransferDialog(
 
                 // Date Picker Button
                 Column {
-                    Text("Tanggal Transfer", style = MaterialTheme.typography.bodySmall)
+                    Text("Tanggal transfer", style = MaterialTheme.typography.bodySmall)
                     Spacer(modifier = Modifier.height(4.dp))
-                    val dateFormatter = SimpleDateFormat("dd MMMM yyyy", Locale("in", "ID"))
+                    val dateFormatter = SimpleDateFormat("d MMM yyyy", Locale("id", "ID"))
                     OutlinedButton(
                         onClick = { showDatePicker = true },
                         modifier = Modifier.fillMaxWidth()
@@ -172,7 +172,7 @@ fun TransferDialog(
                 OutlinedTextField(
                     value = uiState.note,
                     onValueChange = { viewModel.onNoteChanged(it) },
-                    label = { Text("Catatan (Opsional)") },
+                    label = { Text("Catatan (opsional)") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )

@@ -9,10 +9,10 @@ class UpdateBudgetUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(budget: Budget) {
         if (budget.amount <= 0L) {
-            throw IllegalArgumentException("Nominal budget harus lebih besar dari 0.")
+            throw IllegalArgumentException("Nominal anggaran harus lebih besar dari 0.")
         }
         if (budget.thresholdPercent !in 1..100) {
-            throw IllegalArgumentException("Threshold harus berada di antara 1 dan 100%.")
+            throw IllegalArgumentException("Pengingat anggaran harus diisi angka 1–100%.")
         }
         if (budget.startDate > budget.endDate) {
             throw IllegalArgumentException("Tanggal mulai tidak boleh melebihi tanggal selesai.")

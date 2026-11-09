@@ -164,7 +164,7 @@ class BackupModuleTest {
         assertTrue("Should fail when no folder URI", noUriResult.isFailure)
         assertTrue(
             "Error message should mention folder configuration",
-            noUriResult.exceptionOrNull()?.message?.contains("Folder backup belum dikonfigurasi") == true
+            noUriResult.exceptionOrNull()?.message?.contains("Folder cadangan belum dipilih") == true
         )
     }
 
@@ -258,7 +258,7 @@ class BackupModuleTest {
     ): Result<String> {
         val uri = providedUri ?: storedUri
             ?: return Result.failure(
-                IllegalStateException("Folder backup belum dikonfigurasi. Pilih folder terlebih dahulu di Pengaturan Backup.")
+                IllegalStateException("Folder cadangan belum dipilih. Pilih folder terlebih dahulu di Pengaturan Backup.")
             )
         capturedUri?.add(uri)
         return Result.success("hitunguang_backup_test.zip")

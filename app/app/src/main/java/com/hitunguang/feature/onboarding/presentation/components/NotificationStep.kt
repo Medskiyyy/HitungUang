@@ -68,7 +68,7 @@ fun NotificationStep(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "Aplikasi akan mengirimkan pengingat harian untuk mencatat keuangan Anda serta peringatan jika budget bulanan Anda hampir habis.",
+                text = "Aplikasi akan mengirim pengingat harian buat mencatat keuangan, plus peringatan kalau anggaran bulananmu hampir habis.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -84,11 +84,11 @@ fun NotificationStep(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Aktifkan Pengingat Harian",
+                        text = "Aktifkan pengingat harian",
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "Mengingatkan Anda setiap pukul 20:00",
+                        text = "Diingatkan setiap pukul 20:00",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

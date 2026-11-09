@@ -15,7 +15,7 @@ class CreateBackupUseCase @Inject constructor(
     suspend operator fun invoke(folderUri: String? = null): Result<String> {
         val uri = folderUri
             ?: settingsDataStore.backupSettings.firstOrNull()?.backupFolderUri
-            ?: return Result.failure(IllegalStateException("Folder backup belum dikonfigurasi. Pilih folder terlebih dahulu di Pengaturan Backup."))
+            ?: return Result.failure(IllegalStateException("Folder cadangan belum dipilih. Pilih folder dulu di Cadangan & Pemulihan."))
 
         return backupManager.createBackup(uri)
     }

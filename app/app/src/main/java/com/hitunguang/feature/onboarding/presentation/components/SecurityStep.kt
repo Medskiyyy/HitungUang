@@ -68,7 +68,7 @@ fun SecurityStep(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "Lindungi data keuangan Anda dari akses yang tidak berwenang. Anda bisa mengaktifkan PIN dan kunci sidik jari (biometrik) sekarang atau nanti.",
+                text = "Lindungi data keuanganmu dari orang lain. PIN dan sidik jari bisa diaktifkan sekarang atau nanti.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -82,11 +82,11 @@ fun SecurityStep(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Aktifkan Kode PIN",
+                        text = "Aktifkan PIN",
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "Gunakan PIN untuk masuk ke aplikasi",
+                        text = "Pakai PIN buat membuka aplikasi",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -103,7 +103,7 @@ fun SecurityStep(
                 OutlinedTextField(
                     value = pin,
                     onValueChange = { if (it.length <= 6 && it.all { c -> c in '0'..'9' }) onPinChange(it) },
-                    label = { Text("Masukkan PIN Baru (4-6 angka)") },
+                    label = { Text("PIN baru (4–6 angka)") },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                     isError = pinError != null,
@@ -121,7 +121,7 @@ fun SecurityStep(
                 OutlinedTextField(
                     value = confirmPin,
                     onValueChange = { if (it.length <= 6 && it.all { c -> c in '0'..'9' }) onConfirmPinChange(it) },
-                    label = { Text("Konfirmasi PIN Baru") },
+                    label = { Text("Ulangi PIN baru") },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                     isError = confirmPinError != null,
@@ -143,11 +143,11 @@ fun SecurityStep(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Aktifkan Kunci Biometrik",
+                            text = "Aktifkan sidik jari",
                             style = MaterialTheme.typography.titleMedium
                         )
                         Text(
-                            text = "Gunakan Sidik Jari untuk masuk",
+                            text = "Buka aplikasi pakai sidik jari",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -168,13 +168,13 @@ fun SecurityStep(
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
-                                text = "PENTING: Kode Pemulihan Anda",
+                                text = "Simpan Kode Pemulihanmu",
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Tulis kode ini di tempat yang aman. Kode ini digunakan untuk masuk jika Anda lupa PIN Anda.",
+                                text = "Tulis kode ini dan simpan di tempat aman. Kode ini dipakai buat masuk kalau kamu lupa PIN.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )

@@ -14,7 +14,7 @@ class AddAttachmentUseCase @Inject constructor(
     suspend operator fun invoke(transactionId: String, uri: Uri): Attachment {
         val currentCount = attachmentRepository.getAttachmentCount(transactionId)
         if (currentCount >= 5) {
-            throw IllegalStateException("Maksimal 5 lampiran diperbolehkan per transaksi.")
+            throw IllegalStateException("Maksimal 5 lampiran per transaksi.")
         }
 
         val savedFile = fileManager.saveAttachment(uri)

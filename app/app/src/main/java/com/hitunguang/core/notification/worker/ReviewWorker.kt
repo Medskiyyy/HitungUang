@@ -69,8 +69,8 @@ class ReviewWorker(
                 notificationHelper.showNotification(
                     channelId = NotificationHelper.CHANNEL_REVIEW,
                     notificationId = NotificationHelper.ID_REVIEW,
-                    title = "Review Keuangan Mingguan",
-                    message = "Total pengeluaran Anda minggu lalu adalah ${CurrencyFormatter.format(totalExpense)}."
+                    title = "Ringkasan Mingguan",
+                    message = "Total pengeluaranmu minggu lalu: ${CurrencyFormatter.format(totalExpense)}."
                 )
 
                 // Reschedule for next week
@@ -93,7 +93,7 @@ class ReviewWorker(
                     channelId = NotificationHelper.CHANNEL_REVIEW,
                     notificationId = NotificationHelper.ID_REVIEW + 1, // Use a distinct ID for monthly so it doesn't overwrite weekly if both are shown
                     title = "Ringkasan $monthName",
-                    message = "Total pengeluaran Anda bulan $monthName ${monthStart.year} adalah ${CurrencyFormatter.format(totalExpense)}."
+                    message = "Total pengeluaranmu bulan $monthName ${monthStart.year}: ${CurrencyFormatter.format(totalExpense)}."
                 )
 
                 // Reschedule for next month

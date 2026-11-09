@@ -42,7 +42,7 @@ class RestoreManager @Inject constructor(
 
             if (!valid) {
                 return@withContext Result.failure(
-                    IllegalArgumentException("File yang dipilih bukan file backup HitungUang yang valid.")
+                    IllegalArgumentException("File yang dipilih bukan file cadangan HitungUang yang benar.")
                 )
             }
 

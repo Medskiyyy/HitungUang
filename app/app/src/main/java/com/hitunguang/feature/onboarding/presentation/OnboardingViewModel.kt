@@ -103,7 +103,7 @@ class OnboardingViewModel @Inject constructor(
             }
             OnboardingStep.PROFILE -> {
                 if (currentState.name.isBlank()) {
-                    _uiState.update { it.copy(nameError = "Nama tidak boleh kosong") }
+                    _uiState.update { it.copy(nameError = "Namanya belum diisi") }
                 } else {
                     _uiState.update { it.copy(nameError = null) }
                     updateStep(OnboardingStep.ACCOUNT)
@@ -120,7 +120,7 @@ class OnboardingViewModel @Inject constructor(
                     if (!SecurityViewModel.isValidPinFormat(currentState.pin)) {
                         _uiState.update { it.copy(pinError = "PIN harus 4-6 angka") }
                     } else if (currentState.pin != currentState.confirmPin) {
-                        _uiState.update { it.copy(confirmPinError = "PIN konfirmasi tidak cocok", pinError = null) }
+                        _uiState.update { it.copy(confirmPinError = "PIN-nya beda. Ketik ulang, ya.", pinError = null) }
                     } else {
                         _uiState.update { it.copy(pinError = null, confirmPinError = null) }
                         updateStep(OnboardingStep.TUTORIAL)
@@ -158,7 +158,7 @@ class OnboardingViewModel @Inject constructor(
     }
 
     fun updateName(name: String) {
-        _uiState.update { it.copy(name = name, nameError = if (name.isBlank()) "Nama tidak boleh kosong" else null) }
+        _uiState.update { it.copy(name = name, nameError = if (name.isBlank()) "Namanya belum diisi" else null) }
     }
 
     fun updateOccupation(occupation: String) {

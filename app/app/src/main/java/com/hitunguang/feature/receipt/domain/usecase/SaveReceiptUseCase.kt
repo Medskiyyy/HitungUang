@@ -37,7 +37,7 @@ class SaveReceiptUseCase @Inject constructor(
         // so a rejected save leaves nothing behind and can simply be retried.
         val currentBalance = accountDao.getAccountBalance(accountId)
         if (currentBalance < total) {
-            throw IllegalStateException("Saldo tidak mencukupi. Saldo saat ini: ${CurrencyFormatter.format(currentBalance)}, dibutuhkan: ${CurrencyFormatter.format(total)}.")
+            throw IllegalStateException("Saldo nggak cukup. Saldo sekarang: ${CurrencyFormatter.format(currentBalance)}, butuh: ${CurrencyFormatter.format(total)}.")
         }
 
         val receiptId = UUID.randomUUID().toString()

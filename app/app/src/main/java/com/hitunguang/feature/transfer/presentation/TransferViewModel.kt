@@ -76,15 +76,15 @@ class TransferViewModel @Inject constructor(
         val feeVal = state.adminFee.toLongOrNull() ?: 0L
 
         if (fromAcc == null) {
-            _uiState.update { it.copy(error = "Akun asal harus dipilih.") }
+            _uiState.update { it.copy(error = "Dompet asal belum dipilih.") }
             return
         }
         if (toAcc == null) {
-            _uiState.update { it.copy(error = "Akun tujuan harus dipilih.") }
+            _uiState.update { it.copy(error = "Dompet tujuan belum dipilih.") }
             return
         }
         if (fromAcc.id == toAcc.id) {
-            _uiState.update { it.copy(error = "Akun asal dan tujuan harus berbeda.") }
+            _uiState.update { it.copy(error = "Dompet asal dan tujuan harus berbeda.") }
             return
         }
         if (amountVal <= 0L) {
@@ -96,7 +96,7 @@ class TransferViewModel @Inject constructor(
             return
         }
         if (fromAcc.currentBalance < (amountVal + feeVal)) {
-            _uiState.update { it.copy(error = "Saldo tidak mencukupi. Saldo saat ini: ${CurrencyFormatter.format(fromAcc.currentBalance)}, dibutuhkan: ${CurrencyFormatter.format(amountVal + feeVal)}.") }
+            _uiState.update { it.copy(error = "Saldo nggak cukup. Saldo sekarang: ${CurrencyFormatter.format(fromAcc.currentBalance)}, butuh: ${CurrencyFormatter.format(amountVal + feeVal)}.") }
             return
         }
 

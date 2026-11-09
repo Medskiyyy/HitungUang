@@ -46,7 +46,7 @@ fun AttachmentPreviewDialog(
             // Main Image with Zoom & Pan Gestures
             AsyncImage(
                 model = File(attachment.filePath),
-                contentDescription = "Preview Lampiran",
+                contentDescription = "Pratinjau lampiran",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxSize()
@@ -95,7 +95,7 @@ fun AttachmentPreviewDialog(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Tutup Preview",
+                        contentDescription = "Tutup",
                         tint = Color.White
                     )
                 }

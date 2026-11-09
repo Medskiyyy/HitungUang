@@ -46,7 +46,7 @@ fun AttachmentGrid(
 
         if (items.isEmpty()) {
             Text(
-                text = "Tidak ada lampiran",
+                text = "Belum ada lampiran",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 modifier = Modifier.padding(vertical = 8.dp)

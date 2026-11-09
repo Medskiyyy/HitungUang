@@ -54,7 +54,7 @@ fun CategoryPickerDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Pilih Kategori", fontWeight = FontWeight.Bold)
+            Text("Pilih kategori", fontWeight = FontWeight.Bold)
         },
         text = {
             Column(
@@ -145,7 +145,7 @@ fun CategoryPickerDialog(
                 ) {
                     Icon(Icons.Default.Settings, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Kelola Kategori")
+                    Text("Kelola kategori")
                 }
             }
         },

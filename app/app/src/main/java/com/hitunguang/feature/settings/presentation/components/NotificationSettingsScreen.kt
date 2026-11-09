@@ -109,7 +109,7 @@ fun NotificationSettingsScreen(
                 .padding(horizontal = 16.dp)
         ) {
             Text(
-                text = "Kelola notifikasi pengingat harian, laporan mingguan/bulanan, dan pengeluaran anggaran di sini secara offline.",
+                text = "Atur pengingat harian, ringkasan mingguan/bulanan, dan peringatan anggaran.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 8.dp)
@@ -140,14 +140,14 @@ fun NotificationSettingsScreen(
                                 tint = MaterialTheme.colorScheme.onErrorContainer
                             )
                             Text(
-                                text = "Izin Notifikasi Nonaktif",
+                                text = "Izin notifikasi belum aktif",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )
                         }
                         Text(
-                            text = "Aplikasi memerlukan izin untuk menampilkan notifikasi pengingat dan peringatan anggaran di perangkat Anda.",
+                            text = "Aplikasi butuh izin buat menampilkan pengingat dan peringatan anggaran.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer
                         )
@@ -161,7 +161,7 @@ fun NotificationSettingsScreen(
                             ),
                             modifier = Modifier.align(Alignment.End)
                         ) {
-                            Text("Izinkan Notifikasi")
+                            Text("Izinkan notifikasi")
                         }
                     }
                 }
@@ -178,7 +178,7 @@ fun NotificationSettingsScreen(
                         // Daily Reminder Switch
                         ListItem(
                             headlineContent = { Text("Pengingat Harian", fontWeight = FontWeight.SemiBold) },
-                            supportingContent = { Text("Kirim pengingat untuk mencatat pengeluaran/pemasukan Anda setiap hari") },
+                            supportingContent = { Text("Diingatkan buat mencatat pemasukan dan pengeluaran tiap hari") },
                             leadingContent = {
                                 Icon(
                                     imageVector = if (settings.dailyReminderEnabled) Icons.Default.NotificationsActive else Icons.Default.Notifications,
@@ -209,7 +209,7 @@ fun NotificationSettingsScreen(
 
                             ListItem(
                                 headlineContent = { Text("Waktu Pengingat", fontWeight = FontWeight.SemiBold) },
-                                supportingContent = { Text("Sentuh untuk mengubah jam pengingat harian") },
+                                supportingContent = { Text("Ketuk buat ubah jam pengingat") },
                                 leadingContent = {
                                     Icon(
                                         imageVector = Icons.Default.AccessTime,
@@ -244,8 +244,8 @@ fun NotificationSettingsScreen(
 
                         // Weekly Review Switch
                         ListItem(
-                            headlineContent = { Text("Review Mingguan", fontWeight = FontWeight.SemiBold) },
-                            supportingContent = { Text("Terima ringkasan pengeluaran mingguan Anda setiap hari Minggu pukul 19:00") },
+                            headlineContent = { Text("Ringkasan Mingguan", fontWeight = FontWeight.SemiBold) },
+                            supportingContent = { Text("Ringkasan pengeluaran mingguan, tiap hari Minggu pukul 19:00") },
                             leadingContent = {
                                 Icon(
                                     imageVector = Icons.Default.DateRange,
@@ -269,8 +269,8 @@ fun NotificationSettingsScreen(
 
                         // Monthly Review Switch
                         ListItem(
-                            headlineContent = { Text("Review Bulanan", fontWeight = FontWeight.SemiBold) },
-                            supportingContent = { Text("Terima ringkasan laporan keuangan bulanan Anda setiap awal bulan pukul 19:00") },
+                            headlineContent = { Text("Ringkasan Bulanan", fontWeight = FontWeight.SemiBold) },
+                            supportingContent = { Text("Ringkasan keuangan bulanan, tiap awal bulan pukul 19:00") },
                             leadingContent = {
                                 Icon(
                                     imageVector = Icons.Default.CalendarMonth,

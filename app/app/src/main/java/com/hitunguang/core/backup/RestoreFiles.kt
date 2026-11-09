@@ -10,18 +10,18 @@ object RestoreFiles {
     private val DATA_DIRS = listOf("attachments", "receipts")
 
     fun validateDatabase(dbFile: File) {
-        if (!dbFile.isFile) throw IllegalArgumentException("File database di dalam backup tidak ditemukan.")
+        if (!dbFile.isFile) throw IllegalArgumentException("Isi cadangan nggak lengkap: databasenya nggak ketemu.")
         val db = try {
             SQLiteDatabase.openDatabase(dbFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
         } catch (e: Exception) {
-            throw IllegalArgumentException("Database di dalam backup rusak atau bukan database yang valid.", e)
+            throw IllegalArgumentException("Cadangan ini rusak atau bukan cadangan yang benar.", e)
         }
         try {
             db.use { checkOpenDatabase(it) }
         } catch (e: IllegalArgumentException) {
             throw e
         } catch (e: Exception) {
-            throw IllegalArgumentException("Database di dalam backup rusak.", e)
+            throw IllegalArgumentException("Cadangan ini rusak.", e)
         }
     }
 
@@ -30,13 +30,13 @@ object RestoreFiles {
             if (c.moveToFirst()) c.getInt(0) else 0
         }
         if (version > MAX_SCHEMA_VERSION) {
-            throw IllegalArgumentException("Backup ini dibuat dari versi aplikasi yang lebih baru. Update aplikasinya dulu ya.")
+            throw IllegalArgumentException("Cadangan ini dibuat dari versi aplikasi yang lebih baru. Perbarui aplikasinya dulu, ya.")
         }
         val integrity = db.rawQuery("PRAGMA integrity_check", null).use { c ->
             if (c.moveToFirst()) c.getString(0) else null
         }
         if (integrity != "ok") {
-            throw IllegalArgumentException("Database di dalam backup rusak.")
+            throw IllegalArgumentException("Cadangan ini rusak.")
         }
     }
 

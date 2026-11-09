@@ -31,10 +31,10 @@ class OnboardingUiTest {
         // Verify text exists
         composeTestRule.onNodeWithText("HitungUang").assertExists()
         composeTestRule.onNodeWithText("Catat keuangan tanpa internet.").assertExists()
-        composeTestRule.onNodeWithText("Mulai Sekarang").assertExists()
+        composeTestRule.onNodeWithText("Mulai sekarang").assertExists()
 
         // Perform click and verify callback
-        composeTestRule.onNodeWithText("Mulai Sekarang").performClick()
+        composeTestRule.onNodeWithText("Mulai sekarang").performClick()
         assertTrue(startClicked)
     }
 
@@ -57,7 +57,7 @@ class OnboardingUiTest {
             )
         }
 
-        composeTestRule.onNodeWithText("Siapa Anda?").assertExists()
+        composeTestRule.onNodeWithText("Kenalan dulu, yuk").assertExists()
         composeTestRule.onNodeWithText("Lanjut").performClick()
         assertTrue(nextClicked)
 

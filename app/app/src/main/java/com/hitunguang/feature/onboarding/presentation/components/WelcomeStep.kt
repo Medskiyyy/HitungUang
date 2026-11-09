@@ -202,7 +202,7 @@ fun WelcomeStep(
                     .height(56.dp)
             ) {
                 Text(
-                    text = "Mulai Sekarang",
+                    text = "Mulai sekarang",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )

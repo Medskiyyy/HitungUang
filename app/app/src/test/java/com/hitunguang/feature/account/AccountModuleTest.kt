@@ -136,7 +136,7 @@ class AccountModuleTest {
             fail("Should throw IllegalStateException because account has transactions and no replacement account was provided")
         } catch (e: IllegalStateException) {
             // Expected
-            assertTrue(e.message?.contains("membutuhkan akun pengganti") == true)
+            assertTrue(e.message?.contains("butuh dompet pengganti") == true)
         }
     }
 

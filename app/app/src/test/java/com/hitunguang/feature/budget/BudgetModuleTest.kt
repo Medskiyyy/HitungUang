@@ -111,7 +111,7 @@ class BudgetModuleTest {
             createBudgetUseCase(validBudget.copy(amount = 0L))
             fail("Should throw IllegalArgumentException for amount <= 0")
         } catch (e: IllegalArgumentException) {
-            assertTrue(e.message?.contains("Nominal budget harus lebih besar dari 0") == true)
+            assertTrue(e.message?.contains("Nominal anggaran harus lebih besar dari 0") == true)
         }
 
         // 2. Invalid threshold (< 1 or > 100)
@@ -119,13 +119,13 @@ class BudgetModuleTest {
             createBudgetUseCase(validBudget.copy(thresholdPercent = 0))
             fail("Should throw IllegalArgumentException for threshold < 1")
         } catch (e: IllegalArgumentException) {
-            assertTrue(e.message?.contains("Threshold harus berada di antara 1 dan 100%") == true)
+            assertTrue(e.message?.contains("Pengingat anggaran harus diisi angka 1–100%") == true)
         }
         try {
             createBudgetUseCase(validBudget.copy(thresholdPercent = 101))
             fail("Should throw IllegalArgumentException for threshold > 100")
         } catch (e: IllegalArgumentException) {
-            assertTrue(e.message?.contains("Threshold harus berada di antara 1 dan 100%") == true)
+            assertTrue(e.message?.contains("Pengingat anggaran harus diisi angka 1–100%") == true)
         }
 
         // 3. StartDate > EndDate
@@ -141,7 +141,7 @@ class BudgetModuleTest {
             createBudgetUseCase(validBudget.copy(categoryId = null))
             fail("Should throw IllegalArgumentException for CATEGORY budget with null categoryId")
         } catch (e: IllegalArgumentException) {
-            assertTrue(e.message?.contains("Kategori harus dipilih untuk budget per kategori") == true)
+            assertTrue(e.message?.contains("Kategori harus dipilih untuk anggaran per kategori") == true)
         }
 
         // 5. GLOBAL type with non-null categoryId
@@ -149,7 +149,7 @@ class BudgetModuleTest {
             createBudgetUseCase(validBudget.copy(budgetType = "GLOBAL", categoryId = "cat-1"))
             fail("Should throw IllegalArgumentException for GLOBAL budget with non-null categoryId")
         } catch (e: IllegalArgumentException) {
-            assertTrue(e.message?.contains("Kategori harus kosong untuk budget global") == true)
+            assertTrue(e.message?.contains("Kategori harus kosong untuk anggaran semua kategori") == true)
         }
 
         // 6. Valid budget should succeed
@@ -180,7 +180,7 @@ class BudgetModuleTest {
             updateBudgetUseCase(validBudget.copy(amount = -100L))
             fail("Should throw IllegalArgumentException for amount <= 0")
         } catch (e: IllegalArgumentException) {
-            assertTrue(e.message?.contains("Nominal budget harus lebih besar dari 0") == true)
+            assertTrue(e.message?.contains("Nominal anggaran harus lebih besar dari 0") == true)
         }
 
         // 2. Invalid threshold (< 1 or > 100)
@@ -188,7 +188,7 @@ class BudgetModuleTest {
             updateBudgetUseCase(validBudget.copy(thresholdPercent = 0))
             fail("Should throw IllegalArgumentException for threshold < 1")
         } catch (e: IllegalArgumentException) {
-            assertTrue(e.message?.contains("Threshold harus berada di antara 1 dan 100%") == true)
+            assertTrue(e.message?.contains("Pengingat anggaran harus diisi angka 1–100%") == true)
         }
 
         // 3. StartDate > EndDate

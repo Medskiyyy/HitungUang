@@ -44,7 +44,7 @@ fun BudgetSummaryCard(
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = "Budget Terpakai",
+            text = "Anggaran Terpakai",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -67,21 +67,21 @@ fun BudgetSummaryCard(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Belum Ada Budget Aktif",
+                        text = "Belum ada anggaran aktif",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(Spacing.small))
                     Text(
-                        text = "Buat budget baru untuk membantumu melacak pengeluaran secara teratur.",
+                        text = "Buat anggaran biar pengeluaranmu lebih terkontrol.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(Spacing.large))
                     OutlinedButton(onClick = onAddBudgetClick) {
-                        Text("Buat Budget")
+                        Text("Buat anggaran")
                     }
                 }
             }
@@ -95,9 +95,9 @@ fun BudgetSummaryCard(
                     val progressRatio = (progress.progressPercent / 100f).coerceIn(0f, 1f)
 
                     val budgetName = if (budget.budgetType == "GLOBAL") {
-                        "Budget Bulanan Global"
+                        "Anggaran semua kategori"
                     } else {
-                        "Budget ${progress.categoryName ?: "Kategori"}"
+                        "Anggaran ${progress.categoryName ?: "Kategori"}"
                     }
 
                     Card(
@@ -152,7 +152,7 @@ fun BudgetSummaryCard(
                                 )
                                 val remaining = budget.amount - progress.spentAmount
                                 Text(
-                                    text = "Sisa Budget: ${CurrencyFormatter.format(remaining)}",
+                                    text = "Sisa anggaran: ${CurrencyFormatter.format(remaining)}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (remaining >= 0) BudgetSafe else BudgetDanger,
                                     fontWeight = FontWeight.Medium

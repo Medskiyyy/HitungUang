@@ -70,21 +70,21 @@ fun ReceiptArchiveScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Belum Ada Arsip Struk",
+                        text = "Belum ada struk",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Struk yang Anda scan dan simpan akan muncul di sini.",
+                        text = "Struk yang kamu pindai dan simpan akan muncul di sini. Mulai dari tombol Pindai struk di Beranda.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
                 }
             } else {
-                val dateFormatter = remember { SimpleDateFormat("dd MMM yyyy, HH:mm", Locale("in", "ID")) }
+                val dateFormatter = remember { SimpleDateFormat("d MMM yyyy", Locale("id", "ID")) }
 
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -116,9 +116,9 @@ fun ReceiptArchiveScreen(
     if (receiptToDelete != null) {
         AlertDialog(
             onDismissRequest = { receiptToDelete = null },
-            title = { Text("Hapus Arsip Struk?") },
+            title = { Text("Hapus struk ini?") },
             text = {
-                Text("Tindakan ini juga akan menghapus data transaksi keuangan yang terikat dengan struk ini. Hapus berkas fisik dan data struk?")
+                Text("Struk ini dan transaksi dari struk ini akan dihapus, termasuk fotonya. Saldo dompet ikut disesuaikan.")
             },
             confirmButton = {
                 Button(
@@ -184,7 +184,7 @@ fun ReceiptCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = receipt.merchantName?.ifBlank { "Toko Tidak Dikenal" } ?: "Toko Tidak Dikenal",
+                    text = receipt.merchantName?.ifBlank { "Toko tanpa nama" } ?: "Toko tanpa nama",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,

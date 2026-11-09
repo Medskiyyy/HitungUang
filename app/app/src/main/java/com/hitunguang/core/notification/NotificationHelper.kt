@@ -49,7 +49,7 @@ class NotificationHelper @Inject constructor(
 
             val reviewChannel = NotificationChannel(
                 CHANNEL_REVIEW,
-                "Review Laporan Keuangan",
+                "Ringkasan Keuangan",
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
                 description = "Mengirimkan ringkasan keuangan mingguan dan bulanan"

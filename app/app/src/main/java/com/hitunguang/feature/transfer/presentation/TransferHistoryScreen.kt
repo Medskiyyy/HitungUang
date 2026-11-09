@@ -53,7 +53,7 @@ fun TransferHistoryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedTransfer by remember { mutableStateOf<TransferWithAccountNames?>(null) }
-    val dateFormatter = SimpleDateFormat("dd MMM yyyy", Locale("in", "ID"))
+    val dateFormatter = SimpleDateFormat("d MMM yyyy", Locale("id", "ID"))
 
     Scaffold(
         topBar = {
@@ -113,7 +113,7 @@ fun TransferHistoryScreen(
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                         Text(
-                            text = "Belum Ada Riwayat Transfer",
+                            text = "Belum ada transfer. Mulai dari tombol Transfer Saldo di layar Dompet.",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

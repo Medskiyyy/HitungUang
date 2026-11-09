@@ -47,7 +47,7 @@ fun DeleteAccountDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Hapus Akun: ${account.name}")
+            Text("Hapus dompet \"${account.name}\"?")
         },
         text = {
             Column(
@@ -56,7 +56,7 @@ fun DeleteAccountDialog(
             ) {
                 if (hasTransactions) {
                     Text(
-                        text = "Akun ini memiliki riwayat transaksi atau transfer data. Agar data tidak terhapus, silakan pilih akun pengganti di bawah ini untuk memindahkan seluruh riwayat transaksi tersebut.",
+                        text = "Dompet ini punya riwayat transaksi/transfer. Pilih dompet lain buat nampung riwayatnya.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -64,7 +64,7 @@ fun DeleteAccountDialog(
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     Text(
-                        text = "Pilih Akun Pengganti:",
+                        text = "Pilih dompet pengganti:",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -73,7 +73,7 @@ fun DeleteAccountDialog(
                     
                     if (otherAccounts.isEmpty()) {
                         Text(
-                            text = "Tidak ada akun pengganti lain yang tersedia. Silakan buat akun baru terlebih dahulu sebelum menghapus akun ini.",
+                            text = "Belum ada dompet lain. Buat dompet baru dulu sebelum menghapus yang ini.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -131,7 +131,7 @@ fun DeleteAccountDialog(
                     }
                 } else {
                     Text(
-                        text = "Apakah Anda yakin ingin menghapus akun ini? Akun ini kosong dan tidak memiliki transaksi.",
+                        text = "Hapus dompet ini? Dompetnya kosong dan nggak punya transaksi.",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -144,7 +144,7 @@ fun DeleteAccountDialog(
                 onClick = { onConfirm(selectedReplacementId) }
             ) {
                 Text(
-                    text = if (hasTransactions) "Pindahkan & Hapus" else "Hapus",
+                    text = if (hasTransactions) "Pindahkan dan hapus" else "Hapus",
                     color = if (enabled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

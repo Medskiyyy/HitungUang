@@ -237,7 +237,7 @@ viewModelScope.launch {
     fun verifyRecoveryCode() {
         val code = _uiState.value.recoveryCodeInput
         if (code.isBlank()) {
-            _uiState.update { it.copy(recoveryCodeError = "Kode tidak boleh kosong") }
+            _uiState.update { it.copy(recoveryCodeError = "Kodenya belum diisi") }
             return
         }
 
@@ -300,7 +300,7 @@ viewModelScope.launch {
             _uiState.update { it.copy(setupStep = SetupStep.CONFIRM_NEW_PIN, setupError = null) }
         } else if (state.setupStep == SetupStep.CONFIRM_NEW_PIN) {
             if (state.newPinInput != state.confirmPinInput) {
-                _uiState.update { it.copy(setupError = "PIN konfirmasi tidak cocok") }
+                _uiState.update { it.copy(setupError = "PIN-nya beda. Ketik ulang, ya.") }
                 return
             }
             // Save new PIN

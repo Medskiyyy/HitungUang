@@ -380,7 +380,7 @@ class NotificationManagementTest {
 
         assertEquals(ListenableWorker.Result.success(), result)
         assertEquals(1, shadowNotificationManager.allNotifications.size)
-        assertEquals("Catat Keuangan Anda", Shadows.shadowOf(shadowNotificationManager.allNotifications[0]).contentTitle)
+        assertEquals("Udah catat pengeluaran hari ini?", Shadows.shadowOf(shadowNotificationManager.allNotifications[0]).contentTitle)
     }
 
     @Test
@@ -438,7 +438,7 @@ class NotificationManagementTest {
         assertEquals(ListenableWorker.Result.success(), weeklyResult)
         assertEquals(1, shadowNotificationManager.allNotifications.size)
         val weeklyNotif = shadowNotificationManager.allNotifications[0]
-        assertEquals("Review Keuangan Mingguan", Shadows.shadowOf(weeklyNotif).contentTitle)
+        assertEquals("Ringkasan Mingguan", Shadows.shadowOf(weeklyNotif).contentTitle)
         val expectedWeekly = 150000L + if (previousMonthTime in BudgetDates.startOfDay(previousWeekStart)..BudgetDates.endOfDay(previousWeekStart.plusDays(6))) 70000L else 0L
         assertTrue(Shadows.shadowOf(weeklyNotif).contentText.toString().contains(com.hitunguang.core.common.util.CurrencyFormatter.format(expectedWeekly)))
 

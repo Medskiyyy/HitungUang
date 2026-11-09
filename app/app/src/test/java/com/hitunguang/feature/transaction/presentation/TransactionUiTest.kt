@@ -51,8 +51,8 @@ class TransactionUiTest {
         }
 
         // Verify text content
-        composeTestRule.onNodeWithText("Hapus Transaksi").assertExists()
-        composeTestRule.onNodeWithText("Apakah Anda yakin ingin menghapus transaksi \"Nasi Goreng\"? Nominal saldo dompet Anda akan disesuaikan kembali.").assertExists()
+        composeTestRule.onNodeWithText("Hapus transaksi?").assertExists()
+        composeTestRule.onNodeWithText("Hapus \"Nasi Goreng\"? Saldo dompet akan dikembalikan. Transaksinya masuk Tempat Sampah dan bisa dipulihkan dalam 30 hari.").assertExists()
 
         // Test buttons
         composeTestRule.onNodeWithText("Batal").performClick()

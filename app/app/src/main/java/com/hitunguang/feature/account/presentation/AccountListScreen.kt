@@ -108,7 +108,7 @@ fun AccountListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Akun", fontWeight = FontWeight.Bold) }
+                title = { Text("Dompet", fontWeight = FontWeight.Bold) }
             )
         },
         floatingActionButton = {
@@ -120,7 +120,7 @@ fun AccountListScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Tambah Akun"
+                    contentDescription = "Tambah dompet"
                 )
             }
         },
@@ -167,7 +167,7 @@ fun AccountListScreen(
                         )
                         Spacer(modifier = Modifier.width(Spacing.small))
                         Text(
-                            text = "Transfer Dana",
+                            text = "Transfer Saldo",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -189,7 +189,7 @@ fun AccountListScreen(
                         )
                         Spacer(modifier = Modifier.width(Spacing.small))
                         Text(
-                            text = "Riwayat",
+                            text = "Riwayat transfer",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -349,7 +349,7 @@ fun AccountListScreen(
             onDismiss = { viewModel.hideCreateDialog() },
             onSave = { name, type, icon, balance ->
                 viewModel.createAccount(name, type, icon, balance)
-                showSnackbar("Akun berhasil dibuat")
+                showSnackbar("Dompet berhasil dibuat")
             }
         )
     }
@@ -360,7 +360,7 @@ fun AccountListScreen(
             onDismiss = { viewModel.hideEditDialog() },
             onSave = { name, type, icon, _ ->
                 viewModel.updateAccount(uiState.accountToEdit!!, name, type, icon)
-                showSnackbar("Akun berhasil diperbarui")
+                showSnackbar("Dompet berhasil diperbarui")
             }
         )
     }
@@ -373,7 +373,7 @@ fun AccountListScreen(
             onDismiss = { viewModel.hideDeleteDialog() },
             onConfirm = { replacementId ->
                 viewModel.deleteAccount(replacementId) {
-                    showSnackbar("Akun berhasil dihapus")
+                    showSnackbar("Dompet berhasil dihapus")
                 }
             }
         )
@@ -410,7 +410,7 @@ fun WalletSummaryCard(
         ) {
             Column {
                 Text(
-                    text = "Total Saldo Anda",
+                    text = "Total Saldo",
                     style = MaterialTheme.typography.labelMedium,
                     color = HeroOnGradient.copy(alpha = 0.7f)
                 )
@@ -423,7 +423,7 @@ fun WalletSummaryCard(
                 )
                 Spacer(modifier = Modifier.height(Spacing.medium))
                 Text(
-                    text = "$walletCount Dompet Terdaftar",
+                    text = "$walletCount dompet terdaftar",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     color = HeroOnGradient.copy(alpha = 0.9f)
@@ -532,7 +532,7 @@ fun EmptyWalletState() {
         )
         Spacer(modifier = Modifier.height(Spacing.medium))
         Text(
-            text = "Belum ada dompet",
+            text = "Belum ada dompet. Ketuk + buat bikin yang pertama.",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

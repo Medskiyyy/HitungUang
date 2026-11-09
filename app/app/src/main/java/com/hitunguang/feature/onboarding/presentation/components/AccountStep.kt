@@ -67,7 +67,7 @@ fun AccountStep(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = "Setup Akun / Dompet",
+                text = "Atur Dompet",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -75,7 +75,7 @@ fun AccountStep(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "Setidaknya satu akun dompet diperlukan untuk mencatat transaksi. Kami telah membuatkan satu akun default untuk Anda.",
+                text = "Kamu butuh minimal satu dompet buat mencatat transaksi. Kami sudah siapin satu dompet awal buat kamu.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -132,7 +132,7 @@ fun AccountStep(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Delete,
-                                        contentDescription = "Hapus Akun"
+                                        contentDescription = "Hapus dompet"
                                     )
                                 }
                             }
@@ -149,10 +149,10 @@ fun AccountStep(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Tambah Akun",
+                    contentDescription = "Tambah dompet",
                     modifier = Modifier.padding(end = 8.dp)
                 )
-                Text("Tambah Dompet Baru")
+                Text("Tambah dompet baru")
             }
         }
         
@@ -191,25 +191,25 @@ fun AccountStep(
 
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
-            title = { Text("Tambah Dompet Baru") },
+            title = { Text("Tambah dompet baru") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
                         value = accountName,
                         onValueChange = { accountName = it },
-                        label = { Text("Nama Dompet") },
+                        label = { Text("Nama dompet") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Column {
-                        Text("Tipe Dompet", style = MaterialTheme.typography.bodySmall)
+                        Text("Tipe dompet", style = MaterialTheme.typography.bodySmall)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(
                                 selected = accountType == "CASH",
                                 onClick = { accountType = "CASH" }
                             )
-                            Text("Tunai (Cash)")
+                            Text("Tunai")
                             Spacer(modifier = Modifier.width(16.dp))
                             RadioButton(
                                 selected = accountType == "BANK",
@@ -222,7 +222,7 @@ fun AccountStep(
                     OutlinedTextField(
                         value = initialBalanceStr,
                         onValueChange = { initialBalanceStr = it },
-                        label = { Text("Saldo Awal (Rp)") },
+                        label = { Text("Saldo awal (Rp)") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth()

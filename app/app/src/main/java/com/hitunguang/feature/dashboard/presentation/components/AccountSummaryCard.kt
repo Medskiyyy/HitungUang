@@ -39,7 +39,7 @@ fun AccountSummaryCard(
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = "Daftar Akun",
+            text = "Daftar Dompet",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -49,7 +49,7 @@ fun AccountSummaryCard(
 
         if (accounts.isEmpty()) {
             Text(
-                text = "Belum ada akun terdaftar",
+                text = "Belum ada dompet. Buat yang pertama di tab Dompet.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -88,7 +88,7 @@ fun AccountSummaryCard(
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                                 Text(
-                                    text = if (account.accountType == "BANK") "Bank" else "Dompet",
+                                    text = when (account.accountType) { "BANK" -> "Bank"; "E_WALLET" -> "E-Wallet"; else -> "Tunai" },
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )

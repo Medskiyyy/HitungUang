@@ -69,7 +69,7 @@ object RecycleBinMapper {
                     "E_WALLET" -> "E-Wallet"
                     else -> "Lainnya"
                 }
-                subtitle = "Dompet/Akun • $walletType"
+                subtitle = "Dompet • $walletType"
                 val balance = entity.account?.currentBalance ?: 0L
                 amountText = CurrencyFormatter.format(balance)
                 isExpense = false
@@ -87,7 +87,7 @@ object RecycleBinMapper {
                 isExpense = true
             }
             else -> {
-                title = "Item Terhapus"
+                title = "Data terhapus"
                 subtitle = ""
                 amountText = null
                 isExpense = false

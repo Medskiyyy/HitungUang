@@ -251,11 +251,11 @@ class ReceiptReviewViewModel @Inject constructor(
         val state = _uiState.value
         val imageUri = state.imageUri ?: return
         if (state.merchantName.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "Nama toko tidak boleh kosong") }
+            _uiState.update { it.copy(errorMessage = "Nama toko belum diisi") }
             return
         }
         if (state.accountId.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "Harus memilih dompet") }
+            _uiState.update { it.copy(errorMessage = "Pilih dompetnya dulu") }
             return
         }
         val total = parseAmount(state.totalStr)
@@ -265,12 +265,12 @@ class ReceiptReviewViewModel @Inject constructor(
         }
 
         if (state.items.isEmpty()) {
-            _uiState.update { it.copy(errorMessage = "Minimal harus ada 1 item") }
+            _uiState.update { it.copy(errorMessage = "Minimal ada 1 barang") }
             return
         }
         state.items.forEachIndexed { idx, item ->
             if (item.name.isBlank()) {
-                _uiState.update { it.copy(errorMessage = "Nama item ke-${idx + 1} tidak boleh kosong") }
+                _uiState.update { it.copy(errorMessage = "Nama barang ke-${idx + 1} belum diisi") }
                 return
             }
         }

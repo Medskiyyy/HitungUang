@@ -13,7 +13,7 @@ class DeleteAccountUseCase @Inject constructor(
         
         val hasData = txCount > 0 || transferCount > 0
         if (hasData && replacementAccountId == null) {
-            throw IllegalStateException("Akun memiliki transaksi/transfer dan membutuhkan akun pengganti.")
+            throw IllegalStateException("Dompet punya transaksi/transfer dan butuh dompet pengganti.")
         }
 
         // Migrate data (if any) and delete the account in one DB transaction

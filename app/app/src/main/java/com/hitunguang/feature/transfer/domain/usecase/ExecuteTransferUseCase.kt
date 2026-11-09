@@ -12,7 +12,7 @@ class ExecuteTransferUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(transfer: Transfer) {
         if (transfer.fromAccountId == transfer.toAccountId) {
-            throw IllegalArgumentException("Akun asal dan tujuan harus berbeda.")
+            throw IllegalArgumentException("Dompet asal dan tujuan harus berbeda.")
         }
         if (transfer.amount <= 0) {
             throw IllegalArgumentException("Nominal transfer harus lebih dari 0.")
@@ -24,7 +24,7 @@ class ExecuteTransferUseCase @Inject constructor(
         val totalDeduction = transfer.amount + transfer.adminFee
         val currentBalance = accountDao.getAccountBalance(transfer.fromAccountId)
         if (currentBalance < totalDeduction) {
-            throw IllegalStateException("Saldo tidak mencukupi. Saldo saat ini: ${CurrencyFormatter.format(currentBalance)}, dibutuhkan: ${CurrencyFormatter.format(totalDeduction)}.")
+            throw IllegalStateException("Saldo nggak cukup. Saldo sekarang: ${CurrencyFormatter.format(currentBalance)}, butuh: ${CurrencyFormatter.format(totalDeduction)}.")
         }
 
         transferRepository.executeTransfer(transfer)

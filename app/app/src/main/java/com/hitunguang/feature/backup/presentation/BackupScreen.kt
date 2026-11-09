@@ -93,7 +93,7 @@ fun BackupScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Backup & Restore",
+                        text = "Cadangan & Pemulihan",
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -127,7 +127,7 @@ fun BackupScreen(
                     // --- Backup Folder Card ---
                     BackupSectionCard(
                         icon = Icons.Outlined.Folder,
-                        title = "Folder Backup",
+                        title = "Folder Cadangan",
                         iconTint = MaterialTheme.colorScheme.primary
                     ) {
                         if (uiState.backupFolderUri != null) {
@@ -161,7 +161,7 @@ fun BackupScreen(
                             )
                             Spacer(Modifier.width(6.dp))
                             Text(
-                                if (uiState.backupFolderUri != null) "Ubah Folder" else "Pilih Folder"
+                                if (uiState.backupFolderUri != null) "Ubah folder" else "Pilih folder"
                             )
                         }
                     }
@@ -169,11 +169,11 @@ fun BackupScreen(
                     // --- Last Backup Info ---
                     BackupSectionCard(
                         icon = Icons.Outlined.Schedule,
-                        title = "Backup Terakhir",
+                        title = "Cadangan Terakhir",
                         iconTint = MaterialTheme.colorScheme.secondary
                     ) {
                         Text(
-                            text = uiState.lastBackupAt?.let { formatTimestamp(it) } ?: "Belum pernah backup",
+                            text = uiState.lastBackupAt?.let { formatTimestamp(it) } ?: "Belum pernah dicadangkan",
                             style = MaterialTheme.typography.bodyLarge,
                             color = if (uiState.lastBackupAt != null)
                                 MaterialTheme.colorScheme.onSurface
@@ -186,7 +186,7 @@ fun BackupScreen(
                     // --- Auto Backup Settings ---
                     BackupSectionCard(
                         icon = Icons.Outlined.Autorenew,
-                        title = "Auto Backup",
+                        title = "Cadangan Otomatis",
                         iconTint = MaterialTheme.colorScheme.tertiary
                     ) {
                         Row(
@@ -195,7 +195,7 @@ fun BackupScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "Aktifkan auto backup",
+                                text = "Cadangkan otomatis",
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Switch(
@@ -211,7 +211,7 @@ fun BackupScreen(
                         ) {
                             Column(modifier = Modifier.padding(top = 12.dp)) {
                                 Text(
-                                    text = "Frekuensi Backup",
+                                    text = "Frekuensi cadangan",
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(bottom = 8.dp)
@@ -251,11 +251,11 @@ fun BackupScreen(
                                 strokeWidth = 2.dp
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text("Sedang Backup...")
+                            Text("Lagi mencadangkan…")
                         } else {
                             Icon(Icons.Default.CloudUpload, contentDescription = null, modifier = Modifier.size(20.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Backup Sekarang", fontWeight = FontWeight.SemiBold)
+                            Text("Cadangkan sekarang", fontWeight = FontWeight.SemiBold)
                         }
                     }
 
@@ -264,11 +264,11 @@ fun BackupScreen(
 
                     BackupSectionCard(
                         icon = Icons.Outlined.Restore,
-                        title = "Pulihkan Data",
+                        title = "Pulihkan dari Cadangan",
                         iconTint = MaterialTheme.colorScheme.error
                     ) {
                         Text(
-                            text = "Pilih file backup (.zip) untuk memulihkan data. Semua data saat ini akan diganti dengan data dari file backup.",
+                            text = "Pilih file cadangan (.zip) buat memulihkan data. Semua data di HP ini akan diganti dengan isi file cadangan.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 12.dp)
@@ -292,11 +292,11 @@ fun BackupScreen(
                                     strokeWidth = 2.dp
                                 )
                                 Spacer(Modifier.width(8.dp))
-                                Text("Memulihkan Data...")
+                                Text("Lagi memulihkan…")
                             } else {
                                 Icon(Icons.Default.FolderOpen, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text("Pilih File Backup", fontWeight = FontWeight.SemiBold)
+                                Text("Pilih file cadangan", fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }
@@ -316,10 +316,10 @@ fun BackupScreen(
                             tint = MaterialTheme.colorScheme.error
                         )
                     },
-                    title = { Text("Konfirmasi Restore") },
+                    title = { Text("Pulihkan dari cadangan?") },
                     text = {
                         Text(
-                            "Semua data saat ini (transaksi, akun, kategori) akan dihapus dan diganti dengan data dari file backup. Aplikasi akan restart otomatis. Yakin melanjutkan?"
+                            "Semua data sekarang (transaksi, dompet, kategori) akan dihapus dan diganti dengan isi file cadangan. Aplikasi akan mulai ulang otomatis. Lanjut?"
                         )
                     },
                     confirmButton = {
@@ -328,7 +328,7 @@ fun BackupScreen(
                             colors = ButtonDefaults.textButtonColors(
                                 contentColor = MaterialTheme.colorScheme.error
                             )
-                        ) { Text("Ya, Pulihkan") }
+                        ) { Text("Ya, pulihkan") }
                     },
                     dismissButton = {
                         TextButton(onClick = { viewModel.onRestoreDismissed() }) {
@@ -421,6 +421,6 @@ fun FrequencyOption(
 }
 
 private fun formatTimestamp(millis: Long): String {
-    val sdf = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale("id", "ID"))
+    val sdf = SimpleDateFormat("d MMMM yyyy, HH:mm", Locale("id", "ID"))
     return sdf.format(Date(millis))
 }

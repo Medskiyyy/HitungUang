@@ -70,10 +70,10 @@ class BudgetWorker(
                 val categories = categoryRepository.getAllCategories().firstOrNull() ?: emptyList()
                 categories.find { it.id == budget.categoryId }?.name ?: "Kategori"
             } else {
-                "Global"
+                "semua kategori"
             }
 
-            val budgetName = if (budget.categoryId != null) "Kategori $categoryName" else "Global"
+            val budgetName = if (budget.categoryId != null) "kategori $categoryName" else "semua kategori"
             val notificationId = budget.id.hashCode()
 
             val spentText = CurrencyFormatter.format(spentAmount)
@@ -84,14 +84,14 @@ class BudgetWorker(
                     channelId = NotificationHelper.CHANNEL_BUDGET,
                     notificationId = notificationId,
                     title = "Anggaran Habis!",
-                    message = "Anggaran $budgetName Anda telah habis ($spentText dari $limitText)."
+                    message = "Anggaran $budgetName sudah habis ($spentText dari $limitText)."
                 )
             } else {
                 notificationHelper.showNotification(
                     channelId = NotificationHelper.CHANNEL_BUDGET,
                     notificationId = notificationId,
                     title = "Anggaran Hampir Habis!",
-                    message = "Anggaran $budgetName Anda telah melewati batas threshold ${budget.thresholdPercent}% ($spentText dari $limitText)."
+                    message = "Anggaran $budgetName sudah terpakai ${budget.thresholdPercent}% ($spentText dari $limitText)."
                 )
             }
 

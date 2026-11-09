@@ -48,7 +48,7 @@ fun TransferDetailDialog(
 ) {
     var showRevertConfirm by remember { mutableStateOf(false) }
     val transfer = transferWithNames.transfer
-    val dateFormatter = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale("in", "ID"))
+    val dateFormatter = SimpleDateFormat("d MMMM yyyy, HH:mm", Locale("id", "ID"))
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -115,11 +115,11 @@ fun TransferDetailDialog(
 
                 // Details list
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DetailRow(label = "Nominal Transfer", value = CurrencyFormatter.format(transfer.amount))
+                    DetailRow(label = "Nominal transfer", value = CurrencyFormatter.format(transfer.amount))
                     if (transfer.adminFee > 0L) {
-                        DetailRow(label = "Biaya Admin", value = CurrencyFormatter.format(transfer.adminFee))
+                        DetailRow(label = "Biaya admin", value = CurrencyFormatter.format(transfer.adminFee))
                         DetailRow(
-                            label = "Total Potongan", 
+                            label = "Total dipotong", 
                             value = CurrencyFormatter.format(transfer.amount + transfer.adminFee),
                             fontWeight = FontWeight.Bold
                         )
@@ -139,7 +139,7 @@ fun TransferDetailDialog(
             ) {
                 Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.width(18.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Batalkan Transfer")
+                Text("Batalkan transfer")
             }
         },
         dismissButton = {
@@ -152,9 +152,9 @@ fun TransferDetailDialog(
     if (showRevertConfirm) {
         AlertDialog(
             onDismissRequest = { showRevertConfirm = false },
-            title = { Text("Batalkan Transfer?", fontWeight = FontWeight.Bold) },
+            title = { Text("Batalkan transfer?", fontWeight = FontWeight.Bold) },
             text = {
-                Text("Apakah Anda yakin ingin membatalkan transfer ini? Saldo dari kedua dompet akan dikembalikan ke kondisi semula dan catatan transfer ini akan dihapus permanen.")
+                Text("Batalkan transfer ini? Saldo kedua dompet dikembalikan seperti semula dan catatan transfernya dihapus permanen.")
             },
             confirmButton = {
                 Button(

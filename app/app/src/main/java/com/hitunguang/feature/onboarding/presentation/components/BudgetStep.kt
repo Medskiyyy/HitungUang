@@ -60,7 +60,7 @@ fun BudgetStep(
                 )
                 Spacer(modifier = Modifier.width(Spacing.medium))
                 Text(
-                    text = "Atur Target Budget",
+                    text = "Atur batas pengeluaran bulanan",
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -69,7 +69,7 @@ fun BudgetStep(
             Spacer(modifier = Modifier.height(Spacing.medium))
 
             Text(
-                text = "Tentukan batas pengeluaran bulanan Anda. Ini membantu mengontrol keuangan.\n\nLangkah ini opsional — Anda bisa mengaturnya nanti.",
+                text = "Tentukan batas pengeluaran bulananmu biar keuangan lebih terkontrol.\n\nLangkah ini boleh dilewati, bisa diatur nanti.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -80,7 +80,7 @@ fun BudgetStep(
                 value = budgetAmount,
                 // Keep digits only (users may type "2.000.000"); dots are shown by the visual transformation
                 onValueChange = { onBudgetAmountChange(it.filter(Char::isDigit).take(15)) },
-                label = { Text("Budget Bulanan (Rp)") },
+                label = { Text("Anggaran bulanan (Rp)") },
                 placeholder = { Text("Contoh: 2.000.000") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 visualTransformation = ThousandSeparatorTransformation,

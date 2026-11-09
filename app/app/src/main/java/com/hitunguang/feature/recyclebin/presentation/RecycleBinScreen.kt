@@ -103,7 +103,7 @@ fun RecycleBinScreen(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Item di tempat sampah akan disimpan selama 30 hari sebelum dihapus permanen secara otomatis.",
+                        text = "Yang kamu hapus disimpan 30 hari di sini, lalu dihapus permanen otomatis.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -148,7 +148,7 @@ fun RecycleBinScreen(
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                         Text(
-                            text = "Tempat Sampah Kosong",
+                            text = "Tempat Sampah masih kosong. Transaksi, kategori, anggaran, atau dompet yang kamu hapus mampir ke sini dulu.",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -183,14 +183,14 @@ fun RecycleBinScreen(
             "CATEGORY" -> "Kategori"
             "WALLET" -> "Dompet"
             "BUDGET" -> "Anggaran"
-            else -> "Item"
+            else -> "Data"
         }
-        val extraWarning = if (item.entityType == "TRANSACTION") " dan semua lampiran fisik juga akan dihapus" else ""
+        val extraWarning = if (item.entityType == "TRANSACTION") " dan foto lampirannya ikut terhapus" else ""
         AlertDialog(
             onDismissRequest = { itemToDeletePermanently = null },
-            title = { Text("Hapus Permanen?", fontWeight = FontWeight.Bold) },
+            title = { Text("Hapus permanen?", fontWeight = FontWeight.Bold) },
             text = {
-                Text("Apakah Anda yakin ingin menghapus \"$title\" ($typeName) secara permanen? Tindakan ini tidak dapat dibatalkan$extraWarning.")
+                Text("Hapus \"$title\" ($typeName) secara permanen? Ini nggak bisa dibatalkan$extraWarning.")
             },
             confirmButton = {
                 Button(
@@ -225,7 +225,7 @@ fun RecycleBinItemCard(
     enabled: Boolean = true
 ) {
     val remainingDays = max(0L, (item.expireAt - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L))
-    val formatter = SimpleDateFormat("dd MMM yyyy", Locale("in", "ID"))
+    val formatter = SimpleDateFormat("d MMM yyyy", Locale("id", "ID"))
     val dateStr = formatter.format(Date(item.deletedAt))
 
     Card(
@@ -275,7 +275,7 @@ fun RecycleBinItemCard(
             ) {
                 Column {
                     Text(
-                        text = "Dihapus pada: $dateStr",
+                        text = "Dihapus: $dateStr",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

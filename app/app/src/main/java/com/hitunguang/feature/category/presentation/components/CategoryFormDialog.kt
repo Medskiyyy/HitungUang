@@ -44,7 +44,7 @@ fun CategoryFormDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(if (isEditMode) "Edit Kategori" else "Tambah Kategori")
+            Text(if (isEditMode) "Edit kategori" else "Tambah kategori")
         },
         text = {
             Column(
@@ -55,9 +55,9 @@ fun CategoryFormDialog(
                     value = name,
                     onValueChange = {
                         name = it
-                        nameError = if (it.isBlank()) "Nama kategori tidak boleh kosong" else null
+                        nameError = if (it.isBlank()) "Nama kategori belum diisi" else null
                     },
-                    label = { Text("Nama Kategori *") },
+                    label = { Text("Nama kategori *") },
                     isError = nameError != null,
                     supportingText = { nameError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                     singleLine = true,
@@ -67,7 +67,7 @@ fun CategoryFormDialog(
                 // Hanya izinkan ubah tipe jika bukan mengedit kategori bawaan (default)
                 if (category == null || !category.isDefault) {
                     Column {
-                        Text("Tipe Kategori", style = MaterialTheme.typography.bodySmall)
+                        Text("Tipe kategori", style = MaterialTheme.typography.bodySmall)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
@@ -90,7 +90,7 @@ fun CategoryFormDialog(
                 }
 
                 Column {
-                    Text("Ikon Kategori *", style = MaterialTheme.typography.bodySmall)
+                    Text("Ikon kategori *", style = MaterialTheme.typography.bodySmall)
                     Spacer(modifier = Modifier.height(8.dp))
                     androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
                         columns = androidx.compose.foundation.lazy.grid.GridCells.Adaptive(minSize = 48.dp),
@@ -133,7 +133,7 @@ fun CategoryFormDialog(
                         checked = isPinned,
                         onCheckedChange = { isPinned = it }
                     )
-                    Text("Sematkan Kategori (Pin)")
+                    Text("Sematkan kategori")
                 }
             }
         },
@@ -141,7 +141,7 @@ fun CategoryFormDialog(
             TextButton(
                 onClick = {
                     if (name.isBlank()) {
-                        nameError = "Nama kategori tidak boleh kosong"
+                        nameError = "Nama kategori belum diisi"
                     } else {
                         onSave(name, type, icon.ifBlank { null }, isPinned)
                     }

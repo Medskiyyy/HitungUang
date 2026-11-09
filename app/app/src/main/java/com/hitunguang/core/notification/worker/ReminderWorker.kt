@@ -45,8 +45,8 @@ class ReminderWorker(
             notificationHelper.showNotification(
                 channelId = NotificationHelper.CHANNEL_REMINDER,
                 notificationId = NotificationHelper.ID_REMINDER,
-                title = "Catat Keuangan Anda",
-                message = "Jangan lupa untuk mencatat pengeluaran dan pemasukan Anda hari ini!"
+                title = "Udah catat pengeluaran hari ini?",
+                message = "Catat sekarang biar nggak lupa."
             )
 
             // Reschedule daily reminder for tomorrow

@@ -38,7 +38,7 @@ fun RecentTransactionsSection(
                 color = MaterialTheme.colorScheme.onBackground
             )
             TextButton(onClick = onViewAllClick) {
-                Text("Lihat Semua")
+                Text("Lihat semua")
             }
         }
 
@@ -46,7 +46,7 @@ fun RecentTransactionsSection(
 
         if (transactions.isEmpty()) {
             Text(
-                text = "Belum ada transaksi tercatat",
+                text = "Belum ada transaksi. Mulai dari Aksi Cepat di atas.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = Spacing.large)

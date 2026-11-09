@@ -85,7 +85,7 @@ fun SecuritySettingsScreen(
                 .padding(horizontal = 16.dp)
         ) {
             Text(
-                text = "Atur metode pengamanan untuk melindungi data keuangan Anda dari akses yang tidak sah.",
+                text = "Atur cara mengunci aplikasi supaya data keuanganmu aman dari orang lain.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 8.dp)
@@ -100,7 +100,7 @@ fun SecuritySettingsScreen(
                 Column {
                     ListItem(
                         headlineContent = { Text("Aktifkan PIN Keamanan", fontWeight = FontWeight.SemiBold) },
-                        supportingContent = { Text("Gunakan PIN untuk mengunci akses ke dalam aplikasi") },
+                        supportingContent = { Text("Pakai PIN buat mengunci aplikasi") },
                         leadingContent = {
                             Icon(
                                 imageVector = Icons.Default.Lock,
@@ -124,8 +124,8 @@ fun SecuritySettingsScreen(
 
                     if (isPinEnabled) {
                         ListItem(
-                            headlineContent = { Text("Aktifkan Sidik Jari (Biometrik)", fontWeight = FontWeight.SemiBold) },
-                            supportingContent = { Text("Gunakan pemindai sidik jari bawaan hp Anda untuk login cepat") },
+                            headlineContent = { Text("Aktifkan sidik jari", fontWeight = FontWeight.SemiBold) },
+                            supportingContent = { Text("Buka aplikasi pakai sidik jari") },
                             leadingContent = {
                                 Icon(
                                     imageVector = Icons.Default.Fingerprint,
@@ -187,10 +187,10 @@ fun SecuritySettingsScreen(
     if (uiState.verifyCurrentPinOpen) {
         AlertDialog(
             onDismissRequest = { viewModel.closeVerifyCurrentPin() },
-            title = { Text("Verifikasi PIN Saat Ini", fontWeight = FontWeight.Bold) },
+            title = { Text("Masukkan PIN saat ini", fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text("Masukkan PIN Anda saat ini untuk melanjutkan tindakan keamanan ini.")
+                    Text("Masukkan PIN kamu saat ini buat melanjutkan.")
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = uiState.verifyCurrentPinInput,
@@ -199,7 +199,7 @@ fun SecuritySettingsScreen(
                                 viewModel.onVerifyCurrentPinInputChanged(input)
                             }
                         },
-                        label = { Text("PIN Saat Ini") },
+                        label = { Text("PIN saat ini") },
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         isError = uiState.verifyCurrentPinError != null,
@@ -217,7 +217,7 @@ fun SecuritySettingsScreen(
                     onClick = { viewModel.submitVerifyCurrentPin() },
                     enabled = uiState.verifyCurrentPinInput.length >= 4
                 ) {
-                    Text("Verifikasi")
+                    Text("Lanjut")
                 }
             },
             dismissButton = {
@@ -247,14 +247,14 @@ fun PinSetupDialogs(
                     onDismissRequest = { viewModel.finishPinSetup() },
                     title = {
                         Text(
-                            text = if (isConfirm) "Konfirmasi PIN Baru" else "Masukkan PIN Baru",
+                            text = if (isConfirm) "Ulangi PIN baru" else "Masukkan PIN baru",
                             fontWeight = FontWeight.Bold
                         )
                     },
                     text = {
                         Column {
                             Text(
-                                text = if (isConfirm) "Masukkan kembali PIN baru Anda sekali lagi." 
+                                text = if (isConfirm) "Ketik PIN baru kamu sekali lagi." 
                                 else "Masukkan 4 sampai 6 angka PIN baru untuk mengunci aplikasi."
                             )
                             Spacer(modifier = Modifier.height(16.dp))
@@ -265,7 +265,7 @@ fun PinSetupDialogs(
                                         viewModel.onSetupPinInputChanged(input)
                                     }
                                 },
-                                label = { Text(if (isConfirm) "Konfirmasi PIN" else "PIN Baru") },
+                                label = { Text(if (isConfirm) "Ulangi PIN" else "PIN baru") },
                                 visualTransformation = PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                                 isError = uiState.setupError != null,
@@ -297,11 +297,11 @@ fun PinSetupDialogs(
             SetupStep.SHOW_RECOVERY_CODE -> {
                 AlertDialog(
                     onDismissRequest = { viewModel.finishPinSetup() },
-                    title = { Text("SIMPAN KODE PEMULIHAN", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error) },
+                    title = { Text("Simpan kode pemulihan", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error) },
                     text = {
                         Column {
                             Text(
-                                text = "PENTING! Simpan kode pemulihan di bawah ini secara aman. Kode ini akan digunakan untuk membuka kunci aplikasi jika Anda lupa PIN.",
+                                text = "Simpan kode pemulihan ini di tempat aman. Kode ini dipakai buat membuka aplikasi kalau kamu lupa PIN.",
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Spacer(modifier = Modifier.height(16.dp))
@@ -346,7 +346,7 @@ fun PinSetupDialogs(
                         Button(
                             onClick = { viewModel.finishPinSetup() }
                         ) {
-                            Text("Saya Sudah Menyimpan Kode")
+                            Text("Sudah kusimpan")
                         }
                     }
                 )

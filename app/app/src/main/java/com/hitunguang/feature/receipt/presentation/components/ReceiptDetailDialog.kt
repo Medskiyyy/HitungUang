@@ -39,7 +39,7 @@ fun ReceiptDetailDialog(
     if (receipt == null) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text("Memuat Detail...") },
+            title = { Text("Lagi memuat…") },
             text = {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
@@ -90,7 +90,7 @@ fun ReceiptDetailDialog(
 
                     // Metadata
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        val dateFormatter = SimpleDateFormat("dd MMMM yyyy HH:mm", Locale("in", "ID"))
+                        val dateFormatter = SimpleDateFormat("d MMMM yyyy, HH:mm", Locale("id", "ID"))
                         val dateStr = receipt.receiptDate?.let { dateFormatter.format(Date(it)) } ?: "Tidak ada tanggal"
                         Text(
                             text = "Tanggal: $dateStr",
@@ -106,7 +106,7 @@ fun ReceiptDetailDialog(
                     // Items List
                     if (items.isNotEmpty()) {
                         Text(
-                            text = "Rincian Barang:",
+                            text = "Rincian barang",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold
                         )

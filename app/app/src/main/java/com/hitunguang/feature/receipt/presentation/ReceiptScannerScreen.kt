@@ -88,10 +88,10 @@ fun ReceiptScannerScreen(
                 tempPhotoUri = uri
                 takePictureLauncher.launch(uri)
             } else {
-                viewModel.setErrorMessage("Gagal membuat file sementara untuk foto")
+                viewModel.setErrorMessage("Gagal menyiapkan foto. Coba lagi, ya.")
             }
         } else {
-            viewModel.setErrorMessage("Izin kamera diperlukan untuk mengambil foto struk")
+            viewModel.setErrorMessage("Izinkan akses kamera dulu buat memotret struk.")
         }
     }
 
@@ -111,7 +111,7 @@ fun ReceiptScannerScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Scan Struk (OCR)", fontWeight = FontWeight.Bold) },
+                title = { Text("Pindai Struk", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackAndDiscard) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Kembali")
@@ -184,7 +184,7 @@ fun ReceiptScannerScreen(
                                             tempPhotoUri = uri
                                             takePictureLauncher.launch(uri)
                                         } else {
-                                            viewModel.setErrorMessage("Gagal membuat file sementara untuk foto")
+                                            viewModel.setErrorMessage("Gagal menyiapkan foto. Coba lagi, ya.")
                                         }
                                     } else {
                                         permissionLauncher.launch(Manifest.permission.CAMERA)
@@ -226,7 +226,7 @@ fun ReceiptScannerScreen(
                 ) {
                     AsyncImage(
                         model = uiState.imageUri,
-                        contentDescription = "Preview Struk",
+                        contentDescription = "Pratinjau struk",
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -239,7 +239,7 @@ fun ReceiptScannerScreen(
                     ) {
                         Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Mulai Scan OCR")
+                        Text("Baca struk")
                     }
                 }
             }
@@ -264,7 +264,7 @@ fun ReceiptScannerScreen(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Kualitas foto struk rendah. Hasil pembacaan mungkin kurang akurat. Sebaiknya ambil ulang foto dengan pencahayaan lebih terang.",
+                                text = "Foto struknya kurang jelas, hasil bacaan bisa kurang akurat. Coba foto ulang di tempat yang lebih terang.",
                                 color = MaterialTheme.colorScheme.onTertiaryContainer,
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -302,7 +302,7 @@ fun ReceiptScannerScreen(
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(16.dp))
                         Text(
-                            text = "Mengekstrak teks struk...",
+                            text = "Lagi baca struk…",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -334,7 +334,7 @@ fun ReceiptScannerScreen(
                                     contentColor = MaterialTheme.colorScheme.error
                                 )
                             ) {
-                                Text("Coba Lagi", fontWeight = FontWeight.Bold)
+                                Text("Coba lagi", fontWeight = FontWeight.Bold)
                             }
                         }
                     }

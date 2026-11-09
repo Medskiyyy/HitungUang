@@ -23,7 +23,7 @@ fun DeleteCategoryDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Hapus Kategori: ${category.name}")
+            Text("Hapus kategori \"${category.name}\"?")
         },
         text = {
             Column(
@@ -32,13 +32,13 @@ fun DeleteCategoryDialog(
             ) {
                 if (hasTransactions) {
                     Text(
-                        text = "Kategori ini memiliki riwayat transaksi aktif. Menghapus kategori ini juga akan menghapus (soft-delete) seluruh transaksi di dalamnya dan memindahkannya ke Keranjang Sampah (Recycle Bin).\n\nApakah Anda tetap ingin menghapus?",
+                        text = "Kategori ini dipakai di beberapa transaksi. Kalau dihapus, semua transaksinya ikut masuk Tempat Sampah dan saldo dompet disesuaikan. Semuanya bisa dipulihkan dalam 30 hari.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error
                     )
                 } else {
                     Text(
-                        text = "Apakah Anda yakin ingin menghapus kategori ini?",
+                        text = "Hapus kategori ini?",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -49,7 +49,7 @@ fun DeleteCategoryDialog(
                 onClick = { onConfirm(hasTransactions) }
             ) {
                 Text(
-                    text = if (hasTransactions) "Hapus Tetap" else "Hapus",
+                    text = if (hasTransactions) "Tetap hapus" else "Hapus",
                     color = MaterialTheme.colorScheme.error
                 )
             }

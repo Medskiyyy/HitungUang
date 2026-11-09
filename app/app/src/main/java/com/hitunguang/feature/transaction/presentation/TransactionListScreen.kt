@@ -95,14 +95,14 @@ fun TransactionListScreen(
 
 
     val groupedTransactions = remember(transactions) {
-        val formatter = SimpleDateFormat("dd MMMM yyyy", Locale("in", "ID"))
+        val formatter = SimpleDateFormat("d MMM yyyy", Locale("id", "ID"))
         val todayStr = formatter.format(Date())
         val yesterdayStr = formatter.format(Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000L))
 
         transactions.groupBy {
             val dateStr = formatter.format(Date(it.transactionDate))
             when (dateStr) {
-                todayStr -> "Hari Ini"
+                todayStr -> "Hari ini"
                 yesterdayStr -> "Kemarin"
                 else -> dateStr
             }
@@ -111,11 +111,11 @@ fun TransactionListScreen(
 
     val periods = listOf(
         "ALL" to "Semua",
-        "TODAY" to "Hari Ini",
-        "WEEKLY" to "Minggu Ini",
-        "MONTHLY" to "Bulan Ini",
-        "YEARLY" to "Tahun Ini",
-        "CUSTOM" to "Pilih Tanggal"
+        "TODAY" to "Hari ini",
+        "WEEKLY" to "Minggu ini",
+        "MONTHLY" to "Bulan ini",
+        "YEARLY" to "Tahun ini",
+        "CUSTOM" to "Pilih tanggal"
     )
 
     val sorts = listOf(
@@ -125,11 +125,11 @@ fun TransactionListScreen(
         "LOWEST" to "Terendah"
     )
 
-    val sdf = remember { SimpleDateFormat("dd/MM", Locale("in", "ID")) }
+    val sdf = remember { SimpleDateFormat("dd/MM", Locale("id", "ID")) }
     val customRangeLabel = if (selectedPeriod == "CUSTOM" && customDateRange != null) {
-        "Pilih Tanggal (${sdf.format(Date(customDateRange!!.first))} - ${sdf.format(Date(customDateRange!!.second))})"
+        "Pilih tanggal (${sdf.format(Date(customDateRange!!.first))} - ${sdf.format(Date(customDateRange!!.second))})"
     } else {
-        "Pilih Tanggal"
+        "Pilih tanggal"
     }
 
     Scaffold(
@@ -224,7 +224,7 @@ fun TransactionListScreen(
                     )
                     Spacer(modifier = Modifier.height(Spacing.large))
                     Text(
-                        text = "Belum ada transaksi",
+                        text = "Belum ada transaksi. Ketuk + buat mencatat yang pertama.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -549,7 +549,7 @@ fun TransactionListScreen(
 
                 // Sort Section
                 Text(
-                    text = "Urutkan Berdasarkan",
+                    text = "Urutkan berdasarkan",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -33,7 +33,7 @@ fun QuickAddSection(
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = "Quick Add",
+            text = "Tambah Cepat",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground

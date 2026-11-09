@@ -44,7 +44,7 @@ fun AccountFormDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(if (isEditMode) "Edit Akun" else "Tambah Akun")
+            Text(if (isEditMode) "Edit dompet" else "Tambah dompet")
         },
         text = {
             Column(
@@ -57,9 +57,9 @@ fun AccountFormDialog(
                     value = name,
                     onValueChange = {
                         name = it
-                        nameError = if (it.isBlank()) "Nama akun tidak boleh kosong" else null
+                        nameError = if (it.isBlank()) "Nama dompet belum diisi" else null
                     },
-                    label = { Text("Nama Akun *") },
+                    label = { Text("Nama dompet *") },
                     isError = nameError != null,
                     supportingText = { nameError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                     singleLine = true,
@@ -67,7 +67,7 @@ fun AccountFormDialog(
                 )
 
                 Column {
-                    Text("Tipe Akun", style = MaterialTheme.typography.bodySmall)
+                    Text("Tipe dompet", style = MaterialTheme.typography.bodySmall)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -100,7 +100,7 @@ fun AccountFormDialog(
                     OutlinedTextField(
                         value = initialBalanceStr,
                         onValueChange = { initialBalanceStr = it },
-                        label = { Text("Saldo Awal (Rp)") },
+                        label = { Text("Saldo awal (Rp)") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
@@ -112,7 +112,7 @@ fun AccountFormDialog(
             TextButton(
                 onClick = {
                     if (name.isBlank()) {
-                        nameError = "Nama akun tidak boleh kosong"
+                        nameError = "Nama dompet belum diisi"
                     } else {
                         val balance = initialBalanceStr.toLongOrNull() ?: 0L
                         onSave(name, type, icon, balance)

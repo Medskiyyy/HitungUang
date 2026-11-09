@@ -14,7 +14,7 @@ class UpdateTransactionUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(oldTransaction: Transaction, newTransaction: Transaction) {
         if (newTransaction.title.trim().isEmpty()) {
-            throw IllegalArgumentException("Judul transaksi tidak boleh kosong.")
+            throw IllegalArgumentException("Judulnya belum diisi.")
         }
         if (newTransaction.amount <= 0) {
             throw IllegalArgumentException("Nominal transaksi harus lebih dari 0.")
@@ -33,7 +33,7 @@ class UpdateTransactionUseCase @Inject constructor(
             if (newBalanceDiff < 0) {
                 val newAccountBalance = accountDao.getAccountBalance(newTransaction.accountId)
                 if (newAccountBalance + newBalanceDiff < 0) {
-                    throw IllegalStateException("Saldo akun tujuan tidak mencukupi.")
+                    throw IllegalStateException("Saldo dompet tujuan nggak cukup.")
                 }
             }
         } else {
@@ -42,7 +42,7 @@ class UpdateTransactionUseCase @Inject constructor(
             if (netDifference < 0) {
                 val currentBalance = accountDao.getAccountBalance(newTransaction.accountId)
                 if (currentBalance + netDifference < 0) {
-                    throw IllegalStateException("Saldo tidak mencukupi untuk perubahan ini.")
+                    throw IllegalStateException("Saldo nggak cukup buat perubahan ini.")
                 }
             }
         }

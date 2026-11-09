@@ -150,10 +150,10 @@ class DashboardViewModel @Inject constructor(
             
             if (diff > 0) {
                 isExpenseIncreased = true
-                "Pengeluaranmu naik $formattedPercent% dibandingkan dengan $periodLabel."
+                "Pengeluaranmu naik $formattedPercent% dari $periodLabel."
             } else if (diff < 0) {
                 isExpenseIncreased = false
-                "Pengeluaranmu turun $formattedPercent% dibandingkan dengan $periodLabel. Kinerja keuanganmu membaik!"
+                "Pengeluaranmu turun $formattedPercent% dari $periodLabel. Mantap, lebih hemat!"
             } else {
                 isExpenseIncreased = false
                 "Pengeluaranmu sama persis dengan $periodLabel."
@@ -234,7 +234,7 @@ class DashboardViewModel @Inject constructor(
             if (rate > 0) {
                 "Kamu berhasil menghemat ${String.format(java.util.Locale.US, "%.1f", rate)}% dari pemasukanmu periode ini!"
             } else {
-                "Pengeluaran melebihi pemasukan. Ayo perketat budget pengeluaranmu!"
+                "Pengeluaran melebihi pemasukan. Yuk, kurangi pengeluaranmu!"
             }
         } else if (totalExpense > 0) {
             "Belum ada pemasukan. Ayo batasi pengeluaran periode ini!"

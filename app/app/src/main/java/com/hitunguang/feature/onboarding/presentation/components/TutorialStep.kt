@@ -54,23 +54,23 @@ fun TutorialStep(
     val pages = remember {
         listOf(
             TutorialPage(
-                title = "Dashboard Utama",
+                title = "Beranda",
                 description = "Pantau total saldo, ringkasan pengeluaran, grafik kategori, dan status anggaran bulanan.",
                 icon = Icons.Default.Dashboard
             ),
             TutorialPage(
                 title = "Pencatatan Cepat",
-                description = "Catat pengeluaran, pemasukan, dan transfer antar akun dengan mudah. Draft otomatis menyimpan input yang belum selesai.",
+                description = "Catat pengeluaran, pemasukan, dan transfer antar dompet dengan mudah. Draf otomatis menyimpan isian yang belum selesai.",
                 icon = Icons.Default.ReceiptLong
             ),
             TutorialPage(
-                title = "Pindai Struk (OCR)",
-                description = "Cukup foto struk belanja, sistem akan membaca teks secara offline, mengekstrak item, dan menghitung total otomatis.",
+                title = "Pindai Struk",
+                description = "Foto struk belanja, lalu aplikasi membaca teksnya tanpa internet, mengambil daftar barang, dan menghitung total.",
                 icon = Icons.Default.QrCodeScanner
             ),
             TutorialPage(
-                title = "Manajemen Budget",
-                description = "Atur batas pengeluaran per kategori. Dapatkan notifikasi jika mendekati atau melebihi batas.",
+                title = "Anggaran",
+                description = "Atur batas pengeluaran per kategori. Kamu dapat pengingat kalau hampir atau sudah melewati batas.",
                 icon = Icons.Default.BarChart
             ),
             TutorialPage(

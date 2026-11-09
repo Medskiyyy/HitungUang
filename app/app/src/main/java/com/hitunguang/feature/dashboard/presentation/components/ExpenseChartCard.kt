@@ -84,7 +84,7 @@ fun ExpenseChartCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Belum Ada Pengeluaran",
+                        text = "Belum ada pengeluaran. Catat satu biar grafiknya muncul.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

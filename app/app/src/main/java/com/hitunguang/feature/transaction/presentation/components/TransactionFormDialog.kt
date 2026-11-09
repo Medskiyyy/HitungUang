@@ -253,7 +253,7 @@ fun TransactionFormDialog(
                     .padding(horizontal = Spacing.large)
             ) {
                 Text(
-                    text = if (isEditMode) "Edit Transaksi" else "Tambah Transaksi",
+                    text = if (isEditMode) "Edit transaksi" else "Tambah transaksi",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(vertical = Spacing.medium)
@@ -343,9 +343,9 @@ fun TransactionFormDialog(
                     value = title,
                     onValueChange = {
                         title = it
-                        titleError = if (it.isBlank()) "Judul tidak boleh kosong" else null
+                        titleError = if (it.isBlank()) "Judulnya belum diisi" else null
                     },
-                    label = { Text("Judul Transaksi *") },
+                    label = { Text("Judul *") },
                     isError = titleError != null,
                     supportingText = { titleError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                     singleLine = true,
@@ -446,7 +446,7 @@ fun TransactionFormDialog(
                                 Spacer(modifier = Modifier.width(Spacing.medium))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        currentAccount?.name ?: "Pilih Dompet",
+                                        currentAccount?.name ?: "Pilih dompet",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold
                                     )
@@ -503,11 +503,11 @@ fun TransactionFormDialog(
                 // Tanggal Picker
                 Column {
                     Text(
-                        "Tanggal Transaksi",
+                        "Tanggal transaksi",
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.padding(bottom = Spacing.small)
                     )
-                    val dateFormatter = SimpleDateFormat("dd MMMM yyyy", Locale("in", "ID"))
+                    val dateFormatter = SimpleDateFormat("d MMM yyyy", Locale("id", "ID"))
                     Surface(
                         onClick = { showDatePicker = true },
                         modifier = Modifier.fillMaxWidth(),
@@ -539,7 +539,7 @@ fun TransactionFormDialog(
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("Catatan (Opsional)") },
+                    label = { Text("Catatan (opsional)") },
                     shape = RoundedCornerShape(Radius.medium),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -581,13 +581,13 @@ fun TransactionFormDialog(
                                 validationMessage = "Nominal belum diisi"
                                 showValidationDialog = true
                             } else if (selectedAccountId.isBlank()) {
-                                validationMessage = "Silakan pilih akun terlebih dahulu"
+                                validationMessage = "Pilih dompetnya dulu"
                                 showValidationDialog = true
                             } else if (selectedCategoryId.isBlank() && !keepsOriginalCategory) {
-                                validationMessage = "Silakan pilih kategori terlebih dahulu"
+                                validationMessage = "Pilih kategorinya dulu"
                                 showValidationDialog = true
                             } else if (title.isBlank()) {
-                                validationMessage = "Nama transaksi belum diisi"
+                                validationMessage = "Judulnya belum diisi"
                                 showValidationDialog = true
                             } else {
                                 var proceed = true
@@ -648,15 +648,15 @@ fun TransactionFormDialog(
     if (showInsufficientBalanceDialog) {
         AlertDialog(
             onDismissRequest = { showInsufficientBalanceDialog = false },
-            title = { Text("Saldo Tidak Mencukupi", fontWeight = FontWeight.Bold) },
+            title = { Text("Saldo nggak cukup", fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text("Saldo akun saat ini ${CurrencyFormatter.format(insufficientBalanceInfo.first)}")
+                    Text("Saldo dompet sekarang ${CurrencyFormatter.format(insufficientBalanceInfo.first)}")
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("Transaksi membutuhkan ${CurrencyFormatter.format(insufficientBalanceInfo.second)}")
+                    Text("Transaksi ini butuh ${CurrencyFormatter.format(insufficientBalanceInfo.second)}")
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Silakan pilih akun lain atau kurangi nominal transaksi.",
+                        "Pilih dompet lain atau kurangi nominalnya.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -672,7 +672,7 @@ fun TransactionFormDialog(
                     showInsufficientBalanceDialog = false
                     // Scroll to or focus account selector - just dismiss for now
                 }) {
-                    Text("Pilih Akun Lain")
+                    Text("Pilih dompet lain")
                 }
             }
         )
@@ -705,7 +705,7 @@ fun TransactionFormDialog(
     if (showAttachmentSourceDialog) {
         AlertDialog(
             onDismissRequest = { showAttachmentSourceDialog = false },
-            title = { Text("Pilih Sumber Gambar") },
+            title = { Text("Pilih sumber foto") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     TextButton(

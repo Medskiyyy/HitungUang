@@ -43,7 +43,7 @@ fun ProfileStep(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = "Siapa Anda?",
+                text = "Kenalan dulu, yuk",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -51,7 +51,7 @@ fun ProfileStep(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "Masukkan nama Anda untuk personalisasi aplikasi.",
+                text = "Masukkan namamu biar aplikasinya terasa lebih personal.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -61,7 +61,7 @@ fun ProfileStep(
             OutlinedTextField(
                 value = name,
                 onValueChange = onNameChange,
-                label = { Text("Nama Lengkap *") },
+                label = { Text("Nama panggilan *") },
                 isError = nameError != null,
                 supportingText = {
                     if (nameError != null) {
@@ -77,7 +77,7 @@ fun ProfileStep(
             OutlinedTextField(
                 value = occupation,
                 onValueChange = onOccupationChange,
-                label = { Text("Pekerjaan / Aktivitas (Opsional)") },
+                label = { Text("Pekerjaan atau kegiatan (opsional)") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
