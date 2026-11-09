@@ -1,5 +1,9 @@
 package com.hitunguang.core.notification
 
+import kotlinx.coroutines.job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.CoroutineScope
 import android.app.Application
 import android.app.NotificationManager
 import android.content.Context
@@ -87,6 +91,7 @@ class TestApplication : Application(),
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = TestApplication::class)
 class NotificationManagementTest {
+    private lateinit var dataStoreScope: CoroutineScope
 
     @get:Rule
     val tmpFolder = TemporaryFolder()
@@ -121,7 +126,9 @@ class NotificationManagementTest {
 
         // Initialize Settings DataStore
         val datastoreFile = File(tmpFolder.newFolder(), "test_settings_prefs.preferences_pb")
+        dataStoreScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         val dataStore = PreferenceDataStoreFactory.create(
+            scope = dataStoreScope,
             produceFile = { datastoreFile }
         )
         settingsDataStore = SettingsDataStore(dataStore)
@@ -173,6 +180,7 @@ class NotificationManagementTest {
 
     @After
     fun tearDown() {
+        runBlocking { dataStoreScope.coroutineContext.job.cancelAndJoin() }
         Dispatchers.resetMain()
         db.close()
     }

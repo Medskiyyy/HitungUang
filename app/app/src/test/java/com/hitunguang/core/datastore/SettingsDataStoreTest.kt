@@ -1,5 +1,10 @@
 package com.hitunguang.core.datastore
 
+import kotlinx.coroutines.job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
 import android.content.Context
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.test.core.app.ApplicationProvider
@@ -14,6 +19,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -24,6 +30,8 @@ import java.io.File
 
 @RunWith(RobolectricTestRunner::class)
 class SettingsDataStoreTest {
+    private lateinit var dataStoreScope: CoroutineScope
+
 
     @get:Rule
     val tmpFolder = TemporaryFolder()
@@ -35,7 +43,9 @@ class SettingsDataStoreTest {
     fun setup() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val datastoreFile = File(tmpFolder.newFolder(), "test_preferences.preferences_pb")
+        dataStoreScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         val dataStore = PreferenceDataStoreFactory.create(
+            scope = dataStoreScope,
             produceFile = { datastoreFile }
         )
         settingsDataStore = SettingsDataStore(dataStore)
@@ -150,5 +160,10 @@ class SettingsDataStoreTest {
         settingsDataStore.clearTransactionDraft()
         val cleared = settingsDataStore.transactionDraft.first()
         assertNull(cleared)
+    }
+
+    @After
+    fun cancelDataStoreScope() {
+        runBlocking { dataStoreScope.coroutineContext.job.cancelAndJoin() }
     }
 }

@@ -1,5 +1,10 @@
 package com.hitunguang.feature.receipt
 
+import kotlinx.coroutines.job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
@@ -37,6 +42,8 @@ import java.io.FileOutputStream
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class ReceiptManagementTest {
+    private lateinit var dataStoreScope: CoroutineScope
+
 
     private lateinit var db: HitungUangDatabase
     private lateinit var fileManager: ReceiptFileManager
@@ -66,7 +73,9 @@ class ReceiptManagementTest {
         
         // Settings DataStore
         tempPrefsFile = File(context.cacheDir, "test_settings_${System.currentTimeMillis()}.preferences_pb")
+        dataStoreScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         val dataStore = PreferenceDataStoreFactory.create(
+            scope = dataStoreScope,
             produceFile = { tempPrefsFile }
         )
         settingsDataStore = SettingsDataStore(dataStore)
@@ -96,6 +105,7 @@ class ReceiptManagementTest {
 
     @After
     fun tearDown() {
+        runBlocking { dataStoreScope.coroutineContext.job.cancelAndJoin() }
         db.close()
         if (tempPrefsFile.exists()) {
             tempPrefsFile.delete()
