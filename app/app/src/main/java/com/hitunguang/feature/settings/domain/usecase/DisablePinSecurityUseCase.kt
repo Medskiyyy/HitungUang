@@ -1,5 +1,6 @@
 package com.hitunguang.feature.settings.domain.usecase
 
+import com.hitunguang.feature.settings.domain.model.PinLockState
 import com.hitunguang.feature.settings.domain.model.SecuritySettings
 import com.hitunguang.feature.settings.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.firstOrNull
@@ -20,5 +21,6 @@ class DisablePinSecurityUseCase @Inject constructor(
             updatedAt = now
         )
         repository.saveSecuritySettings(disabledSettings)
+        repository.savePinLockState(PinLockState())
     }
 }

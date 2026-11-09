@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.hitunguang.feature.settings.domain.model.AppSettings
 import com.hitunguang.feature.settings.domain.model.BackupSettings
 import com.hitunguang.feature.settings.domain.model.NotificationSettings
+import com.hitunguang.feature.settings.domain.model.PinLockState
 import com.hitunguang.feature.settings.domain.model.SecuritySettings
 import com.hitunguang.feature.transaction.domain.model.TransactionDraft
 import kotlinx.coroutines.flow.Flow
@@ -57,6 +58,9 @@ class SettingsDataStore @Inject constructor(
         private val KEY_RECOVERY_CODE_HASH = stringPreferencesKey("recovery_code_hash")
         private val KEY_SECURITY_SETTINGS_CREATED_AT = longPreferencesKey("security_settings_created_at")
         private val KEY_SECURITY_SETTINGS_UPDATED_AT = longPreferencesKey("security_settings_updated_at")
+        private val KEY_PIN_LENGTH = intPreferencesKey("pin_length")
+        private val KEY_PIN_FAILED_ATTEMPTS = intPreferencesKey("pin_failed_attempts")
+        private val KEY_PIN_LOCKOUT_UNTIL = longPreferencesKey("pin_lockout_until")
 
         // Draft Transaction key
         private val KEY_TRANSACTION_DRAFT = stringPreferencesKey("transaction_draft")
@@ -157,7 +161,8 @@ class SettingsDataStore @Inject constructor(
             biometricEnabled = preferences[KEY_BIOMETRIC_ENABLED] ?: false,
             recoveryCodeHash = preferences[KEY_RECOVERY_CODE_HASH],
             createdAt = preferences[KEY_SECURITY_SETTINGS_CREATED_AT] ?: System.currentTimeMillis(),
-            updatedAt = preferences[KEY_SECURITY_SETTINGS_UPDATED_AT] ?: System.currentTimeMillis()
+            updatedAt = preferences[KEY_SECURITY_SETTINGS_UPDATED_AT] ?: System.currentTimeMillis(),
+            pinLength = preferences[KEY_PIN_LENGTH]
         )
     }
 
@@ -177,6 +182,25 @@ class SettingsDataStore @Inject constructor(
             }
             preferences[KEY_SECURITY_SETTINGS_CREATED_AT] = settings.createdAt
             preferences[KEY_SECURITY_SETTINGS_UPDATED_AT] = settings.updatedAt
+            if (settings.pinHash != null && settings.pinLength != null) {
+                preferences[KEY_PIN_LENGTH] = settings.pinLength
+            } else {
+                preferences.remove(KEY_PIN_LENGTH)
+            }
+        }
+    }
+
+    val pinLockState: Flow<PinLockState> = dataStore.data.map { preferences ->
+        PinLockState(
+            failedAttempts = preferences[KEY_PIN_FAILED_ATTEMPTS] ?: 0,
+            lockoutUntil = preferences[KEY_PIN_LOCKOUT_UNTIL] ?: 0L
+        )
+    }
+
+    suspend fun savePinLockState(state: PinLockState) {
+        dataStore.edit { preferences ->
+            preferences[KEY_PIN_FAILED_ATTEMPTS] = state.failedAttempts
+            preferences[KEY_PIN_LOCKOUT_UNTIL] = state.lockoutUntil
         }
     }
 

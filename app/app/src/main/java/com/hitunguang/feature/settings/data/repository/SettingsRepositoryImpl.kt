@@ -4,6 +4,7 @@ import com.hitunguang.core.datastore.SettingsDataStore
 import com.hitunguang.feature.settings.domain.model.AppSettings
 import com.hitunguang.feature.settings.domain.model.BackupSettings
 import com.hitunguang.feature.settings.domain.model.NotificationSettings
+import com.hitunguang.feature.settings.domain.model.PinLockState
 import com.hitunguang.feature.settings.domain.model.SecuritySettings
 import com.hitunguang.feature.settings.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +27,14 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun saveSecuritySettings(settings: SecuritySettings) {
         settingsDataStore.saveSecuritySettings(settings)
+    }
+
+    override fun getPinLockState(): Flow<PinLockState> {
+        return settingsDataStore.pinLockState
+    }
+
+    override suspend fun savePinLockState(state: PinLockState) {
+        settingsDataStore.savePinLockState(state)
     }
 
     override fun getNotificationSettings(): Flow<NotificationSettings?> {

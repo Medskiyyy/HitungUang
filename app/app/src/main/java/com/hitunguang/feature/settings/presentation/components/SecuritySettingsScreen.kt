@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.hitunguang.feature.settings.presentation.PendingSecurityAction
+import com.hitunguang.feature.settings.presentation.SecurityUiState
 import com.hitunguang.feature.settings.presentation.SecurityViewModel
 import com.hitunguang.feature.settings.presentation.SetupStep
 
@@ -62,8 +63,6 @@ fun SecuritySettingsScreen(
     viewModel: SecurityViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
-    val clipboardManager = LocalClipboardManager.current
     val isPinEnabled = uiState.securitySettings?.pinHash != null
 
     Scaffold(
@@ -162,8 +161,8 @@ fun SecuritySettingsScreen(
                         )
 
                         ListItem(
-                            headlineContent = { Text("Lihat Kode Pemulihan", fontWeight = FontWeight.SemiBold) },
-                            supportingContent = { Text("Dapatkan kode recovery baru untuk membuka kunci jika Anda lupa PIN") },
+                            headlineContent = { Text("Buat kode baru", fontWeight = FontWeight.SemiBold) },
+                            supportingContent = { Text("Kode lama nggak berlaku lagi setelah kamu buat yang baru.") },
                             leadingContent = {
                                 Icon(
                                     imageVector = Icons.Default.Warning,
@@ -174,7 +173,7 @@ fun SecuritySettingsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             trailingContent = {
                                 TextButton(onClick = { viewModel.openVerifyCurrentPin(PendingSecurityAction.VIEW_RECOVERY_CODE) }) {
-                                    Text("Lihat")
+                                    Text("Buat")
                                 }
                             }
                         )
@@ -196,7 +195,7 @@ fun SecuritySettingsScreen(
                     OutlinedTextField(
                         value = uiState.verifyCurrentPinInput,
                         onValueChange = { input ->
-                            if (input.length <= 6 && input.all { it.isDigit() }) {
+                            if (input.length <= 6 && input.all { it in '0'..'9' }) {
                                 viewModel.onVerifyCurrentPinInputChanged(input)
                             }
                         },
@@ -229,7 +228,17 @@ fun SecuritySettingsScreen(
         )
     }
 
-    // PIN Setup / Change Dialog Flow
+    PinSetupDialogs(uiState = uiState, viewModel = viewModel)
+}
+
+@Composable
+fun PinSetupDialogs(
+    uiState: SecurityUiState,
+    viewModel: SecurityViewModel
+) {
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+
     if (uiState.setupStep != SetupStep.INACTIVE) {
         when (uiState.setupStep) {
             SetupStep.ENTER_NEW_PIN, SetupStep.CONFIRM_NEW_PIN -> {
@@ -252,7 +261,7 @@ fun SecuritySettingsScreen(
                             OutlinedTextField(
                                 value = if (isConfirm) uiState.confirmPinInput else uiState.newPinInput,
                                 onValueChange = { input ->
-                                    if (input.length <= 6 && input.all { it.isDigit() }) {
+                                    if (input.length <= 6 && input.all { it in '0'..'9' }) {
                                         viewModel.onSetupPinInputChanged(input)
                                     }
                                 },

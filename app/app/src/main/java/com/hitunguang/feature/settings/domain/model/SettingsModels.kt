@@ -36,5 +36,11 @@ data class SecuritySettings(
     val biometricEnabled: Boolean,
     val recoveryCodeHash: String?,
     val createdAt: Long,
-    val updatedAt: Long
+    val updatedAt: Long,
+    val pinLength: Int? = null
+)
+
+data class PinLockState(
+    val failedAttempts: Int = 0,
+    val lockoutUntil: Long = 0L
 )

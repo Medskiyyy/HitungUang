@@ -2,6 +2,8 @@ package com.hitunguang.feature.settings.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hitunguang.core.security.PinLockoutPolicy
+import com.hitunguang.feature.settings.domain.model.PinLockState
 import com.hitunguang.feature.settings.domain.model.SecuritySettings
 import com.hitunguang.feature.settings.domain.repository.SettingsRepository
 import com.hitunguang.feature.settings.domain.usecase.CheckSecurityStatusUseCase
@@ -10,10 +12,13 @@ import com.hitunguang.feature.settings.domain.usecase.SavePinUseCase
 import com.hitunguang.feature.settings.domain.usecase.ValidatePinUseCase
 import com.hitunguang.feature.settings.domain.usecase.ValidateRecoveryCodeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -21,16 +26,20 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class SecurityUiState(
+    val isLockStateKnown: Boolean = false,
     val isAppLocked: Boolean = false,
-    val securitySettings: SecuritySettings? = null,
+val securitySettings: SecuritySettings? = null,
     val pinInput: String = "",
     val pinError: String? = null,
     val remainingAttempts: Int = 5,
     val isLockedOut: Boolean = false,
-    
+    val lockoutUntil: Long = 0L,
+    val isVerifying: Boolean = false,
+
     // Recovery flow states
     val isRecoveryMode: Boolean = false,
-    val recoveryCodeInput: String = "",
+    val isRecoveryReset: Boolean = false,
+val recoveryCodeInput: String = "",
     val recoveryCodeError: String? = null,
     
     // PIN Setup / Change states inside settings
@@ -65,11 +74,26 @@ class SecurityViewModel @Inject constructor(
     private val validateRecoveryCodeUseCase: ValidateRecoveryCodeUseCase
 ) : ViewModel() {
 
+    companion object {
+        const val MIN_PIN_LENGTH = 4
+        const val MAX_PIN_LENGTH = 6
+        const val RELOCK_GRACE_MS = 30_000L
+
+        fun isValidPinFormat(pin: String): Boolean =
+            pin.length in MIN_PIN_LENGTH..MAX_PIN_LENGTH && pin.all { it in '0'..'9' }
+    }
+
     private val _uiState = MutableStateFlow(SecurityUiState())
     val uiState: StateFlow<SecurityUiState> = _uiState.asStateFlow()
 
+    private var lockoutJob: Job? = null
+    private var stoppedAt: Long? = null
+
     init {
         viewModelScope.launch {
+            applyLockState(settingsRepository.getPinLockState().first())
+        }
+viewModelScope.launch {
             var isFirstCollect = true
             settingsRepository.getSecuritySettings().collect { settings ->
                 val hasPin = settings?.pinHash != null
@@ -82,7 +106,8 @@ class SecurityViewModel @Inject constructor(
                     isFirstCollect = false
                     it.copy(
                         securitySettings = settings,
-                        isAppLocked = shouldLock
+                        isAppLocked = shouldLock,
+                        isLockStateKnown = true
                     )
                 }
             }
@@ -92,36 +117,94 @@ class SecurityViewModel @Inject constructor(
     // App Lock screen actions
     fun onPinDigitEntered(digit: String) {
         val currentState = _uiState.value
-        if (currentState.isLockedOut || currentState.pinInput.length >= 6) return
+        if (currentState.isLockedOut || currentState.isVerifying || currentState.pinInput.length >= MAX_PIN_LENGTH) return
 
         val newInput = currentState.pinInput + digit
         _uiState.update { it.copy(pinInput = newInput, pinError = null) }
 
-        if (newInput.length == 4 || newInput.length == 6) {
-            // Auto-verify when 4 or 6 digits entered
-            viewModelScope.launch {
-                val isValid = validatePinUseCase(newInput)
-                if (isValid) {
-                    _uiState.update { 
-                        it.copy(
-                            isAppLocked = false, 
-                            pinInput = "", 
-                            remainingAttempts = 5, 
-                            pinError = null
-                        ) 
-                    }
-                } else {
-                    val remaining = currentState.remainingAttempts - 1
-                    _uiState.update { 
-                        it.copy(
-                            pinInput = "",
-                            remainingAttempts = remaining,
-                            pinError = "PIN salah",
-                            isLockedOut = remaining <= 0
-                        ) 
-                    }
-                }
+        val storedLength = currentState.securitySettings?.pinLength
+        if (storedLength != null) {
+            if (newInput.length == storedLength) verifyPin(newInput, countFailure = true)
+        } else if (newInput.length >= MIN_PIN_LENGTH) {
+            // Legacy PIN without a stored length: try silently, only count a failure at max length
+            verifyPin(newInput, countFailure = newInput.length == MAX_PIN_LENGTH)
+        }
+    }
+
+    private fun verifyPin(input: String, countFailure: Boolean) {
+        _uiState.update { it.copy(isVerifying = true) }
+        viewModelScope.launch {
+            val lockState = settingsRepository.getPinLockState().first()
+            if (lockState.lockoutUntil > System.currentTimeMillis()) {
+                applyLockState(lockState)
+                _uiState.update { it.copy(pinInput = "", isVerifying = false) }
+                return@launch
             }
+            if (validatePinUseCase(input)) {
+                onUnlocked()
+            } else if (countFailure) {
+                registerFailedAttempt(lockState)
+            }
+            _uiState.update { it.copy(isVerifying = false) }
+        }
+    }
+
+    private suspend fun registerFailedAttempt(current: PinLockState) {
+        val failedAttempts = current.failedAttempts + 1
+        val duration = PinLockoutPolicy.lockoutDurationMs(failedAttempts)
+        val updated = PinLockState(
+            failedAttempts = failedAttempts,
+            lockoutUntil = if (duration > 0) System.currentTimeMillis() + duration else 0L
+        )
+        settingsRepository.savePinLockState(updated)
+        _uiState.update { it.copy(pinInput = "", pinError = "PIN salah") }
+        applyLockState(updated)
+    }
+
+    private fun applyLockState(lockState: PinLockState) {
+        val remainingMs = lockState.lockoutUntil - System.currentTimeMillis()
+        val isLockedOut = remainingMs > 0
+        _uiState.update {
+            it.copy(
+                remainingAttempts = PinLockoutPolicy.remainingAttempts(lockState.failedAttempts),
+                isLockedOut = isLockedOut,
+                lockoutUntil = if (isLockedOut) lockState.lockoutUntil else 0L
+            )
+        }
+        lockoutJob?.cancel()
+        if (isLockedOut) {
+            lockoutJob = viewModelScope.launch {
+                delay(remainingMs.coerceAtMost(PinLockoutPolicy.MAX_LOCKOUT_MS))
+                _uiState.update { it.copy(isLockedOut = false, lockoutUntil = 0L) }
+            }
+        }
+    }
+
+    private suspend fun onUnlocked() {
+        lockoutJob?.cancel()
+        settingsRepository.savePinLockState(PinLockState())
+        _uiState.update {
+            it.copy(
+                isAppLocked = false,
+                pinInput = "",
+                remainingAttempts = PinLockoutPolicy.MAX_ATTEMPTS,
+                isLockedOut = false,
+                lockoutUntil = 0L,
+                pinError = null
+            )
+        }
+    }
+
+    fun onAppStopped(now: Long) {
+        val state = _uiState.value
+        stoppedAt = if (state.securitySettings?.pinHash != null && !state.isAppLocked) now else null
+    }
+
+    fun onAppStarted(now: Long) {
+        val stopped = stoppedAt ?: return
+        stoppedAt = null
+        if (_uiState.value.securitySettings?.pinHash != null && now - stopped >= RELOCK_GRACE_MS) {
+            _uiState.update { it.copy(isAppLocked = true, pinInput = "", pinError = null) }
         }
     }
 
@@ -134,7 +217,7 @@ class SecurityViewModel @Inject constructor(
     }
 
     fun triggerBiometricUnlock() {
-        _uiState.update { it.copy(isAppLocked = false, pinInput = "", remainingAttempts = 5, pinError = null) }
+        viewModelScope.launch { onUnlocked() }
     }
 
     fun enterRecoveryMode(enabled: Boolean) {
@@ -161,14 +244,22 @@ class SecurityViewModel @Inject constructor(
         viewModelScope.launch {
             val isValid = validateRecoveryCodeUseCase(code)
             if (isValid) {
-                _uiState.update { 
+                lockoutJob?.cancel()
+                settingsRepository.savePinLockState(PinLockState())
+                _uiState.update {
                     it.copy(
-                        isAppLocked = false, 
                         isRecoveryMode = false,
+                        isRecoveryReset = true,
                         recoveryCodeInput = "",
-                        remainingAttempts = 5,
-                        isLockedOut = false
-                    ) 
+                        remainingAttempts = PinLockoutPolicy.MAX_ATTEMPTS,
+                        isLockedOut = false,
+                        lockoutUntil = 0L,
+                        setupStep = SetupStep.ENTER_NEW_PIN,
+                        newPinInput = "",
+                        confirmPinInput = "",
+                        setupError = null,
+                        generatedRecoveryCode = null
+                    )
                 }
             } else {
                 _uiState.update { it.copy(recoveryCodeError = "Kode pemulihan salah") }
@@ -202,8 +293,8 @@ class SecurityViewModel @Inject constructor(
     fun submitSetupPin() {
         val state = _uiState.value
         if (state.setupStep == SetupStep.ENTER_NEW_PIN) {
-            if (state.newPinInput.length < 4) {
-                _uiState.update { it.copy(setupError = "PIN minimal 4 angka") }
+            if (!isValidPinFormat(state.newPinInput)) {
+                _uiState.update { it.copy(setupError = "PIN harus 4-6 angka") }
                 return
             }
             _uiState.update { it.copy(setupStep = SetupStep.CONFIRM_NEW_PIN, setupError = null) }
@@ -227,7 +318,15 @@ class SecurityViewModel @Inject constructor(
     }
 
     fun finishPinSetup() {
-        _uiState.update { it.copy(setupStep = SetupStep.INACTIVE, generatedRecoveryCode = null) }
+        _uiState.update {
+            val unlock = it.isRecoveryReset && it.setupStep == SetupStep.SHOW_RECOVERY_CODE
+            it.copy(
+                setupStep = SetupStep.INACTIVE,
+                generatedRecoveryCode = null,
+                isRecoveryReset = false,
+                isAppLocked = if (unlock) false else it.isAppLocked
+            )
+        }
     }
 
     // Biometric toggle
