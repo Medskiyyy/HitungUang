@@ -1,5 +1,9 @@
 package com.hitunguang.feature.dashboard.presentation
 
+import kotlinx.coroutines.job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.CoroutineScope
 import android.content.Context
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.room.Room
@@ -45,6 +49,8 @@ import java.time.temporal.TemporalAdjusters
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 class DashboardViewModelTest {
+    private lateinit var dataStoreScope: CoroutineScope
+
 
     @get:Rule
     val tmpFolder = TemporaryFolder()
@@ -65,7 +71,9 @@ class DashboardViewModelTest {
 
         // 2. Setup in-memory DataStore
         val datastoreFile = File(tmpFolder.newFolder(), "test_preferences.preferences_pb")
+        dataStoreScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         val dataStore = PreferenceDataStoreFactory.create(
+            scope = dataStoreScope,
             produceFile = { datastoreFile }
         )
         settingsDataStore = SettingsDataStore(dataStore)
@@ -92,6 +100,7 @@ class DashboardViewModelTest {
 
     @After
     fun tearDown() {
+        runBlocking { dataStoreScope.coroutineContext.job.cancelAndJoin() }
         Dispatchers.resetMain()
         db.close()
     }
@@ -108,7 +117,7 @@ class DashboardViewModelTest {
         assertEquals("Pengguna", state.userName)
         assertEquals(0L, state.totalBalance)
         assertFalse(state.hideBalance)
-        assertEquals("WEEKLY", state.selectedPeriod)
+        assertEquals("MONTHLY", state.selectedPeriod)
 
         job.cancel()
     }

@@ -97,7 +97,7 @@ class DashboardViewModel @Inject constructor(
 
         val userName = profile?.name ?: "Pengguna"
         val hideBalance = appSettings?.hideBalance ?: false
-        val selectedPeriod = appSettings?.dashboardPeriod ?: "WEEKLY"
+        val selectedPeriod = appSettings?.dashboardPeriod ?: "MONTHLY"
 
         val totalBalance = accounts.sumOf { it.currentBalance }
 
@@ -284,7 +284,7 @@ class DashboardViewModel @Inject constructor(
                 themeMode = "SYSTEM",
                 hideBalance = false,
                 receiptAutoDeleteDays = 30,
-                dashboardPeriod = "WEEKLY",
+                dashboardPeriod = "MONTHLY",
                 createdAt = System.currentTimeMillis(),
                 updatedAt = System.currentTimeMillis()
             )
@@ -300,7 +300,7 @@ class DashboardViewModel @Inject constructor(
                 themeMode = "SYSTEM",
                 hideBalance = false,
                 receiptAutoDeleteDays = 30,
-                dashboardPeriod = "WEEKLY",
+                dashboardPeriod = "MONTHLY",
                 createdAt = System.currentTimeMillis(),
                 updatedAt = System.currentTimeMillis()
             )
