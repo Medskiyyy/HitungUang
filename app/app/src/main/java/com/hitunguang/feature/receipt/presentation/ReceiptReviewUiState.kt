@@ -1,5 +1,6 @@
 package com.hitunguang.feature.receipt.presentation
 
+import androidx.annotation.StringRes
 import android.net.Uri
 import com.hitunguang.feature.receipt.domain.usecase.ParsedItemInput
 
@@ -17,6 +18,8 @@ data class ReceiptReviewUiState(
     val isTotalPinned: Boolean = false,
     val isSaving: Boolean = false,
     val errorMessage: String? = null,
+    @StringRes val errorMessageRes: Int? = null,
+    val errorMessageArgs: List<Any> = emptyList(),
     val isSaved: Boolean = false,
     val isMerchantConfident: Boolean = false,
     val isDateConfident: Boolean = false,

@@ -1,5 +1,6 @@
 package com.hitunguang.feature.receipt.presentation
 
+import androidx.annotation.StringRes
 import android.net.Uri
 
 data class ReceiptScannerUiState(
@@ -9,7 +10,8 @@ data class ReceiptScannerUiState(
     val scanQuality: ScanQuality = ScanQuality.UNKNOWN,
     /** The user chose to continue with a LOW quality scan instead of retaking it. */
     val isLowQualityAccepted: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    @StringRes val errorMessageRes: Int? = null
 )
 
 enum class ScanQuality {

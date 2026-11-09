@@ -1,5 +1,7 @@
 package com.hitunguang.feature.receipt.presentation
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -40,10 +42,10 @@ fun ReceiptArchiveScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Arsip Struk Belanja", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.receipt_archive_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 }
             )
@@ -70,14 +72,14 @@ fun ReceiptArchiveScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Belum ada struk",
+                        text = stringResource(R.string.receipt_archive_empty_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Struk yang kamu pindai dan simpan akan muncul di sini. Mulai dari tombol Pindai struk di Beranda.",
+                        text = stringResource(R.string.receipt_archive_empty_desc),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -116,9 +118,9 @@ fun ReceiptArchiveScreen(
     if (receiptToDelete != null) {
         AlertDialog(
             onDismissRequest = { receiptToDelete = null },
-            title = { Text("Hapus struk ini?") },
+            title = { Text(stringResource(R.string.receipt_delete_title)) },
             text = {
-                Text("Struk ini dan transaksi dari struk ini akan dihapus, termasuk fotonya. Saldo dompet ikut disesuaikan.")
+                Text(stringResource(R.string.receipt_delete_message))
             },
             confirmButton = {
                 Button(
@@ -128,12 +130,12 @@ fun ReceiptArchiveScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Hapus")
+                    Text(stringResource(R.string.common_delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { receiptToDelete = null }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -184,14 +186,14 @@ fun ReceiptCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = receipt.merchantName?.ifBlank { "Toko tanpa nama" } ?: "Toko tanpa nama",
+                    text = receipt.merchantName?.ifBlank { stringResource(R.string.receipt_no_merchant) } ?: stringResource(R.string.receipt_no_merchant),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                val dateStr = receipt.receiptDate?.let { dateFormatter.format(Date(it)) } ?: "Tidak ada tanggal"
+                val dateStr = receipt.receiptDate?.let { dateFormatter.format(Date(it)) } ?: stringResource(R.string.receipt_no_date)
                 Text(
                     text = dateStr,
                     style = MaterialTheme.typography.bodySmall,
@@ -199,7 +201,7 @@ fun ReceiptCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Total: ${CurrencyFormatter.format(receipt.total)}",
+                    text = stringResource(R.string.receipt_total_format, CurrencyFormatter.format(receipt.total)),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
@@ -210,7 +212,7 @@ fun ReceiptCard(
             IconButton(onClick = onDelete) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Hapus Struk",
+                    contentDescription = stringResource(R.string.receipt_delete_cd),
                     tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
                 )
             }

@@ -1,5 +1,7 @@
 package com.hitunguang.feature.receipt.presentation
 
+import com.hitunguang.R
+import androidx.annotation.StringRes
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -28,7 +30,8 @@ class ReceiptScannerViewModel @Inject constructor(
             it.copy(
                 imageUri = uri,
                 rawText = null,
-                errorMessage = null
+                errorMessage = null,
+                errorMessageRes = null
             )
         }
     }
@@ -39,7 +42,7 @@ class ReceiptScannerViewModel @Inject constructor(
             try {
                 setImageUri(receiptFileManager.copyToCache(uri))
             } catch (e: Exception) {
-                setErrorMessage("Gagal membaca foto dari galeri")
+                setErrorMessage(R.string.receipt_scanner_error_gallery_read)
             }
         }
     }
@@ -62,9 +65,9 @@ class ReceiptScannerViewModel @Inject constructor(
         clearAll()
     }
 
-    fun setErrorMessage(message: String) {
+    fun setErrorMessage(@StringRes message: Int) {
         _uiState.update {
-            it.copy(errorMessage = message)
+            it.copy(errorMessage = null, errorMessageRes = message)
         }
     }
 
@@ -74,6 +77,7 @@ class ReceiptScannerViewModel @Inject constructor(
             it.copy(
                 isScanning = true,
                 errorMessage = null,
+                errorMessageRes = null,
                 rawText = null,
                 scanQuality = ScanQuality.UNKNOWN,
                 isLowQualityAccepted = false
@@ -96,7 +100,8 @@ class ReceiptScannerViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isScanning = false,
-                            errorMessage = error.localizedMessage ?: "Gagal memindai struk"
+                            errorMessage = error.localizedMessage,
+                            errorMessageRes = if (error.localizedMessage == null) R.string.receipt_scanner_error_scan_failed else null
                         )
                     }
                 }

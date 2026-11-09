@@ -1,5 +1,6 @@
 package com.hitunguang.core.filemanager
 
+import com.hitunguang.R
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
@@ -47,7 +48,7 @@ class ReceiptFileManager @Inject constructor(
         val file = File.createTempFile(PICKED_PHOTO_PREFIX, ".jpg", context.cacheDir)
         try {
             val input = context.contentResolver.openInputStream(sourceUri)
-                ?: throw IllegalArgumentException("Fotonya nggak bisa dibuka. Coba pilih foto lain.")
+                ?: throw IllegalArgumentException(context.getString(R.string.file_error_photo_unreadable))
             input.use { inputStream ->
                 FileOutputStream(file).use { inputStream.copyTo(it) }
             }

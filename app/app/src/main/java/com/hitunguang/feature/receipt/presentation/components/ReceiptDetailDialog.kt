@@ -1,5 +1,7 @@
 package com.hitunguang.feature.receipt.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -39,7 +41,7 @@ fun ReceiptDetailDialog(
     if (receipt == null) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text("Lagi memuat…") },
+            title = { Text(stringResource(R.string.receipt_detail_loading)) },
             text = {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
@@ -55,7 +57,7 @@ fun ReceiptDetailDialog(
             onDismissRequest = onDismiss,
             title = {
                 Text(
-                    text = receipt.merchantName?.ifBlank { "Detail Struk" } ?: "Detail Struk",
+                    text = receipt.merchantName?.ifBlank { stringResource(R.string.receipt_detail_title) } ?: stringResource(R.string.receipt_detail_title),
                     fontWeight = FontWeight.Bold
                 )
             },
@@ -82,7 +84,7 @@ fun ReceiptDetailDialog(
                     ) {
                         AsyncImage(
                             model = receipt.imagePath,
-                            contentDescription = "Foto Struk",
+                            contentDescription = stringResource(R.string.receipt_photo),
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
                         )
@@ -91,13 +93,13 @@ fun ReceiptDetailDialog(
                     // Metadata
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         val dateFormatter = SimpleDateFormat("d MMMM yyyy, HH:mm", Locale("id", "ID"))
-                        val dateStr = receipt.receiptDate?.let { dateFormatter.format(Date(it)) } ?: "Tidak ada tanggal"
+                        val dateStr = receipt.receiptDate?.let { dateFormatter.format(Date(it)) } ?: stringResource(R.string.receipt_no_date)
                         Text(
-                            text = "Tanggal: $dateStr",
+                            text = stringResource(R.string.receipt_detail_date, dateStr),
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            text = "Dibuat pada: ${dateFormatter.format(Date(receipt.createdAt))}",
+                            text = stringResource(R.string.receipt_detail_created, dateFormatter.format(Date(receipt.createdAt))),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -106,7 +108,7 @@ fun ReceiptDetailDialog(
                     // Items List
                     if (items.isNotEmpty()) {
                         Text(
-                            text = "Rincian barang",
+                            text = stringResource(R.string.receipt_detail_items),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -155,7 +157,7 @@ fun ReceiptDetailDialog(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text("Subtotal", style = MaterialTheme.typography.bodyMedium)
+                                Text(stringResource(R.string.receipt_detail_subtotal), style = MaterialTheme.typography.bodyMedium)
                                 Text(CurrencyFormatter.format(it), style = MaterialTheme.typography.bodyMedium)
                             }
                         }
@@ -164,7 +166,7 @@ fun ReceiptDetailDialog(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text("Pajak", style = MaterialTheme.typography.bodyMedium)
+                                Text(stringResource(R.string.receipt_detail_tax), style = MaterialTheme.typography.bodyMedium)
                                 Text(CurrencyFormatter.format(it), style = MaterialTheme.typography.bodyMedium)
                             }
                         }
@@ -172,7 +174,7 @@ fun ReceiptDetailDialog(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Total", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.receipt_detail_total), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                             Text(CurrencyFormatter.format(receipt.total), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                         }
                     }
@@ -180,7 +182,7 @@ fun ReceiptDetailDialog(
             },
             confirmButton = {
                 TextButton(onClick = onDismiss) {
-                    Text("Tutup")
+                    Text(stringResource(R.string.common_close))
                 }
             }
         )

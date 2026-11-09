@@ -1,5 +1,7 @@
 package com.hitunguang.feature.receipt.presentation
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -81,10 +83,10 @@ fun ReceiptReviewScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Cek Hasil Pindai", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.receipt_review_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -116,7 +118,7 @@ fun ReceiptReviewScreen(
                             )
                         } else {
                             Text(
-                                "Simpan transaksi",
+                                stringResource(R.string.receipt_review_save),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -164,13 +166,13 @@ fun ReceiptReviewScreen(
                             )
                             Spacer(modifier = Modifier.width(Spacing.medium))
                             Text(
-                                text = "Foto Struk",
+                                text = stringResource(R.string.receipt_photo),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                         Text(
-                            text = if (isImageExpanded) "Sembunyikan" else "Tampilkan",
+                            text = if (isImageExpanded) stringResource(R.string.receipt_photo_hide) else stringResource(R.string.receipt_photo_show),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.SemiBold
@@ -191,7 +193,7 @@ fun ReceiptReviewScreen(
                         ) {
                             AsyncImage(
                                 model = imageUri,
-                                contentDescription = "Foto Struk",
+                                contentDescription = stringResource(R.string.receipt_photo),
                                 contentScale = ContentScale.Fit,
                                 modifier = Modifier.fillMaxSize()
                              )
@@ -200,14 +202,15 @@ fun ReceiptReviewScreen(
                 }
             }
 
-            if (uiState.errorMessage != null) {
+            val errorText = uiState.errorMessage ?: uiState.errorMessageRes?.let { stringResource(it, *uiState.errorMessageArgs.toTypedArray()) }
+            if (errorText != null) {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
                     modifier = Modifier.padding(horizontal = Spacing.large).fillMaxWidth(),
                     shape = RoundedCornerShape(Radius.medium)
                 ) {
                     Text(
-                        text = uiState.errorMessage!!,
+                        text = errorText,
                         color = MaterialTheme.colorScheme.onErrorContainer,
                         modifier = Modifier.padding(Spacing.medium),
                         style = MaterialTheme.typography.bodyMedium
@@ -228,12 +231,12 @@ fun ReceiptReviewScreen(
                     modifier = Modifier.padding(Spacing.large),
                     verticalArrangement = Arrangement.spacedBy(Spacing.medium)
                 ) {
-                    Text("Informasi Umum", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.receipt_general_info), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     
                     OutlinedTextField(
                         value = uiState.merchantName,
                         onValueChange = { viewModel.updateMerchantName(it) },
-                        label = { Text("Nama toko") },
+                        label = { Text(stringResource(R.string.receipt_merchant_name)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(Radius.medium),
@@ -241,13 +244,13 @@ fun ReceiptReviewScreen(
                             if (uiState.isMerchantConfident) {
                                 Icon(
                                     imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = "Terdeteksi",
+                                    contentDescription = stringResource(R.string.receipt_detected),
                                     tint = com.hitunguang.core.designsystem.theme.IncomeGreen
                                 )
                             } else {
                                 Icon(
                                     imageVector = Icons.Default.Warning,
-                                    contentDescription = "Perlu dicek",
+                                    contentDescription = stringResource(R.string.receipt_needs_check),
                                     tint = MaterialTheme.colorScheme.tertiary
                                 )
                             }
@@ -276,7 +279,7 @@ fun ReceiptReviewScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        "Tanggal transaksi",
+                                        stringResource(R.string.receipt_date_label),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -284,14 +287,14 @@ fun ReceiptReviewScreen(
                                     if (uiState.isDateConfident) {
                                         Icon(
                                             imageVector = Icons.Default.CheckCircle,
-                                            contentDescription = "Terdeteksi",
+                                            contentDescription = stringResource(R.string.receipt_detected),
                                             tint = com.hitunguang.core.designsystem.theme.IncomeGreen,
                                             modifier = Modifier.size(14.dp)
                                         )
                                     } else {
                                         Icon(
                                             imageVector = Icons.Default.Warning,
-                                            contentDescription = "Perlu dicek",
+                                            contentDescription = stringResource(R.string.receipt_needs_check),
                                             tint = MaterialTheme.colorScheme.tertiary,
                                             modifier = Modifier.size(14.dp)
                                         )
@@ -336,20 +339,20 @@ fun ReceiptReviewScreen(
                                     Column(modifier = Modifier.weight(1f)) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Text(
-                                                "Dompet",
+                                                stringResource(R.string.receipt_account_label),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                             Spacer(modifier = Modifier.width(Spacing.small))
                                             Icon(
                                                 imageVector = Icons.Default.CheckCircle,
-                                                contentDescription = "Oke",
+                                                contentDescription = stringResource(R.string.receipt_ok),
                                                 tint = com.hitunguang.core.designsystem.theme.IncomeGreen,
                                                 modifier = Modifier.size(14.dp)
                                             )
                                         }
                                         Text(
-                                            currentAccount?.name ?: "Pilih dompet",
+                                            currentAccount?.name ?: stringResource(R.string.receipt_pick_account),
                                             style = MaterialTheme.typography.bodyLarge,
                                             fontWeight = FontWeight.Medium
                                         )
@@ -374,7 +377,7 @@ fun ReceiptReviewScreen(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "Saran: ${suggestedAccount.name}. Ketuk buat pilih.",
+                                        text = stringResource(R.string.receipt_suggestion, suggestedAccount.name),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.primary,
                                         fontWeight = FontWeight.Bold
@@ -442,20 +445,20 @@ fun ReceiptReviewScreen(
                                 Column(modifier = Modifier.weight(1f)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            "Kategori",
+                                            stringResource(R.string.receipt_category_label),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                         Spacer(modifier = Modifier.width(Spacing.small))
                                         Icon(
                                             imageVector = Icons.Default.CheckCircle,
-                                            contentDescription = "Oke",
+                                            contentDescription = stringResource(R.string.receipt_ok),
                                             tint = com.hitunguang.core.designsystem.theme.IncomeGreen,
                                             modifier = Modifier.size(14.dp)
                                         )
                                     }
                                     Text(
-                                        currentCategory?.name ?: "Pilih kategori",
+                                        currentCategory?.name ?: stringResource(R.string.receipt_pick_category),
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Medium
                                     )
@@ -480,7 +483,7 @@ fun ReceiptReviewScreen(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "Saran: ${suggestedCategory.name}. Ketuk buat pilih.",
+                                    text = stringResource(R.string.receipt_suggestion, suggestedCategory.name),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold
@@ -503,11 +506,11 @@ fun ReceiptReviewScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Daftar Barang", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.receipt_items_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     TextButton(onClick = { viewModel.addItem() }) {
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Tambah barang", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.receipt_add_item), fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -542,7 +545,7 @@ fun ReceiptReviewScreen(
                                     if (dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
-                                            contentDescription = "Hapus barang",
+                                            contentDescription = stringResource(R.string.receipt_delete_item),
                                             tint = MaterialTheme.colorScheme.onErrorContainer
                                         )
                                     }
@@ -565,13 +568,13 @@ fun ReceiptReviewScreen(
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Text("Barang ke-${index + 1}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Text(stringResource(R.string.receipt_item_number, index + 1), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                             IconButton(
                                                 onClick = { viewModel.removeItem(index) }
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Delete,
-                                                    contentDescription = "Hapus barang",
+                                                    contentDescription = stringResource(R.string.receipt_delete_item),
                                                     tint = MaterialTheme.colorScheme.error,
                                                     modifier = Modifier.size(20.dp)
                                                 )
@@ -581,7 +584,7 @@ fun ReceiptReviewScreen(
                                         OutlinedTextField(
                                             value = item.name,
                                             onValueChange = { viewModel.updateItemName(index, it) },
-                                            label = { Text("Nama barang") },
+                                            label = { Text(stringResource(R.string.receipt_item_name)) },
                                             singleLine = true,
                                             modifier = Modifier.fillMaxWidth(),
                                             shape = RoundedCornerShape(Radius.small)
@@ -594,7 +597,7 @@ fun ReceiptReviewScreen(
                                             OutlinedTextField(
                                                 value = item.quantity?.toString()?.replace(Regex("\\.0$"), "") ?: "",
                                                 onValueChange = { viewModel.updateItemQty(index, it) },
-                                                label = { Text("Jumlah") },
+                                                label = { Text(stringResource(R.string.receipt_item_qty)) },
                                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                                 singleLine = true,
                                                 modifier = Modifier.weight(1f),
@@ -604,7 +607,7 @@ fun ReceiptReviewScreen(
                                             OutlinedTextField(
                                                 value = if (item.unitPrice == 0L) "" else formatAmount(item.unitPrice.toString()),
                                                 onValueChange = { viewModel.updateItemUnitPrice(index, it) },
-                                                label = { Text("Harga satuan") },
+                                                label = { Text(stringResource(R.string.receipt_item_unit_price)) },
                                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                                 singleLine = true,
                                                 modifier = Modifier.weight(2f),
@@ -617,7 +620,7 @@ fun ReceiptReviewScreen(
                                             horizontalArrangement = Arrangement.End
                                         ) {
                                             Text(
-                                                "Subtotal: Rp ${formatAmount(item.subtotal.toString())}",
+                                                stringResource(R.string.receipt_item_subtotal, formatAmount(item.subtotal.toString())),
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 fontWeight = FontWeight.Bold,
                                                 color = MaterialTheme.colorScheme.primary
@@ -648,7 +651,7 @@ fun ReceiptReviewScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Subtotal Barang", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text(stringResource(R.string.receipt_items_subtotal), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
                         Text("Rp ${formatAmount(uiState.subtotal.toString())}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onPrimaryContainer)
                     }
 
@@ -657,7 +660,7 @@ fun ReceiptReviewScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Pajak (PPN)", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text(stringResource(R.string.receipt_tax), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
                         OutlinedTextField(
                             value = formatAmount(uiState.taxStr),
                             onValueChange = { viewModel.updateTax(it) },
@@ -679,7 +682,7 @@ fun ReceiptReviewScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Total Belanja", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text(stringResource(R.string.receipt_total), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
                         OutlinedTextField(
                             value = formatAmount(uiState.totalStr),
                             onValueChange = { viewModel.updateTotal(it) },
@@ -698,7 +701,7 @@ fun ReceiptReviewScreen(
 
                     if (uiState.isAmountMismatch) {
                         Text(
-                            text = "Rincian barang nggak sama dengan total di struk. Totalnya tetap sesuai isianmu atau yang ada di struk, jadi cek lagi daftar barangnya, ya.",
+                            text = stringResource(R.string.receipt_amount_mismatch),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.padding(top = Spacing.small)
@@ -720,12 +723,12 @@ fun ReceiptReviewScreen(
                         showDatePicker = false
                     }
                 ) {
-                    Text("Pilih")
+                    Text(stringResource(R.string.common_choose))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         ) {

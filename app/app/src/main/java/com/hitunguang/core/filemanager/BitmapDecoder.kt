@@ -1,5 +1,6 @@
 package com.hitunguang.core.filemanager
 
+import com.hitunguang.R
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -28,7 +29,7 @@ object BitmapDecoder {
 
         val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
         val bitmap = resolver.openInputStream(uri).use { BitmapFactory.decodeStream(it, null, options) }
-            ?: throw IllegalArgumentException("Gambarnya nggak bisa dibuka. Coba pilih foto lain.")
+            ?: throw IllegalArgumentException(context.getString(R.string.file_error_image_unreadable))
 
         val orientation = try {
             resolver.openInputStream(uri)?.use {

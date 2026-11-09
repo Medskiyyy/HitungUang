@@ -1,5 +1,8 @@
 package com.hitunguang.feature.receipt.presentation
 
+import com.hitunguang.feature.receipt.domain.usecase.InsufficientBalanceException
+import com.hitunguang.core.common.util.CurrencyFormatter
+import com.hitunguang.R
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -251,31 +254,31 @@ class ReceiptReviewViewModel @Inject constructor(
         val state = _uiState.value
         val imageUri = state.imageUri ?: return
         if (state.merchantName.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "Nama toko belum diisi") }
+            _uiState.update { it.copy(errorMessage = null, errorMessageRes = R.string.receipt_error_merchant_blank) }
             return
         }
         if (state.accountId.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "Pilih dompetnya dulu") }
+            _uiState.update { it.copy(errorMessage = null, errorMessageRes = R.string.receipt_error_account_blank) }
             return
         }
         val total = parseAmount(state.totalStr)
         if (total <= 0) {
-            _uiState.update { it.copy(errorMessage = "Total belanja harus lebih dari 0") }
+            _uiState.update { it.copy(errorMessage = null, errorMessageRes = R.string.receipt_error_total_zero) }
             return
         }
 
         if (state.items.isEmpty()) {
-            _uiState.update { it.copy(errorMessage = "Minimal ada 1 barang") }
+            _uiState.update { it.copy(errorMessage = null, errorMessageRes = R.string.receipt_error_no_items) }
             return
         }
         state.items.forEachIndexed { idx, item ->
             if (item.name.isBlank()) {
-                _uiState.update { it.copy(errorMessage = "Nama barang ke-${idx + 1} belum diisi") }
+                _uiState.update { it.copy(errorMessage = null, errorMessageRes = R.string.receipt_error_item_name_blank, errorMessageArgs = listOf(idx + 1)) }
                 return
             }
         }
 
-        _uiState.update { it.copy(isSaving = true, errorMessage = null) }
+        _uiState.update { it.copy(isSaving = true, errorMessage = null, errorMessageRes = null, errorMessageArgs = emptyList()) }
 
         viewModelScope.launch {
             try {
@@ -292,11 +295,22 @@ class ReceiptReviewViewModel @Inject constructor(
                     items = state.items
                 )
                 _uiState.update { it.copy(isSaving = false, isSaved = true) }
+            } catch (e: InsufficientBalanceException) {
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        errorMessage = null,
+                        errorMessageRes = R.string.receipt_error_insufficient_balance,
+                        errorMessageArgs = listOf(CurrencyFormatter.format(e.currentBalance), CurrencyFormatter.format(e.required))
+                    )
+                }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
                         isSaving = false,
-                        errorMessage = e.localizedMessage ?: "Gagal menyimpan struk"
+                        errorMessage = e.localizedMessage,
+                        errorMessageRes = if (e.localizedMessage == null) R.string.receipt_error_save_failed else null,
+                        errorMessageArgs = emptyList()
                     )
                 }
             }

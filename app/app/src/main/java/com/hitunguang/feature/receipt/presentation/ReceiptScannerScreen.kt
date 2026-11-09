@@ -1,5 +1,7 @@
 package com.hitunguang.feature.receipt.presentation
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import android.content.Context
 import android.net.Uri
 import android.Manifest
@@ -88,10 +90,10 @@ fun ReceiptScannerScreen(
                 tempPhotoUri = uri
                 takePictureLauncher.launch(uri)
             } else {
-                viewModel.setErrorMessage("Gagal menyiapkan foto. Coba lagi, ya.")
+                viewModel.setErrorMessage(R.string.receipt_scanner_error_prepare_photo)
             }
         } else {
-            viewModel.setErrorMessage("Izinkan akses kamera dulu buat memotret struk.")
+            viewModel.setErrorMessage(R.string.receipt_scanner_error_camera_permission)
         }
     }
 
@@ -111,16 +113,16 @@ fun ReceiptScannerScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Pindai Struk", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.receipt_scanner_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBackAndDiscard) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
                 actions = {
                     if (uiState.imageUri != null || uiState.rawText != null) {
                         IconButton(onClick = { viewModel.reset() }) {
-                            Icon(imageVector = Icons.Default.Clear, contentDescription = "Ulangi")
+                            Icon(imageVector = Icons.Default.Clear, contentDescription = stringResource(R.string.receipt_scanner_retake))
                         }
                     }
                 }
@@ -165,7 +167,7 @@ fun ReceiptScannerScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "Pilih atau ambil foto struk belanja",
+                            text = stringResource(R.string.receipt_scanner_prompt),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -184,7 +186,7 @@ fun ReceiptScannerScreen(
                                             tempPhotoUri = uri
                                             takePictureLauncher.launch(uri)
                                         } else {
-                                            viewModel.setErrorMessage("Gagal menyiapkan foto. Coba lagi, ya.")
+                                            viewModel.setErrorMessage(R.string.receipt_scanner_error_prepare_photo)
                                         }
                                     } else {
                                         permissionLauncher.launch(Manifest.permission.CAMERA)
@@ -193,7 +195,7 @@ fun ReceiptScannerScreen(
                             ) {
                                 Icon(imageVector = Icons.Default.CameraAlt, contentDescription = null)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Kamera")
+                                Text(stringResource(R.string.receipt_scanner_camera))
                             }
 
                             FilledTonalButton(
@@ -205,7 +207,7 @@ fun ReceiptScannerScreen(
                             ) {
                                 Icon(imageVector = Icons.Default.PhotoLibrary, contentDescription = null)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Galeri")
+                                Text(stringResource(R.string.receipt_scanner_gallery))
                             }
                         }
                     }
@@ -226,7 +228,7 @@ fun ReceiptScannerScreen(
                 ) {
                     AsyncImage(
                         model = uiState.imageUri,
-                        contentDescription = "Pratinjau struk",
+                        contentDescription = stringResource(R.string.receipt_scanner_preview),
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -239,7 +241,7 @@ fun ReceiptScannerScreen(
                     ) {
                         Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Baca struk")
+                        Text(stringResource(R.string.receipt_scanner_read))
                     }
                 }
             }
@@ -264,7 +266,7 @@ fun ReceiptScannerScreen(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Foto struknya kurang jelas, hasil bacaan bisa kurang akurat. Coba foto ulang di tempat yang lebih terang.",
+                                text = stringResource(R.string.receipt_scanner_low_quality),
                                 color = MaterialTheme.colorScheme.onTertiaryContainer,
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -274,10 +276,10 @@ fun ReceiptScannerScreen(
                             horizontalArrangement = Arrangement.End
                         ) {
                             TextButton(onClick = { viewModel.reset() }) {
-                                Text("Foto ulang")
+                                Text(stringResource(R.string.receipt_scanner_retake_photo))
                             }
                             TextButton(onClick = { viewModel.acceptLowQuality() }) {
-                                Text("Lanjut aja", fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.receipt_scanner_continue), fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -302,7 +304,7 @@ fun ReceiptScannerScreen(
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(16.dp))
                         Text(
-                            text = "Lagi baca struk…",
+                            text = stringResource(R.string.receipt_scanner_reading),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -311,7 +313,8 @@ fun ReceiptScannerScreen(
             }
 
             // Error display
-            uiState.errorMessage?.let { error ->
+            val errorText = uiState.errorMessage ?: uiState.errorMessageRes?.let { stringResource(it) }
+            errorText?.let { error ->
                 Card(
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.errorContainer
@@ -334,7 +337,7 @@ fun ReceiptScannerScreen(
                                     contentColor = MaterialTheme.colorScheme.error
                                 )
                             ) {
-                                Text("Coba lagi", fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.common_retry), fontWeight = FontWeight.Bold)
                             }
                         }
                     }
