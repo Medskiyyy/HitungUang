@@ -65,6 +65,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.hitunguang.core.balance.BalanceCalculator
 import com.hitunguang.core.designsystem.theme.Elevation
 import com.hitunguang.core.designsystem.theme.ExpenseRed
 import com.hitunguang.core.designsystem.theme.IncomeGreen
@@ -211,7 +212,14 @@ fun TransactionFormDialog(
         categories.filter { it.categoryType == type }
     }
 
+    // Edit mode: keep the transaction's own category even if it is null or no longer listed
+    val keepsOriginalCategory = transaction != null &&
+        type == transaction.transactionType &&
+        selectedCategoryId == (transaction.categoryId ?: "")
+    val showsUnlistedCategory = keepsOriginalCategory && filteredCategories.none { it.id == selectedCategoryId }
+
     LaunchedEffect(type, filteredCategories) {
+        if (keepsOriginalCategory) return@LaunchedEffect
         if (selectedCategoryId.isEmpty() || filteredCategories.none { it.id == selectedCategoryId }) {
             selectedCategoryId = filteredCategories.firstOrNull()?.id ?: ""
         }
@@ -359,6 +367,16 @@ fun TransactionFormDialog(
                         contentPadding = PaddingValues(bottom = Spacing.small)
                     ) {
                         val topCategories = filteredCategories.take(8)
+                        if (showsUnlistedCategory) {
+                            item {
+                                FilterChip(
+                                    selected = true,
+                                    onClick = {},
+                                    label = { Text(transaction?.categoryName ?: "Tanpa kategori") },
+                                    shape = RoundedCornerShape(Radius.medium)
+                                )
+                            }
+                        }
                         items(topCategories) { category ->
                             FilterChip(
                                 selected = selectedCategoryId == category.id,
@@ -565,7 +583,7 @@ fun TransactionFormDialog(
                             } else if (selectedAccountId.isBlank()) {
                                 validationMessage = "Silakan pilih akun terlebih dahulu"
                                 showValidationDialog = true
-                            } else if (selectedCategoryId.isBlank()) {
+                            } else if (selectedCategoryId.isBlank() && !keepsOriginalCategory) {
                                 validationMessage = "Silakan pilih kategori terlebih dahulu"
                                 showValidationDialog = true
                             } else if (title.isBlank()) {
@@ -575,8 +593,15 @@ fun TransactionFormDialog(
                                 var proceed = true
                                 if (type == "EXPENSE") {
                                     val selectedAccount = accounts.find { it.id == selectedAccountId }
-                                    if (selectedAccount != null && selectedAccount.currentBalance < amount) {
-                                        insufficientBalanceInfo = selectedAccount.currentBalance to amount
+                                    // Editing on the same account: the old transaction's effect is undone first
+                                    val oldEffect = if (transaction != null && transaction.accountId == selectedAccountId) {
+                                        BalanceCalculator.calculateDifference(transaction.transactionType, transaction.amount)
+                                    } else {
+                                        0L
+                                    }
+                                    val availableBalance = (selectedAccount?.currentBalance ?: 0L) - oldEffect
+                                    if (selectedAccount != null && availableBalance < amount) {
+                                        insufficientBalanceInfo = availableBalance to amount
                                         showInsufficientBalanceDialog = true
                                         proceed = false
                                     }
