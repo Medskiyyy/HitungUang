@@ -1,5 +1,7 @@
 package com.hitunguang.feature.dashboard.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -61,22 +63,22 @@ fun SetupChecklistCard(
 ) {
     val tasks = listOf(
         SetupTask(
-            title = "Buat dompet pertama",
-            description = "Tempat mencatat saldo tunai, bank, atau e-wallet.",
+            title = stringResource(R.string.dashboard_setup_wallet_title),
+            description = stringResource(R.string.dashboard_setup_wallet_desc),
             icon = Icons.Default.AccountBalanceWallet,
             isDone = hasWallet,
             onClick = onCreateWalletClick
         ),
         SetupTask(
-            title = "Catat transaksi pertama",
-            description = "Isi manual atau pindai struk belanja langsung.",
+            title = stringResource(R.string.dashboard_setup_transaction_title),
+            description = stringResource(R.string.dashboard_setup_transaction_desc),
             icon = Icons.Default.ReceiptLong,
             isDone = hasTransaction,
             onClick = onAddTransactionClick
         ),
         SetupTask(
-            title = "Atur anggaran bulanan",
-            description = "Tetapkan batas pengeluaran biar nggak kebablasan.",
+            title = stringResource(R.string.dashboard_setup_budget_title),
+            description = stringResource(R.string.dashboard_setup_budget_desc),
             icon = Icons.Default.PieChart,
             isDone = hasBudget,
             onClick = onCreateBudgetClick
@@ -100,13 +102,13 @@ fun SetupChecklistCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Langkah Awal",
+                    text = stringResource(R.string.dashboard_setup_header),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
                 Text(
-                    text = "$doneCount dari ${tasks.size}",
+                    text = stringResource(R.string.dashboard_setup_progress, doneCount, tasks.size),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
@@ -115,7 +117,7 @@ fun SetupChecklistCard(
             Spacer(modifier = Modifier.height(Spacing.small))
 
             Text(
-                text = "Selesaikan langkah ini supaya HitungUang siap dipakai sehari-hari.",
+                text = stringResource(R.string.dashboard_setup_subtitle),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )

@@ -111,8 +111,10 @@ class DashboardViewModelTest {
                     CheckBudgetThresholdUseCase(budgetRepo, context)
                 ),
                 failureStore = RecurringFailureStore(context),
-                notificationHelper = NotificationHelper(context)
-            )
+                notificationHelper = NotificationHelper(context),
+                context = context
+            ),
+            context = context
         )
     }
 

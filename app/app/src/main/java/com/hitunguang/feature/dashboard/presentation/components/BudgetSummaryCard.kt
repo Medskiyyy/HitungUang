@@ -1,5 +1,7 @@
 package com.hitunguang.feature.dashboard.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -44,7 +46,7 @@ fun BudgetSummaryCard(
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = "Anggaran Terpakai",
+            text = stringResource(R.string.dashboard_budget_used),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -67,21 +69,21 @@ fun BudgetSummaryCard(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Belum ada anggaran aktif",
+                        text = stringResource(R.string.dashboard_budget_empty_title),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(Spacing.small))
                     Text(
-                        text = "Buat anggaran biar pengeluaranmu lebih terkontrol.",
+                        text = stringResource(R.string.dashboard_budget_empty_message),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(Spacing.large))
                     OutlinedButton(onClick = onAddBudgetClick) {
-                        Text("Buat anggaran")
+                        Text(stringResource(R.string.dashboard_budget_create))
                     }
                 }
             }
@@ -95,9 +97,9 @@ fun BudgetSummaryCard(
                     val progressRatio = (progress.progressPercent / 100f).coerceIn(0f, 1f)
 
                     val budgetName = if (budget.budgetType == "GLOBAL") {
-                        "Anggaran semua kategori"
+                        stringResource(R.string.dashboard_budget_all_categories)
                     } else {
-                        "Anggaran ${progress.categoryName ?: "Kategori"}"
+                        stringResource(R.string.dashboard_budget_category, progress.categoryName ?: stringResource(R.string.dashboard_budget_category_fallback))
                     }
 
                     Card(
@@ -146,13 +148,13 @@ fun BudgetSummaryCard(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "Terpakai: ${CurrencyFormatter.format(progress.spentAmount)}",
+                                    text = stringResource(R.string.dashboard_budget_spent, CurrencyFormatter.format(progress.spentAmount)),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 val remaining = budget.amount - progress.spentAmount
                                 Text(
-                                    text = "Sisa anggaran: ${CurrencyFormatter.format(remaining)}",
+                                    text = stringResource(R.string.dashboard_budget_remaining, CurrencyFormatter.format(remaining)),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = if (remaining >= 0) BudgetSafe else BudgetDanger,
                                     fontWeight = FontWeight.Medium

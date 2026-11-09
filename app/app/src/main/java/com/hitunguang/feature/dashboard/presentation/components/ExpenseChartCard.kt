@@ -1,5 +1,7 @@
 package com.hitunguang.feature.dashboard.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -68,7 +70,7 @@ fun ExpenseChartCard(
             modifier = Modifier.padding(Spacing.large)
         ) {
             Text(
-                text = "Kategori Pengeluaran",
+                text = stringResource(R.string.dashboard_expense_categories),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -84,7 +86,7 @@ fun ExpenseChartCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Belum ada pengeluaran. Catat satu biar grafiknya muncul.",
+                        text = stringResource(R.string.dashboard_expense_empty),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -134,7 +136,7 @@ fun ExpenseChartCard(
                             modifier = Modifier.padding(16.dp)
                         ) {
                             Text(
-                                text = "Total",
+                                text = stringResource(R.string.dashboard_total),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
@@ -205,7 +207,7 @@ fun ExpenseChartCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Kategori Terbesar",
+                            text = stringResource(R.string.dashboard_top_category),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

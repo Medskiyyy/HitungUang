@@ -3,6 +3,7 @@ package com.hitunguang.core.notification.worker
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.hitunguang.R
 import com.hitunguang.core.common.util.CurrencyFormatter
 import com.hitunguang.core.notification.BudgetAlertLevel
 import com.hitunguang.core.notification.BudgetAlertStore
@@ -68,12 +69,12 @@ class BudgetWorker(
 
             val categoryName = if (budget.categoryId != null) {
                 val categories = categoryRepository.getAllCategories().firstOrNull() ?: emptyList()
-                categories.find { it.id == budget.categoryId }?.name ?: "Kategori"
+                categories.find { it.id == budget.categoryId }?.name ?: applicationContext.getString(R.string.notif_budget_category_fallback)
             } else {
-                "semua kategori"
+                applicationContext.getString(R.string.notif_budget_all_categories)
             }
 
-            val budgetName = if (budget.categoryId != null) "kategori $categoryName" else "semua kategori"
+            val budgetName = if (budget.categoryId != null) applicationContext.getString(R.string.notif_budget_name_category, categoryName) else applicationContext.getString(R.string.notif_budget_all_categories)
             val notificationId = budget.id.hashCode()
 
             val spentText = CurrencyFormatter.format(spentAmount)
@@ -83,15 +84,15 @@ class BudgetWorker(
                 notificationHelper.showNotification(
                     channelId = NotificationHelper.CHANNEL_BUDGET,
                     notificationId = notificationId,
-                    title = "Anggaran Habis!",
-                    message = "Anggaran $budgetName sudah habis ($spentText dari $limitText)."
+                    title = applicationContext.getString(R.string.notif_budget_exceeded_title),
+                    message = applicationContext.getString(R.string.notif_budget_exceeded_message, budgetName, spentText, limitText)
                 )
             } else {
                 notificationHelper.showNotification(
                     channelId = NotificationHelper.CHANNEL_BUDGET,
                     notificationId = notificationId,
-                    title = "Anggaran Hampir Habis!",
-                    message = "Anggaran $budgetName sudah terpakai ${budget.thresholdPercent}% ($spentText dari $limitText)."
+                    title = applicationContext.getString(R.string.notif_budget_near_title),
+                    message = applicationContext.getString(R.string.notif_budget_near_message, budgetName, budget.thresholdPercent, spentText, limitText)
                 )
             }
 

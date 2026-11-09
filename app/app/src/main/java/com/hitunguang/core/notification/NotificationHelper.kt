@@ -9,6 +9,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.hitunguang.MainActivity
+import com.hitunguang.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,34 +35,34 @@ class NotificationHelper @Inject constructor(
 
             val reminderChannel = NotificationChannel(
                 CHANNEL_REMINDER,
-                "Pengingat Harian",
+                context.getString(R.string.notif_channel_reminder_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Mengirimkan pengingat harian untuk mencatat keuangan"
+                description = context.getString(R.string.notif_channel_reminder_desc)
             }
 
             val budgetChannel = NotificationChannel(
                 CHANNEL_BUDGET,
-                "Peringatan Anggaran",
+                context.getString(R.string.notif_channel_budget_name),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Mengirimkan peringatan jika pengeluaran melebihi batas anggaran"
+                description = context.getString(R.string.notif_channel_budget_desc)
             }
 
             val reviewChannel = NotificationChannel(
                 CHANNEL_REVIEW,
-                "Ringkasan Keuangan",
+                context.getString(R.string.notif_channel_review_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Mengirimkan ringkasan keuangan mingguan dan bulanan"
+                description = context.getString(R.string.notif_channel_review_desc)
             }
 
             val recurringChannel = NotificationChannel(
                 CHANNEL_RECURRING,
-                "Transaksi Berulang",
+                context.getString(R.string.notif_channel_recurring_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Mengabari kalau transaksi berulang gagal dicatat"
+                description = context.getString(R.string.notif_channel_recurring_desc)
             }
 
             manager.createNotificationChannels(listOf(reminderChannel, budgetChannel, reviewChannel, recurringChannel))

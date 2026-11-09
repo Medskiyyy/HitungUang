@@ -1,5 +1,7 @@
 package com.hitunguang.feature.dashboard.presentation
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -73,7 +75,7 @@ fun DashboardScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Halo, ${uiState.userName}",
+                        text = stringResource(R.string.dashboard_greeting, uiState.userName),
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleLarge
                     )
@@ -82,7 +84,7 @@ fun DashboardScreen(
                     IconButton(onClick = onSettingsClick) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Pengaturan"
+                            contentDescription = stringResource(R.string.dashboard_settings)
                         )
                     }
                 }
@@ -212,7 +214,7 @@ fun FinancialSummaryInfo(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Pemasukan",
+                    text = stringResource(R.string.dashboard_income),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -225,7 +227,7 @@ fun FinancialSummaryInfo(
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Pengeluaran",
+                    text = stringResource(R.string.dashboard_expense),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -238,7 +240,7 @@ fun FinancialSummaryInfo(
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Selisih",
+                    text = stringResource(R.string.dashboard_difference),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

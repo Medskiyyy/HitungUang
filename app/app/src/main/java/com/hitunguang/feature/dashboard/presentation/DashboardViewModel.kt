@@ -1,7 +1,9 @@
 package com.hitunguang.feature.dashboard.presentation
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hitunguang.R
 import com.hitunguang.feature.account.domain.model.Account
 import com.hitunguang.feature.account.domain.repository.AccountRepository
 import com.hitunguang.feature.budget.domain.model.Budget
@@ -19,6 +21,7 @@ import com.hitunguang.feature.settings.domain.repository.SettingsRepository
 import com.hitunguang.feature.transaction.domain.model.TransactionWithDetails
 import com.hitunguang.feature.transaction.domain.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,7 +50,8 @@ class DashboardViewModel @Inject constructor(
     private val budgetRepository: BudgetRepository,
     private val settingsRepository: SettingsRepository,
     private val autoResetBudgetsUseCase: AutoResetBudgetsUseCase,
-    private val processDueRecurringUseCase: ProcessDueRecurringUseCase
+    private val processDueRecurringUseCase: ProcessDueRecurringUseCase,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private data class DashboardData(
@@ -105,7 +109,7 @@ class DashboardViewModel @Inject constructor(
         val (profile, appSettings, accounts) = f1
         val (categories, transactions, budgets, transferFees) = f2
 
-        val userName = profile?.name ?: "Pengguna"
+        val userName = profile?.name ?: context.getString(R.string.dashboard_default_user_name)
         val hideBalance = appSettings?.hideBalance ?: false
         val selectedPeriod = appSettings?.dashboardPeriod ?: "MONTHLY"
 
@@ -145,11 +149,11 @@ class DashboardViewModel @Inject constructor(
         val previousTotalExpense = BudgetSpending.totalExpense(transactions, transferFees, prevStartTime, prevEndTime)
 
         val periodLabel = when (selectedPeriod) {
-            "TODAY" -> "kemarin"
-            "WEEKLY" -> "minggu lalu"
-            "MONTHLY" -> "bulan lalu"
-            "YEARLY" -> "tahun lalu"
-            else -> "periode lalu"
+            "TODAY" -> context.getString(R.string.dashboard_prev_period_yesterday)
+            "WEEKLY" -> context.getString(R.string.dashboard_prev_period_week)
+            "MONTHLY" -> context.getString(R.string.dashboard_prev_period_month)
+            "YEARLY" -> context.getString(R.string.dashboard_prev_period_year)
+            else -> context.getString(R.string.dashboard_prev_period_other)
         }
 
         var isExpenseIncreased = false
@@ -160,21 +164,21 @@ class DashboardViewModel @Inject constructor(
             
             if (diff > 0) {
                 isExpenseIncreased = true
-                "Pengeluaranmu naik $formattedPercent% dari $periodLabel."
+                context.getString(R.string.dashboard_comparison_up, formattedPercent, periodLabel)
             } else if (diff < 0) {
                 isExpenseIncreased = false
-                "Pengeluaranmu turun $formattedPercent% dari $periodLabel. Mantap, lebih hemat!"
+                context.getString(R.string.dashboard_comparison_down, formattedPercent, periodLabel)
             } else {
                 isExpenseIncreased = false
-                "Pengeluaranmu sama persis dengan $periodLabel."
+                context.getString(R.string.dashboard_comparison_same, periodLabel)
             }
         } else if (totalExpense > 0L) {
             isExpenseIncreased = true
             val formatter = java.text.NumberFormat.getIntegerInstance(java.util.Locale("in", "ID"))
-            "Ada pengeluaran Rp ${formatter.format(totalExpense)} periode ini, sedangkan $periodLabel tidak ada pengeluaran sama sekali."
+            context.getString(R.string.dashboard_comparison_only_current, formatter.format(totalExpense), periodLabel)
         } else {
             isExpenseIncreased = false
-            "Belum ada catatan pengeluaran pada periode ini maupun $periodLabel."
+            context.getString(R.string.dashboard_comparison_none, periodLabel)
         }
 
         // Quick Add Categories (6 chips)
@@ -216,7 +220,7 @@ class DashboardViewModel @Inject constructor(
         val expenseCategoriesDistribution = categoryMap.mapNotNull { (catId, txs) ->
             val category = categories.find { it.id == catId } ?: Category(
                 id = catId ?: "unknown",
-                name = "Lainnya",
+                name = context.getString(R.string.dashboard_category_other),
                 categoryType = "EXPENSE",
                 icon = "help",
                 isDefault = false,
@@ -242,14 +246,14 @@ class DashboardViewModel @Inject constructor(
         val savingsRateMessage = if (totalIncome > 0) {
             val rate = (netDifference.toFloat() / totalIncome.toFloat()) * 100f
             if (rate > 0) {
-                "Kamu berhasil menghemat ${String.format(java.util.Locale.US, "%.1f", rate)}% dari pemasukanmu periode ini!"
+                context.getString(R.string.dashboard_savings_positive, String.format(java.util.Locale.US, "%.1f", rate))
             } else {
-                "Pengeluaran melebihi pemasukan. Yuk, kurangi pengeluaranmu!"
+                context.getString(R.string.dashboard_savings_overspent)
             }
         } else if (totalExpense > 0) {
-            "Belum ada pemasukan. Ayo batasi pengeluaran periode ini!"
+            context.getString(R.string.dashboard_savings_no_income)
         } else {
-            "Belum ada catatan keuangan untuk periode ini."
+            context.getString(R.string.dashboard_savings_no_records)
         }
 
         DashboardUiState(
@@ -320,11 +324,11 @@ class DashboardViewModel @Inject constructor(
     }
 
     private fun currentPeriodLabel(period: String): String = when (period) {
-        "TODAY" -> "hari ini"
-        "WEEKLY" -> "minggu ini"
-        "MONTHLY" -> "bulan ini"
-        "YEARLY" -> "tahun ini"
-        else -> "periode ini"
+        "TODAY" -> context.getString(R.string.dashboard_period_today)
+        "WEEKLY" -> context.getString(R.string.dashboard_period_week)
+        "MONTHLY" -> context.getString(R.string.dashboard_period_month)
+        "YEARLY" -> context.getString(R.string.dashboard_period_year)
+        else -> context.getString(R.string.dashboard_period_other)
     }
 
     private fun getPeriodBounds(period: String): Pair<Long, Long> {

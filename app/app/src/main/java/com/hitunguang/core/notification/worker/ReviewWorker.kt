@@ -3,6 +3,7 @@ package com.hitunguang.core.notification.worker
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.hitunguang.R
 import com.hitunguang.core.common.util.CurrencyFormatter
 import com.hitunguang.core.datastore.SettingsDataStore
 import com.hitunguang.core.notification.NotificationHelper
@@ -69,8 +70,8 @@ class ReviewWorker(
                 notificationHelper.showNotification(
                     channelId = NotificationHelper.CHANNEL_REVIEW,
                     notificationId = NotificationHelper.ID_REVIEW,
-                    title = "Ringkasan Mingguan",
-                    message = "Total pengeluaranmu minggu lalu: ${CurrencyFormatter.format(totalExpense)}."
+                    title = applicationContext.getString(R.string.notif_review_weekly_title),
+                    message = applicationContext.getString(R.string.notif_review_weekly_message, CurrencyFormatter.format(totalExpense))
                 )
 
                 // Reschedule for next week
@@ -92,8 +93,8 @@ class ReviewWorker(
                 notificationHelper.showNotification(
                     channelId = NotificationHelper.CHANNEL_REVIEW,
                     notificationId = NotificationHelper.ID_REVIEW + 1, // Use a distinct ID for monthly so it doesn't overwrite weekly if both are shown
-                    title = "Ringkasan $monthName",
-                    message = "Total pengeluaranmu bulan $monthName ${monthStart.year}: ${CurrencyFormatter.format(totalExpense)}."
+                    title = applicationContext.getString(R.string.notif_review_monthly_title, monthName),
+                    message = applicationContext.getString(R.string.notif_review_monthly_message, monthName, monthStart.year, CurrencyFormatter.format(totalExpense))
                 )
 
                 // Reschedule for next month

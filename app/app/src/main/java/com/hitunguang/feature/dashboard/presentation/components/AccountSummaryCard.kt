@@ -1,5 +1,7 @@
 package com.hitunguang.feature.dashboard.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,7 +41,7 @@ fun AccountSummaryCard(
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = "Daftar Dompet",
+            text = stringResource(R.string.dashboard_wallet_list),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -49,7 +51,7 @@ fun AccountSummaryCard(
 
         if (accounts.isEmpty()) {
             Text(
-                text = "Belum ada dompet. Buat yang pertama di tab Dompet.",
+                text = stringResource(R.string.dashboard_wallet_empty),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -88,7 +90,7 @@ fun AccountSummaryCard(
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                                 Text(
-                                    text = when (account.accountType) { "BANK" -> "Bank"; "E_WALLET" -> "E-Wallet"; else -> "Tunai" },
+                                    text = when (account.accountType) { "BANK" -> stringResource(R.string.dashboard_account_type_bank); "E_WALLET" -> stringResource(R.string.dashboard_account_type_ewallet); else -> stringResource(R.string.dashboard_account_type_cash) },
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )

@@ -1,3 +1,23 @@
 <resources>
     <string name="app_name">HitungUang</string>
+
+    <string name="common_cancel">Batal</string>
+    <string name="common_back">Kembali</string>
+    <string name="common_delete">Hapus</string>
+    <string name="common_close">Tutup</string>
+    <string name="common_next">Lanjut</string>
+    <string name="common_save">Simpan</string>
+    <string name="common_choose">Pilih</string>
+    <string name="common_edit">Edit</string>
+    <string name="common_ok">OK</string>
+    <string name="common_skip">Lewati</string>
+    <string name="common_change">Ubah</string>
+    <string name="common_apply">Terapkan</string>
+    <string name="common_add">Tambah</string>
+    <string name="common_done">Selesai</string>
+    <string name="common_restore">Pulihkan</string>
+    <string name="common_view_all">Lihat semua</string>
+    <string name="common_send">Kirim</string>
+    <string name="common_retry">Coba lagi</string>
+    <string name="common_search">Cari</string>
 </resources>

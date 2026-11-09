@@ -1,5 +1,7 @@
 package com.hitunguang.feature.dashboard.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,13 +34,13 @@ fun RecentTransactionsSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Transaksi Terbaru",
+                text = stringResource(R.string.dashboard_recent_transactions),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
             TextButton(onClick = onViewAllClick) {
-                Text("Lihat semua")
+                Text(stringResource(R.string.common_view_all))
             }
         }
 
@@ -46,7 +48,7 @@ fun RecentTransactionsSection(
 
         if (transactions.isEmpty()) {
             Text(
-                text = "Belum ada transaksi. Mulai dari Aksi Cepat di atas.",
+                text = stringResource(R.string.dashboard_recent_empty),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = Spacing.large)

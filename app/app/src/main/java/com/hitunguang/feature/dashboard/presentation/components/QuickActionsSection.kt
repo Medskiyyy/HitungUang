@@ -1,5 +1,7 @@
 package com.hitunguang.feature.dashboard.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,7 +48,7 @@ fun QuickActionsSection(
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = "Aksi Cepat",
+            text = stringResource(R.string.dashboard_quick_actions),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -59,7 +61,7 @@ fun QuickActionsSection(
             horizontalArrangement = Arrangement.spacedBy(Spacing.medium)
         ) {
             QuickActionButton(
-                title = "Tambah Pengeluaran",
+                title = stringResource(R.string.dashboard_add_expense),
                 icon = Icons.Default.TrendingDown,
                 iconTint = MaterialTheme.colorScheme.error,
                 backgroundColor = MaterialTheme.colorScheme.error.copy(alpha = 0.2f),
@@ -67,7 +69,7 @@ fun QuickActionsSection(
                 modifier = Modifier.weight(1f)
             )
             QuickActionButton(
-                title = "Tambah Pemasukan",
+                title = stringResource(R.string.dashboard_add_income),
                 icon = Icons.Default.TrendingUp,
                 iconTint = MaterialTheme.colorScheme.primary,
                 backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
@@ -83,7 +85,7 @@ fun QuickActionsSection(
             horizontalArrangement = Arrangement.spacedBy(Spacing.medium)
         ) {
             QuickActionButton(
-                title = "Transfer Saldo",
+                title = stringResource(R.string.dashboard_transfer_balance),
                 icon = Icons.Default.SwapHoriz,
                 iconTint = MaterialTheme.colorScheme.secondary,
                 backgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
@@ -91,7 +93,7 @@ fun QuickActionsSection(
                 modifier = Modifier.weight(1f)
             )
             QuickActionButton(
-                title = "Pindai struk",
+                title = stringResource(R.string.dashboard_scan_receipt),
                 icon = Icons.Default.QrCodeScanner,
                 iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
                 backgroundColor = MaterialTheme.colorScheme.surfaceVariant,

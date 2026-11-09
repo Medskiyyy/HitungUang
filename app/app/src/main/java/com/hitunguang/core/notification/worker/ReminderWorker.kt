@@ -3,6 +3,7 @@ package com.hitunguang.core.notification.worker
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.hitunguang.R
 import com.hitunguang.core.datastore.SettingsDataStore
 import com.hitunguang.core.notification.NotificationHelper
 import com.hitunguang.core.notification.NotificationScheduler
@@ -45,8 +46,8 @@ class ReminderWorker(
             notificationHelper.showNotification(
                 channelId = NotificationHelper.CHANNEL_REMINDER,
                 notificationId = NotificationHelper.ID_REMINDER,
-                title = "Udah catat pengeluaran hari ini?",
-                message = "Catat sekarang biar nggak lupa."
+                title = applicationContext.getString(R.string.notif_reminder_title),
+                message = applicationContext.getString(R.string.notif_reminder_message)
             )
 
             // Reschedule daily reminder for tomorrow

@@ -1,5 +1,6 @@
 package com.hitunguang
 
+import androidx.compose.ui.res.stringResource
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.WindowManager
@@ -262,9 +263,9 @@ class MainActivity : FragmentActivity() {
         )
 
         val promptInfo = androidx.biometric.BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Buka HitungUang")
-            .setSubtitle("Pakai sidik jari buat masuk")
-            .setNegativeButtonText("Pakai PIN")
+            .setTitle(getString(R.string.main_biometric_title))
+            .setSubtitle(getString(R.string.main_biometric_subtitle))
+            .setNegativeButtonText(getString(R.string.main_biometric_use_pin))
             .build()
 
         biometricPrompt.authenticate(promptInfo)
@@ -450,12 +451,12 @@ fun MainAppScreen(
                 modifier = Modifier.padding(Spacing.large)
             ) {
                 Text(
-                    text = "Pengaturan",
+                    text = stringResource(R.string.main_settings_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Pilih pengaturan:",
+                    text = stringResource(R.string.main_settings_prompt),
                     style = MaterialTheme.typography.bodySmall
                 )
                 Spacer(modifier = Modifier.height(Spacing.large))
@@ -469,8 +470,8 @@ fun MainAppScreen(
                     Column {
                         SettingsMenuItem(
                             icon = Icons.Default.Palette,
-                            title = "Pengaturan Tampilan",
-                            subtitle = "Tema terang, gelap, atau ikut sistem",
+                            title = stringResource(R.string.main_menu_appearance_title),
+                            subtitle = stringResource(R.string.main_menu_appearance_subtitle),
                             onClick = {
                                 showSettingsPlaceholder = false
                                 showThemeSettingsDialog = true
@@ -479,8 +480,8 @@ fun MainAppScreen(
                         HorizontalDivider(thickness = 0.5.dp)
                         SettingsMenuItem(
                             icon = Icons.Default.Lock,
-                            title = "Keamanan",
-                            subtitle = "PIN dan sidik jari",
+                            title = stringResource(R.string.main_menu_security_title),
+                            subtitle = stringResource(R.string.main_menu_security_subtitle),
                             onClick = {
                                 showSettingsPlaceholder = false
                                 showSecuritySettingsScreen = true
@@ -489,8 +490,8 @@ fun MainAppScreen(
                         HorizontalDivider(thickness = 0.5.dp)
                         SettingsMenuItem(
                             icon = Icons.Default.Notifications,
-                            title = "Notifikasi",
-                            subtitle = "Pengingat harian dan anggaran",
+                            title = stringResource(R.string.main_menu_notifications_title),
+                            subtitle = stringResource(R.string.main_menu_notifications_subtitle),
                             onClick = {
                                 showSettingsPlaceholder = false
                                 showNotificationSettingsScreen = true
@@ -499,8 +500,8 @@ fun MainAppScreen(
                         HorizontalDivider(thickness = 0.5.dp)
                         SettingsMenuItem(
                             icon = Icons.Default.Backup,
-                            title = "Cadangan & Pemulihan",
-                            subtitle = "Cadangkan dan pulihkan data",
+                            title = stringResource(R.string.main_menu_backup_title),
+                            subtitle = stringResource(R.string.main_menu_backup_subtitle),
                             onClick = {
                                 showSettingsPlaceholder = false
                                 showBackupScreen = true
@@ -509,8 +510,8 @@ fun MainAppScreen(
                         HorizontalDivider(thickness = 0.5.dp)
                         SettingsMenuItem(
                             icon = Icons.Default.Receipt,
-                            title = "Arsip Struk Belanja",
-                            subtitle = "Riwayat pemindaian struk",
+                            title = stringResource(R.string.main_menu_receipts_title),
+                            subtitle = stringResource(R.string.main_menu_receipts_subtitle),
                             onClick = {
                                 showSettingsPlaceholder = false
                                 showReceiptArchiveScreen = true
@@ -519,8 +520,8 @@ fun MainAppScreen(
                         HorizontalDivider(thickness = 0.5.dp)
                         SettingsMenuItem(
                             icon = Icons.Default.Category,
-                            title = "Kelola Kategori",
-                            subtitle = "Tambah dan ubah kategori",
+                            title = stringResource(R.string.main_menu_categories_title),
+                            subtitle = stringResource(R.string.main_menu_categories_subtitle),
                             onClick = {
                                 showSettingsPlaceholder = false
                                 showCategoryListScreen = true
@@ -529,8 +530,8 @@ fun MainAppScreen(
                         HorizontalDivider(thickness = 0.5.dp)
                         SettingsMenuItem(
                             icon = Icons.Default.Repeat,
-                            title = "Transaksi Berulang",
-                            subtitle = "Catat otomatis tagihan dan pemasukan rutin",
+                            title = stringResource(R.string.main_menu_recurring_title),
+                            subtitle = stringResource(R.string.main_menu_recurring_subtitle),
                             onClick = {
                                 showSettingsPlaceholder = false
                                 showRecurringScreen = true
@@ -539,8 +540,8 @@ fun MainAppScreen(
                         HorizontalDivider(thickness = 0.5.dp)
                         SettingsMenuItem(
                             icon = Icons.Default.Delete,
-                            title = "Tempat Sampah",
-                            subtitle = "Pulihkan data terhapus",
+                            title = stringResource(R.string.main_menu_trash_title),
+                            subtitle = stringResource(R.string.main_menu_trash_subtitle),
                             onClick = {
                                 showSettingsPlaceholder = false
                                 showRecycleBinScreen = true
@@ -556,13 +557,13 @@ fun MainAppScreen(
         val currentTheme = appSettings?.themeMode ?: "SYSTEM"
         AlertDialog(
             onDismissRequest = { showThemeSettingsDialog = false },
-            title = { Text("Pilih tema", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.main_theme_dialog_title), fontWeight = FontWeight.Bold) },
             text = {
                 Column {
                     listOf(
-                        "SYSTEM" to "Ikuti Sistem",
-                        "LIGHT" to "Terang",
-                        "DARK" to "Gelap"
+                        "SYSTEM" to stringResource(R.string.main_theme_system),
+                        "LIGHT" to stringResource(R.string.main_theme_light),
+                        "DARK" to stringResource(R.string.main_theme_dark)
                     ).forEach { (mode, label) ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -611,7 +612,7 @@ fun MainAppScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showThemeSettingsDialog = false }) {
-                    Text("Tutup")
+                    Text(stringResource(R.string.common_close))
                 }
             }
         )
@@ -645,13 +646,13 @@ fun FloatingBottomNavigation(
                 selected = currentTab == MainTab.DASHBOARD,
                 onClick = { onTabSelected(MainTab.DASHBOARD) },
                 icon = Icons.Default.Dashboard,
-                label = "Beranda"
+                label = stringResource(R.string.main_tab_home)
             )
             FloatingNavItem(
                 selected = currentTab == MainTab.TRANSACTIONS,
                 onClick = { onTabSelected(MainTab.TRANSACTIONS) },
                 icon = Icons.Default.ReceiptLong,
-                label = "Transaksi"
+                label = stringResource(R.string.main_tab_transactions)
             )
             FloatingScanNavItem(
                 onClick = onScanClick
@@ -660,13 +661,13 @@ fun FloatingBottomNavigation(
                 selected = currentTab == MainTab.ACCOUNTS,
                 onClick = { onTabSelected(MainTab.ACCOUNTS) },
                 icon = Icons.Default.Wallet,
-                label = "Dompet"
+                label = stringResource(R.string.main_tab_wallets)
             )
             FloatingNavItem(
                 selected = currentTab == MainTab.BUDGETS,
                 onClick = { onTabSelected(MainTab.BUDGETS) },
                 icon = Icons.Default.BarChart,
-                label = "Anggaran"
+                label = stringResource(R.string.main_tab_budgets)
             )
         }
     }
@@ -720,7 +721,7 @@ fun RowScope.FloatingScanNavItem(
         modifier = Modifier
             .weight(1.2f)
             .clip(RoundedCornerShape(16.dp))
-            .clickable(onClickLabel = "Pindai struk", role = Role.Button, onClick = onClick)
+            .clickable(onClickLabel = stringResource(R.string.main_scan_receipt), role = Role.Button, onClick = onClick)
             .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -743,7 +744,7 @@ fun RowScope.FloatingScanNavItem(
         }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "Pindai",
+            text = stringResource(R.string.main_scan),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,

@@ -1,5 +1,7 @@
 package com.hitunguang.feature.dashboard.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -77,7 +79,7 @@ fun BalanceCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Total Saldo",
+                        text = stringResource(R.string.dashboard_total_balance),
                         style = MaterialTheme.typography.titleMedium,
                         color = HeroOnGradient.copy(alpha = 0.85f),
                         fontWeight = FontWeight.Medium
@@ -92,7 +94,7 @@ fun BalanceCard(
                     ) {
                         Icon(
                             imageVector = if (hideBalance) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = if (hideBalance) "Tampilkan saldo" else "Sembunyikan saldo",
+                            contentDescription = if (hideBalance) stringResource(R.string.dashboard_show_balance) else stringResource(R.string.dashboard_hide_balance),
                             tint = HeroOnGradient.copy(alpha = 0.9f),
                             modifier = Modifier.size(20.dp)
                         )
@@ -139,7 +141,7 @@ fun BalanceCard(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = if (periodLabel != null) "Pemasukan $periodLabel" else "Pemasukan",
+                            text = if (periodLabel != null) stringResource(R.string.dashboard_income_period, periodLabel) else stringResource(R.string.dashboard_income),
                             style = MaterialTheme.typography.bodySmall,
                             color = HeroOnGradient.copy(alpha = 0.7f)
                         )
@@ -157,7 +159,7 @@ fun BalanceCard(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = if (periodLabel != null) "Pengeluaran $periodLabel" else "Pengeluaran",
+                            text = if (periodLabel != null) stringResource(R.string.dashboard_expense_period, periodLabel) else stringResource(R.string.dashboard_expense),
                             style = MaterialTheme.typography.bodySmall,
                             color = HeroOnGradient.copy(alpha = 0.7f)
                         )
