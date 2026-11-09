@@ -24,6 +24,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.job
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -60,6 +64,7 @@ class SecurityModuleTest {
     private lateinit var validateRecoveryCodeUseCase: ValidateRecoveryCodeUseCase
 
     private lateinit var viewModel: SecurityViewModel
+    private lateinit var dataStoreScope: CoroutineScope
 
     @Before
     fun setup() {
@@ -68,7 +73,9 @@ class SecurityModuleTest {
 
         // Setup DataStore
         val datastoreFile = File(tmpFolder.newFolder(), "test_settings_prefs.preferences_pb")
+        dataStoreScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         val dataStore = PreferenceDataStoreFactory.create(
+            scope = dataStoreScope,
             produceFile = { datastoreFile }
         )
         settingsDataStore = SettingsDataStore(dataStore)
@@ -86,6 +93,7 @@ class SecurityModuleTest {
 
     @After
     fun tearDown() {
+        runBlocking { dataStoreScope.coroutineContext.job.cancelAndJoin() }
         Dispatchers.resetMain()
     }
 
