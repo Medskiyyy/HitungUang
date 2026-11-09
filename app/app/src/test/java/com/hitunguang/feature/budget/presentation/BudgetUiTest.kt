@@ -54,10 +54,10 @@ class BudgetUiTest {
         }
 
         // Verify content
-        composeTestRule.onNodeWithText("Anggaran Global").assertExists()
-        composeTestRule.onNodeWithText("Limit Anggaran").assertExists()
+        composeTestRule.onNodeWithText("Semua Kategori").assertExists()
+        composeTestRule.onNodeWithText("Batas").assertExists()
         composeTestRule.onNodeWithText("Terpakai").assertExists()
-        composeTestRule.onNodeWithText("Sisa Limit").assertExists()
+        composeTestRule.onNodeWithText("Sisa").assertExists()
 
         // Test buttons
         composeTestRule.onNodeWithContentDescription("Edit").performClick()
