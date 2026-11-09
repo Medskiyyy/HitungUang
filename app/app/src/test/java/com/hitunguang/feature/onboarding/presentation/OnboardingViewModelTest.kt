@@ -152,11 +152,11 @@ class OnboardingViewModelTest {
         // TUTORIAL -> COMPLETE
         viewModel.nextStep()
         
-        // Wait for asynchronous completeOnboarding coroutine to finish
-        kotlinx.coroutines.delay(500)
-        
+        // Profile is written last, so wait for it instead of a fixed delay
+        val profile = kotlinx.coroutines.withTimeout(10_000) {
+            userProfileRepository.getUserProfile().first { it != null }
+        }
         // 1. User Profile saved
-        val profile = userProfileRepository.getUserProfile().first()
         assertNotNull(profile)
         assertEquals("Ahmad", profile?.name)
 
