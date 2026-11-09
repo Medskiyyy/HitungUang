@@ -10,16 +10,21 @@ class SearchTransactionsUseCase @Inject constructor(
     private val repository: TransactionRepository
 ) {
     operator fun invoke(query: String): Flow<List<TransactionWithDetails>> {
-        val clean = query.trim()
-        if (clean.isEmpty()) {
-            return flowOf(emptyList())
-        }
-        
-        // Transform query to FTS prefix: "makan bakso" -> "makan* bakso*"
-        val ftsQuery = clean.split("\\s+".toRegex())
-            .filter { it.isNotEmpty() }
-            .joinToString(" ") { "$it*" }
-            
+        val ftsQuery = toFtsQuery(query) ?: return flowOf(emptyList())
         return repository.searchTransactions(ftsQuery)
+    }
+
+    companion object {
+        private val NON_WORD = Regex("[^\\p{L}\\p{N}]+")
+
+        // Transform query to FTS prefix: "makan bakso" -> "makan* bakso*".
+        // Only letters/digits are kept so FTS syntax chars (" * - ( ) : ^) can't break MATCH.
+        fun toFtsQuery(query: String): String? {
+            val tokens = query.split(NON_WORD)
+                .filter { it.isNotEmpty() }
+                .map { it.lowercase() }
+            if (tokens.isEmpty()) return null
+            return tokens.joinToString(" ") { "$it*" }
+        }
     }
 }
