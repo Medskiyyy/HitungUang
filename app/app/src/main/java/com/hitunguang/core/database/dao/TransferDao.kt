@@ -29,6 +29,12 @@ interface TransferDao {
     @Query("SELECT COALESCE(SUM(amount + admin_fee), 0) FROM transfers WHERE from_account_id = :accountId")
     suspend fun sumTransfersOut(accountId: String): Long
 
+    @Query("SELECT COALESCE(SUM(admin_fee), 0) FROM transfers WHERE transfer_date BETWEEN :start AND :end")
+    fun sumAdminFeesBetween(start: Long, end: Long): Flow<Long>
+
+    @Query("SELECT COALESCE(SUM(admin_fee), 0) FROM transfers WHERE transfer_date BETWEEN :start AND :end")
+    suspend fun sumAdminFeesBetweenDirect(start: Long, end: Long): Long
+
     @Query("UPDATE accounts SET current_balance = current_balance + :difference, updated_at = :updatedAt WHERE id = :id")
     suspend fun adjustAccountBalance(id: String, difference: Long, updatedAt: Long)
 

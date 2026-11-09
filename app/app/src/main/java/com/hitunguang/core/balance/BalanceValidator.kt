@@ -18,17 +18,17 @@ class BalanceValidator @Inject constructor(
 
     /**
      * Menghitung ulang saldo akun dari nol berdasarkan data transaksi dan transfer.
-     * Formula: initialBalance + sum(INCOME) - sum(EXPENSE) - sum(TRANSFER_FEE) + sum(transfer_in) - sum(transfer_out + adminFee)
+     * Formula: initialBalance + sum(INCOME) - sum(EXPENSE) + sum(transfer_in) - sum(transfer_out + adminFee)
+     * Biaya admin hanya dihitung dari kolom transfers.admin_fee (bukan transaksi TRANSFER_FEE) agar tidak terhitung dua kali.
      */
     suspend fun recalculateBalance(accountId: String): Long {
         val initialBalance = accountDao.getInitialBalance(accountId)
         val incomeSum = transactionDao.sumByTypeAndAccount(accountId, "INCOME")
         val expenseSum = transactionDao.sumByTypeAndAccount(accountId, "EXPENSE")
-        val transferFeeSum = transactionDao.sumByTypeAndAccount(accountId, "TRANSFER_FEE")
         val transfersIn = transferDao.sumTransfersIn(accountId)
         val transfersOut = transferDao.sumTransfersOut(accountId)
 
-        return initialBalance + incomeSum - expenseSum - transferFeeSum + transfersIn - transfersOut
+        return initialBalance + incomeSum - expenseSum + transfersIn - transfersOut
     }
 
     /**
