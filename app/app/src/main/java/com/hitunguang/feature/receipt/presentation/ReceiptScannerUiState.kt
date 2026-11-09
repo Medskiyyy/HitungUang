@@ -7,6 +7,8 @@ data class ReceiptScannerUiState(
     val isScanning: Boolean = false,
     val rawText: String? = null,
     val scanQuality: ScanQuality = ScanQuality.UNKNOWN,
+    /** The user chose to continue with a LOW quality scan instead of retaking it. */
+    val isLowQualityAccepted: Boolean = false,
     val errorMessage: String? = null
 )
 

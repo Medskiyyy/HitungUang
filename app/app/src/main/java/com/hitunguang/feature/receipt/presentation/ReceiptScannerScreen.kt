@@ -50,11 +50,17 @@ fun ReceiptScannerScreen(
     val uiState by viewModel.uiState.collectAsState()
     var tempPhotoUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
+    LaunchedEffect(Unit) {
+        viewModel.deleteStaleTempFiles()
+    }
+
     val currentOnNavigateToReview by rememberUpdatedState(onNavigateToReview)
-    LaunchedEffect(uiState.rawText, uiState.imageUri) {
+    LaunchedEffect(uiState.rawText, uiState.imageUri, uiState.scanQuality, uiState.isLowQualityAccepted) {
         val rawText = uiState.rawText
         val imageUri = uiState.imageUri
-        if (rawText != null && imageUri != null) {
+        // A LOW quality scan waits for the user to retake or explicitly continue.
+        val canContinue = uiState.scanQuality != ScanQuality.LOW || uiState.isLowQualityAccepted
+        if (rawText != null && imageUri != null && canContinue) {
             currentOnNavigateToReview(imageUri, rawText)
             viewModel.clearAll()
         }
@@ -63,11 +69,14 @@ fun ReceiptScannerScreen(
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
-        if (success) {
-            tempPhotoUri?.let { uri ->
+        tempPhotoUri?.let { uri ->
+            if (success) {
                 viewModel.setImageUri(uri)
+            } else {
+                viewModel.discardTempPhoto(uri)
             }
         }
+        tempPhotoUri = null
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -90,8 +99,13 @@ fun ReceiptScannerScreen(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         if (uri != null) {
-            viewModel.setImageUri(uri)
+            viewModel.setPickedImageUri(uri)
         }
+    }
+
+    val onBackAndDiscard = {
+        viewModel.reset()
+        onBack()
     }
 
     Scaffold(
@@ -99,13 +113,13 @@ fun ReceiptScannerScreen(
             TopAppBar(
                 title = { Text("Scan Struk (OCR)", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = onBackAndDiscard) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Kembali")
                     }
                 },
                 actions = {
                     if (uiState.imageUri != null || uiState.rawText != null) {
-                        IconButton(onClick = { viewModel.clearAll() }) {
+                        IconButton(onClick = { viewModel.reset() }) {
                             Icon(imageVector = Icons.Default.Clear, contentDescription = "Reset")
                         }
                     }
@@ -238,23 +252,34 @@ fun ReceiptScannerScreen(
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.Warning,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onTertiaryContainer
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "Kualitas foto struk rendah. Hasil pembacaan mungkin kurang akurat. Sebaiknya ambil ulang foto dengan pencahayaan lebih terang.",
-                            color = MaterialTheme.colorScheme.onTertiaryContainer,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Kualitas foto struk rendah. Hasil pembacaan mungkin kurang akurat. Sebaiknya ambil ulang foto dengan pencahayaan lebih terang.",
+                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            TextButton(onClick = { viewModel.reset() }) {
+                                Text("Foto ulang")
+                            }
+                            TextButton(onClick = { viewModel.acceptLowQuality() }) {
+                                Text("Lanjut aja", fontWeight = FontWeight.Bold)
+                            }
+                        }
                     }
                 }
             }
@@ -323,9 +348,9 @@ fun ReceiptScannerScreen(
 
 private fun getTempPhotoUri(context: Context): Uri? {
     return try {
-        val tempFile = File.createTempFile("camera_photo_", ".jpg", context.cacheDir).apply {
-            deleteOnExit()
-        }
+        // Deleted after save, reset, back or a cancelled capture; leftovers are swept
+        // by ReceiptFileManager.deleteStaleTempFiles.
+        val tempFile = File.createTempFile("camera_photo_", ".jpg", context.cacheDir)
         androidx.core.content.FileProvider.getUriForFile(
             context,
             "com.hitunguang.fileprovider",
