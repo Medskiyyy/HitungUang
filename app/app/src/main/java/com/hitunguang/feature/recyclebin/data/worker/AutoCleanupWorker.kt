@@ -31,19 +31,26 @@ class AutoCleanupWorker(
         val cleanupExpiredItemsUseCase = entryPoint.cleanupExpiredItemsUseCase()
         val autoDeleteReceiptsUseCase = entryPoint.autoDeleteReceiptsUseCase()
 
-        return try {
-            Timber.d("Starting Recycle Bin auto-cleanup...")
-            cleanupExpiredItemsUseCase(System.currentTimeMillis())
-            Timber.d("Recycle Bin auto-cleanup finished successfully.")
+        Timber.d("Starting Recycle Bin auto-cleanup...")
+        val binFailedCompletely = try {
+            val result = cleanupExpiredItemsUseCase(System.currentTimeMillis())
+            Timber.d("Recycle Bin auto-cleanup finished: ${result.deleted} deleted, ${result.failed} failed.")
+            result.failed > 0 && result.deleted == 0
+        } catch (e: Exception) {
+            Timber.e(e, "Error occurred during Recycle Bin auto-cleanup")
+            true
+        }
 
+        val receiptsFailed = try {
             Timber.d("Starting expired receipts auto-cleanup...")
             autoDeleteReceiptsUseCase()
             Timber.d("Expired receipts auto-cleanup finished successfully.")
-
-            Result.success()
+            false
         } catch (e: Exception) {
-            Timber.e(e, "Error occurred during auto-cleanup")
-            Result.retry()
+            Timber.e(e, "Error occurred during receipts auto-cleanup")
+            true
         }
+
+        return if (binFailedCompletely || receiptsFailed) Result.retry() else Result.success()
     }
 }

@@ -58,6 +58,15 @@ interface CategoryDao {
     @Query("DELETE FROM categories WHERE id = :id")
     suspend fun hardDeleteCategory(id: String)
 
+    @Query("UPDATE transactions SET category_id = NULL, updated_at = :now WHERE category_id = :categoryId")
+    suspend fun detachTransactionsFromCategory(categoryId: String, now: Long)
+
+    @Transaction
+    suspend fun hardDeleteCategoryKeepingTransactions(id: String, now: Long) {
+        detachTransactionsFromCategory(id, now)
+        hardDeleteCategory(id)
+    }
+
     @Query("SELECT * FROM transactions WHERE category_id = :categoryId AND is_deleted = 0")
     suspend fun getActiveTransactionsForCategory(categoryId: String): List<TransactionEntity>
 
@@ -70,7 +79,7 @@ interface CategoryDao {
     @Query("UPDATE accounts SET current_balance = current_balance + :difference, updated_at = :updatedAt WHERE id = :accountId")
     suspend fun adjustAccountBalance(accountId: String, difference: Long, updatedAt: Long)
 
-    @Query("UPDATE transactions SET is_deleted = 1, deleted_at = CASE WHEN is_deleted = 0 THEN :now ELSE deleted_at END, category_id = NULL, updated_at = :now WHERE category_id = :categoryId")
+    @Query("UPDATE transactions SET is_deleted = 1, deleted_at = CASE WHEN is_deleted = 0 THEN :now ELSE deleted_at END, updated_at = :now WHERE category_id = :categoryId")
     suspend fun updateTransactionsForDeletedCategory(categoryId: String, now: Long)
 
     @Transaction

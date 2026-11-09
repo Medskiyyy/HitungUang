@@ -50,16 +50,19 @@ interface TransactionDao {
     """)
     fun getTransactionWithDetailsById(id: String): Flow<TransactionWithDetailsEntity?>
 
-    @Query("UPDATE transactions SET is_deleted = 1, deleted_at = :now, updated_at = :now WHERE id = :id")
-    suspend fun softDeleteTransaction(id: String, now: Long)
+    @Query("UPDATE transactions SET is_deleted = 1, deleted_at = :now, updated_at = :now WHERE id = :id AND is_deleted = 0")
+    suspend fun softDeleteTransaction(id: String, now: Long): Int
 
-    @Query("UPDATE transactions SET is_deleted = 0, deleted_at = NULL, updated_at = :now WHERE id = :id")
-    suspend fun restoreTransactionState(id: String, now: Long)
+    @Query("UPDATE transactions SET is_deleted = 0, deleted_at = NULL, updated_at = :now WHERE id = :id AND is_deleted = 1")
+    suspend fun restoreTransactionState(id: String, now: Long): Int
+
+    @Query("UPDATE transactions SET category_id = NULL, updated_at = :now WHERE id = :id")
+    suspend fun clearTransactionCategory(id: String, now: Long)
 
     @Query("SELECT * FROM transactions WHERE id = :id")
     suspend fun getTransactionEntityById(id: String): TransactionEntity?
 
-    @Query("SELECT * FROM transactions WHERE receipt_id = :receiptId LIMIT 1")
+    @Query("SELECT * FROM transactions WHERE receipt_id = :receiptId AND is_deleted = 0 LIMIT 1")
     suspend fun getTransactionByReceiptId(receiptId: String): TransactionEntity?
 
     @Query("DELETE FROM transactions WHERE id = :id")
@@ -84,7 +87,7 @@ interface TransactionDao {
     @Transaction
     suspend fun deleteTransactionAndUpdateBalance(transaction: TransactionEntity, balanceDifference: Long) {
         val now = System.currentTimeMillis()
-        softDeleteTransaction(transaction.id, now)
+        if (softDeleteTransaction(transaction.id, now) != 1) return
         adjustAccountBalance(transaction.accountId, balanceDifference, now)
         deindexTransaction(transaction.id)
         

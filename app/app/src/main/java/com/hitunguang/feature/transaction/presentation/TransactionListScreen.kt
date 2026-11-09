@@ -457,6 +457,7 @@ fun TransactionListScreen(
     if (uiState.showDeleteDialog && uiState.transactionToDelete != null) {
         DeleteTransactionDialog(
             transaction = uiState.transactionToDelete!!,
+            isProcessing = uiState.isDeleting,
             onDismiss = { viewModel.hideDeleteDialog() },
             onConfirm = {
                 viewModel.deleteTransaction()

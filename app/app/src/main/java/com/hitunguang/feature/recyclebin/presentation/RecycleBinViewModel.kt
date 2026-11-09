@@ -6,8 +6,10 @@ import com.hitunguang.feature.recyclebin.domain.usecase.GetDeletedItemsUseCase
 import com.hitunguang.feature.recyclebin.domain.usecase.RestoreItemUseCase
 import com.hitunguang.feature.recyclebin.domain.usecase.PermanentDeleteItemUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -34,22 +36,33 @@ class RecycleBinViewModel @Inject constructor(
             initialValue = RecycleBinUiState(isLoading = true)
         )
 
+    private val _isProcessing = MutableStateFlow(false)
+    val isProcessing: StateFlow<Boolean> = _isProcessing.asStateFlow()
+
     fun restoreItem(entityId: String, entityType: String) {
+        if (_isProcessing.value) return
+        _isProcessing.value = true
         viewModelScope.launch {
             try {
                 restoreItemUseCase(entityId, entityType)
             } catch (e: Exception) {
                 // Safely handle error
+            } finally {
+                _isProcessing.value = false
             }
         }
     }
 
     fun permanentDeleteItem(entityId: String, entityType: String) {
+        if (_isProcessing.value) return
+        _isProcessing.value = true
         viewModelScope.launch {
             try {
                 permanentDeleteItemUseCase(entityId, entityType)
             } catch (e: Exception) {
                 // Safely handle error
+            } finally {
+                _isProcessing.value = false
             }
         }
     }

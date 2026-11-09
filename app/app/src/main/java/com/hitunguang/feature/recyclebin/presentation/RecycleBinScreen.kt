@@ -59,6 +59,7 @@ fun RecycleBinScreen(
     viewModel: RecycleBinViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val isProcessing by viewModel.isProcessing.collectAsState()
     var itemToDeletePermanently by remember { mutableStateOf<RecycleBinItem?>(null) }
 
     Scaffold(
@@ -161,6 +162,7 @@ fun RecycleBinScreen(
                         items(uiState.items, key = { it.id }) { item ->
                             RecycleBinItemCard(
                                 item = item,
+                                enabled = !isProcessing,
                                 onRestore = { viewModel.restoreItem(item.entityId, item.entityType) },
                                 onDeletePermanently = { itemToDeletePermanently = item }
                             )
@@ -196,6 +198,7 @@ fun RecycleBinScreen(
                         viewModel.permanentDeleteItem(item.entityId, item.entityType)
                         itemToDeletePermanently = null
                     },
+                    enabled = !isProcessing,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
@@ -218,7 +221,8 @@ fun RecycleBinItemCard(
     item: RecycleBinItem,
     onRestore: () -> Unit,
     onDeletePermanently: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     val remainingDays = max(0L, (item.expireAt - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L))
     val formatter = SimpleDateFormat("dd MMM yyyy", Locale("in", "ID"))
@@ -287,6 +291,7 @@ fun RecycleBinItemCard(
                     if (!(item.entityType == "CATEGORY" && item.isDefault)) {
                         IconButton(
                             onClick = onDeletePermanently,
+                            enabled = enabled
                         ) {
                             Icon(
                                 imageVector = Icons.Default.DeleteForever,
@@ -298,6 +303,7 @@ fun RecycleBinItemCard(
                     }
                     OutlinedButton(
                         onClick = onRestore,
+                        enabled = enabled,
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                         modifier = Modifier.height(36.dp)
                     ) {

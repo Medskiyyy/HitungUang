@@ -21,7 +21,7 @@ interface TransferDao {
     suspend fun insertTransfer(transfer: TransferEntity)
 
     @Delete
-    suspend fun deleteTransfer(transfer: TransferEntity)
+    suspend fun deleteTransfer(transfer: TransferEntity): Int
 
     @Query("SELECT COALESCE(SUM(amount), 0) FROM transfers WHERE to_account_id = :accountId")
     suspend fun sumTransfersIn(accountId: String): Long
@@ -43,7 +43,7 @@ interface TransferDao {
 
     @Transaction
     suspend fun revertTransfer(transfer: TransferEntity) {
-        deleteTransfer(transfer)
+        if (deleteTransfer(transfer) != 1) return
         // Refund sender account (amount + admin fee)
         adjustAccountBalance(transfer.fromAccountId, transfer.amount + transfer.adminFee, System.currentTimeMillis())
         // Deduct from receiver account

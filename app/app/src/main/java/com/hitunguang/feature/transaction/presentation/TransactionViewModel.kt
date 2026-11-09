@@ -41,6 +41,7 @@ data class TransactionUiState(
     val transactionDetails: TransactionWithDetails? = null,
     val attachments: List<Attachment> = emptyList(),
     val pendingAttachmentUris: List<android.net.Uri> = emptyList(),
+    val isDeleting: Boolean = false,
     val error: String? = null
 )
 
@@ -366,6 +367,8 @@ class TransactionViewModel @Inject constructor(
 
     fun deleteTransaction() {
         val details = _uiState.value.transactionToDelete ?: return
+        if (_uiState.value.isDeleting) return
+        _uiState.update { it.copy(isDeleting = true) }
         viewModelScope.launch {
             try {
                 val transaction = Transaction(
@@ -387,6 +390,8 @@ class TransactionViewModel @Inject constructor(
                 hideDeleteDialog()
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
+            } finally {
+                _uiState.update { it.copy(isDeleting = false) }
             }
         }
     }

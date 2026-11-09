@@ -93,6 +93,9 @@ interface RecycleBinDao {
     @Delete
     suspend fun removeFromRecycleBin(item: RecycleBinEntity)
 
+    @Query("DELETE FROM recycle_bin WHERE entity_id = :entityId AND entity_type = :entityType")
+    suspend fun removeByEntity(entityId: String, entityType: String)
+
     @Query("DELETE FROM recycle_bin WHERE expire_at <= :currentTime")
     suspend fun cleanupExpiredItems(currentTime: Long)
 }

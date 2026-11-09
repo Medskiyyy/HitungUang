@@ -8,8 +8,10 @@ import com.hitunguang.core.database.dao.RecycleBinDao
 import com.hitunguang.core.database.dao.TransactionDao
 import com.hitunguang.core.filemanager.AttachmentFileManager
 import com.hitunguang.feature.recyclebin.data.mapper.RecycleBinMapper
+import com.hitunguang.feature.recyclebin.domain.model.CleanupResult
 import com.hitunguang.feature.recyclebin.domain.model.RecycleBinItem
 import com.hitunguang.feature.recyclebin.domain.repository.RecycleBinRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -31,33 +33,43 @@ class RecycleBinRepositoryImpl @Inject constructor(
 
     override suspend fun restoreTransaction(transactionId: String) {
         database.withTransaction {
-            val transactionEntity = transactionDao.getTransactionEntityById(transactionId) ?: return@withTransaction
+            val transactionEntity = transactionDao.getTransactionEntityById(transactionId)
+            if (transactionEntity == null) {
+                // Stale bin entry: the transaction no longer exists
+                recycleBinDao.removeByEntity(transactionId, "TRANSACTION")
+                return@withTransaction
+            }
             val balanceDifference = BalanceCalculator.calculateDifference(
                 transactionEntity.transactionType,
                 transactionEntity.amount
             )
             val now = System.currentTimeMillis()
 
-            // 1. Update transaction state (is_deleted = 0, deleted_at = null)
-            transactionDao.restoreTransactionState(transactionId, now)
+            // 1. Update transaction state (is_deleted = 0, deleted_at = null); only once
+            if (transactionDao.restoreTransactionState(transactionId, now) == 1) {
+                // Category may have been permanently removed meanwhile: restore uncategorized
+                val categoryId = transactionEntity.categoryId?.takeIf {
+                    database.categoryDao().getCategoryByIdDirect(it) != null
+                }
+                if (categoryId == null && transactionEntity.categoryId != null) {
+                    transactionDao.clearTransactionCategory(transactionId, now)
+                }
 
-            // 2. Adjust account balance
-            transactionDao.adjustAccountBalance(transactionEntity.accountId, balanceDifference, now)
+                // 2. Adjust account balance
+                transactionDao.adjustAccountBalance(transactionEntity.accountId, balanceDifference, now)
 
-            // 3. Re-index in FTS
-            transactionDao.indexTransaction(
-                transactionEntity.id,
-                transactionEntity.title,
-                transactionEntity.note,
-                transactionEntity.categoryId,
-                transactionEntity.receiptId
-            )
+                // 3. Re-index in FTS
+                transactionDao.indexTransaction(
+                    transactionEntity.id,
+                    transactionEntity.title,
+                    transactionEntity.note,
+                    categoryId,
+                    transactionEntity.receiptId
+                )
+            }
 
             // 4. Delete recycle bin entry
-            val recycleBinEntry = recycleBinDao.getAllDeletedItems().first().find { it.entityId == transactionId }
-            if (recycleBinEntry != null) {
-                recycleBinDao.removeFromRecycleBin(recycleBinEntry)
-            }
+            recycleBinDao.removeByEntity(transactionId, "TRANSACTION")
         }
     }
 
@@ -116,7 +128,8 @@ class RecycleBinRepositoryImpl @Inject constructor(
                 "CATEGORY" -> {
                     val category = database.categoryDao().getCategoryByIdDirect(entityId)
                     if (category == null || !category.isDefault) {
-                        database.categoryDao().hardDeleteCategory(entityId)
+                        // Keep transactions (FK would cascade): detach them first
+                        database.categoryDao().hardDeleteCategoryKeepingTransactions(entityId, System.currentTimeMillis())
                     }
                 }
                 "WALLET" -> database.accountDao().hardDeleteAccount(entityId)
@@ -132,10 +145,20 @@ class RecycleBinRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun cleanupExpiredItems(currentTime: Long) {
+    override suspend fun cleanupExpiredItems(currentTime: Long): CleanupResult {
         val expiredEntries = recycleBinDao.getExpiredItems(currentTime)
+        var deleted = 0
+        var failed = 0
         expiredEntries.forEach { entry ->
-            permanentDeleteItem(entry.entityId, entry.entityType)
+            try {
+                permanentDeleteItem(entry.entityId, entry.entityType)
+                deleted++
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                failed++
+            }
         }
+        return CleanupResult(deleted = deleted, failed = failed)
     }
 }

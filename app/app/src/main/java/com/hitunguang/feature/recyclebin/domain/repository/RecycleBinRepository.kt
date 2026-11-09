@@ -1,5 +1,6 @@
 package com.hitunguang.feature.recyclebin.domain.repository
 
+import com.hitunguang.feature.recyclebin.domain.model.CleanupResult
 import com.hitunguang.feature.recyclebin.domain.model.RecycleBinItem
 import kotlinx.coroutines.flow.Flow
 
@@ -9,5 +10,5 @@ interface RecycleBinRepository {
     suspend fun permanentDeleteTransaction(transactionId: String)
     suspend fun restoreItem(entityId: String, entityType: String)
     suspend fun permanentDeleteItem(entityId: String, entityType: String)
-    suspend fun cleanupExpiredItems(currentTime: Long)
+    suspend fun cleanupExpiredItems(currentTime: Long): CleanupResult
 }

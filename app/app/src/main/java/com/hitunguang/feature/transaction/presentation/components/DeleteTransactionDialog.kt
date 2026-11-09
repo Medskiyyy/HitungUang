@@ -13,7 +13,8 @@ fun DeleteTransactionDialog(
     transaction: TransactionWithDetails,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isProcessing: Boolean = false
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -25,7 +26,8 @@ fun DeleteTransactionDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = onConfirm
+                onClick = onConfirm,
+                enabled = !isProcessing
             ) {
                 Text("Hapus", color = MaterialTheme.colorScheme.error)
             }
