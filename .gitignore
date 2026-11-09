@@ -22,3 +22,8 @@ Thumbs.db
 /plan/
 CHANGELOG.md
 /Testing-APP/
+
+# Release signing secrets
+**/keystore.properties
+*.jks
+*.keystore
