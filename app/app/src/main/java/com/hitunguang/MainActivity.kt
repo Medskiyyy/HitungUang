@@ -91,6 +91,8 @@ import androidx.compose.material.icons.filled.Receipt
 import com.hitunguang.feature.transaction.presentation.TransactionViewModel
 import com.hitunguang.feature.backup.presentation.BackupScreen
 import com.hitunguang.feature.recyclebin.presentation.RecycleBinScreen
+import com.hitunguang.feature.recurring.presentation.RecurringTransactionScreen
+import androidx.compose.material.icons.filled.Repeat
 import com.hitunguang.feature.settings.presentation.SecurityViewModel
 import com.hitunguang.feature.settings.presentation.components.LockScreen
 import com.hitunguang.feature.settings.presentation.components.SecuritySettingsScreen
@@ -302,6 +304,7 @@ fun MainAppScreen(
     var reviewOcrRawText by rememberSaveable { mutableStateOf("") }
     var showReceiptArchiveScreen by rememberSaveable { mutableStateOf(false) }
     var showTransferHistoryScreen by rememberSaveable { mutableStateOf(false) }
+    var showRecurringScreen by rememberSaveable { mutableStateOf(false) }
 
     BackHandler(enabled = showSearchScreen) { showSearchScreen = false }
     BackHandler(enabled = showCategoryListScreen) { showCategoryListScreen = false }
@@ -316,6 +319,7 @@ fun MainAppScreen(
     }
     BackHandler(enabled = showReceiptArchiveScreen) { showReceiptArchiveScreen = false }
     BackHandler(enabled = showTransferHistoryScreen) { showTransferHistoryScreen = false }
+    BackHandler(enabled = showRecurringScreen) { showRecurringScreen = false }
 
     // Scoped to activity / parent level to allow quick add pre-population
     val transactionViewModel: TransactionViewModel = hiltViewModel()
@@ -366,6 +370,8 @@ fun MainAppScreen(
         TransferHistoryScreen(
             onBack = { showTransferHistoryScreen = false }
         )
+    } else if (showRecurringScreen) {
+        RecurringTransactionScreen(onBack = { showRecurringScreen = false })
     } else {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -518,6 +524,16 @@ fun MainAppScreen(
                             onClick = {
                                 showSettingsPlaceholder = false
                                 showCategoryListScreen = true
+                            }
+                        )
+                        HorizontalDivider(thickness = 0.5.dp)
+                        SettingsMenuItem(
+                            icon = Icons.Default.Repeat,
+                            title = "Transaksi Berulang",
+                            subtitle = "Catat otomatis tagihan dan pemasukan rutin",
+                            onClick = {
+                                showSettingsPlaceholder = false
+                                showRecurringScreen = true
                             }
                         )
                         HorizontalDivider(thickness = 0.5.dp)
