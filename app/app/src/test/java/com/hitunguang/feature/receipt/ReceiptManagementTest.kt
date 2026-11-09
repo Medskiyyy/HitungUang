@@ -328,7 +328,7 @@ class ReceiptManagementTest {
     }
 
     @Test
-    fun testFailedSaveLeavesNoReceiptOrImage() = runBlocking {
+    fun testFailedSaveLeavesNoReceiptOrImage() = runBlocking<Unit> {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val tempFile = File(context.cacheDir, "camera_photo_test.jpg")
         Bitmap.createBitmap(50, 50, Bitmap.Config.ARGB_8888).let { bitmap ->

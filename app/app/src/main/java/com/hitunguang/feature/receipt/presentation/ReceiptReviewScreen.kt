@@ -57,15 +57,11 @@ fun ReceiptReviewScreen(
     modifier: Modifier = Modifier,
     viewModel: ReceiptReviewViewModel = hiltViewModel()
 ) {
+    viewModel.initializeWithOcr(imageUri, ocrRawText)
+
     val uiState by viewModel.uiState.collectAsState()
     val accounts by viewModel.accounts.collectAsState()
     val categories by viewModel.categories.collectAsState()
-
-    var isInitialized by remember { mutableStateOf(false) }
-    if (!isInitialized) {
-        viewModel.initializeWithOcr(imageUri, ocrRawText)
-        isInitialized = true
-    }
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
@@ -78,7 +74,7 @@ fun ReceiptReviewScreen(
     var showDatePicker by remember { mutableStateOf(false) }
 
     val formatAmount: (String) -> String = { input ->
-        val amount = input.toLongOrNull() ?: 0L
+        val amount = input.filter { it.isDigit() }.toLongOrNull() ?: 0L
         NumberFormat.getNumberInstance(Locale("in", "ID")).format(amount)
     }
 
@@ -607,7 +603,7 @@ fun ReceiptReviewScreen(
                                             )
 
                                             OutlinedTextField(
-                                                value = if (item.unitPrice == 0L) "" else item.unitPrice.toString(),
+                                                value = if (item.unitPrice == 0L) "" else formatAmount(item.unitPrice.toString()),
                                                 onValueChange = { viewModel.updateItemUnitPrice(index, it) },
                                                 label = { Text("Harga Satuan") },
                                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -664,7 +660,7 @@ fun ReceiptReviewScreen(
                     ) {
                         Text("Pajak / PPN", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
                         OutlinedTextField(
-                            value = uiState.taxStr,
+                            value = formatAmount(uiState.taxStr),
                             onValueChange = { viewModel.updateTax(it) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
@@ -685,12 +681,25 @@ fun ReceiptReviewScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("Total Belanja", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        Text("Rp ${formatAmount(uiState.totalStr)}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        OutlinedTextField(
+                            value = formatAmount(uiState.totalStr),
+                            onValueChange = { viewModel.updateTotal(it) },
+                            prefix = { Text("Rp ") },
+                            textStyle = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, textAlign = TextAlign.End),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            modifier = Modifier.width(180.dp),
+                            shape = RoundedCornerShape(Radius.small),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                            )
+                        )
                     }
 
                     if (uiState.isAmountMismatch) {
                         Text(
-                            text = "Rincian item tidak sama dengan total pada struk. Total mengikuti struk — periksa kembali daftar item.",
+                            text = "Rincian item tidak sama dengan total pada struk. Total tetap sesuai yang kamu isi atau yang ada di struk, jadi cek lagi daftar itemnya ya.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.padding(top = Spacing.small)
