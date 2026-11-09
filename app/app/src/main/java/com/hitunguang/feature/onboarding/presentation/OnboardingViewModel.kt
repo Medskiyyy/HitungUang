@@ -32,6 +32,8 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.util.UUID
 import javax.inject.Inject
+import androidx.annotation.StringRes
+import com.hitunguang.R
 
 internal fun monthRangeMillis(today: LocalDate, zone: ZoneId): Pair<Long, Long> {
     val firstDay = today.withDayOfMonth(1)
@@ -64,14 +66,14 @@ data class OnboardingUiState(
     val currentStep: OnboardingStep = OnboardingStep.WELCOME,
     val totalSteps: Int = 6,
     val name: String = "",
-    val nameError: String? = null,
+    @StringRes val nameError: Int? = null,
     val occupation: String = "",
     val accounts: List<AccountDraft> = listOf(AccountDraft("Dompet Utama", "CASH", "wallet", 0L)),
     val budgetAmount: String = "",
     val pin: String = "",
-    val pinError: String? = null,
+    @StringRes val pinError: Int? = null,
     val confirmPin: String = "",
-    val confirmPinError: String? = null,
+    @StringRes val confirmPinError: Int? = null,
     val isPinEnabled: Boolean = false,
     val biometricEnabled: Boolean = false,
     val recoveryCode: String? = null,
@@ -103,7 +105,7 @@ class OnboardingViewModel @Inject constructor(
             }
             OnboardingStep.PROFILE -> {
                 if (currentState.name.isBlank()) {
-                    _uiState.update { it.copy(nameError = "Namanya belum diisi") }
+                    _uiState.update { it.copy(nameError = R.string.onboarding_name_required) }
                 } else {
                     _uiState.update { it.copy(nameError = null) }
                     updateStep(OnboardingStep.ACCOUNT)
@@ -118,9 +120,9 @@ class OnboardingViewModel @Inject constructor(
             OnboardingStep.SECURITY -> {
                 if (currentState.isPinEnabled) {
                     if (!SecurityViewModel.isValidPinFormat(currentState.pin)) {
-                        _uiState.update { it.copy(pinError = "PIN harus 4-6 angka") }
+                        _uiState.update { it.copy(pinError = R.string.security_pin_format_error) }
                     } else if (currentState.pin != currentState.confirmPin) {
-                        _uiState.update { it.copy(confirmPinError = "PIN-nya beda. Ketik ulang, ya.", pinError = null) }
+                        _uiState.update { it.copy(confirmPinError = R.string.security_pin_mismatch, pinError = null) }
                     } else {
                         _uiState.update { it.copy(pinError = null, confirmPinError = null) }
                         updateStep(OnboardingStep.TUTORIAL)
@@ -158,7 +160,7 @@ class OnboardingViewModel @Inject constructor(
     }
 
     fun updateName(name: String) {
-        _uiState.update { it.copy(name = name, nameError = if (name.isBlank()) "Namanya belum diisi" else null) }
+        _uiState.update { it.copy(name = name, nameError = if (name.isBlank()) R.string.onboarding_name_required else null) }
     }
 
     fun updateOccupation(occupation: String) {

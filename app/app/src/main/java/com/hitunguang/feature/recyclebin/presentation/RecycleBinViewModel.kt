@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.hitunguang.R
 
 @HiltViewModel
 class RecycleBinViewModel @Inject constructor(
@@ -28,7 +29,7 @@ class RecycleBinViewModel @Inject constructor(
             RecycleBinUiState(isLoading = false, items = items)
         }
         .catch { e ->
-            emit(RecycleBinUiState(error = e.localizedMessage ?: "Ada yang gagal. Coba lagi, ya."))
+            emit(RecycleBinUiState(error = e.localizedMessage, errorRes = R.string.recycle_error_generic))
         }
         .stateIn(
             scope = viewModelScope,

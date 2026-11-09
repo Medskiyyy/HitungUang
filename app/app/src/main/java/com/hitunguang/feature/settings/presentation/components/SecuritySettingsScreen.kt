@@ -54,6 +54,8 @@ import com.hitunguang.feature.settings.presentation.PendingSecurityAction
 import com.hitunguang.feature.settings.presentation.SecurityUiState
 import com.hitunguang.feature.settings.presentation.SecurityViewModel
 import com.hitunguang.feature.settings.presentation.SetupStep
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,10 +70,10 @@ fun SecuritySettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Keamanan", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.security_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 }
             )
@@ -85,7 +87,7 @@ fun SecuritySettingsScreen(
                 .padding(horizontal = 16.dp)
         ) {
             Text(
-                text = "Atur cara mengunci aplikasi supaya data keuanganmu aman dari orang lain.",
+                text = stringResource(R.string.security_screen_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 8.dp)
@@ -99,8 +101,8 @@ fun SecuritySettingsScreen(
             ) {
                 Column {
                     ListItem(
-                        headlineContent = { Text("Aktifkan PIN Keamanan", fontWeight = FontWeight.SemiBold) },
-                        supportingContent = { Text("Pakai PIN buat mengunci aplikasi") },
+                        headlineContent = { Text(stringResource(R.string.security_enable_pin_title), fontWeight = FontWeight.SemiBold) },
+                        supportingContent = { Text(stringResource(R.string.security_enable_pin_desc)) },
                         leadingContent = {
                             Icon(
                                 imageVector = Icons.Default.Lock,
@@ -124,8 +126,8 @@ fun SecuritySettingsScreen(
 
                     if (isPinEnabled) {
                         ListItem(
-                            headlineContent = { Text("Aktifkan sidik jari", fontWeight = FontWeight.SemiBold) },
-                            supportingContent = { Text("Buka aplikasi pakai sidik jari") },
+                            headlineContent = { Text(stringResource(R.string.security_enable_fingerprint_title), fontWeight = FontWeight.SemiBold) },
+                            supportingContent = { Text(stringResource(R.string.security_enable_fingerprint_desc)) },
                             leadingContent = {
                                 Icon(
                                     imageVector = Icons.Default.Fingerprint,
@@ -144,7 +146,7 @@ fun SecuritySettingsScreen(
                         )
 
                         ListItem(
-                            headlineContent = { Text("Ubah PIN Keamanan", fontWeight = FontWeight.SemiBold) },
+                            headlineContent = { Text(stringResource(R.string.security_change_pin_title), fontWeight = FontWeight.SemiBold) },
                             leadingContent = {
                                 Icon(
                                     imageVector = Icons.Default.Key,
@@ -155,14 +157,14 @@ fun SecuritySettingsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             trailingContent = {
                                 TextButton(onClick = { viewModel.openVerifyCurrentPin(PendingSecurityAction.CHANGE_PIN) }) {
-                                    Text("Ubah")
+                                    Text(stringResource(R.string.common_change))
                                 }
                             }
                         )
 
                         ListItem(
-                            headlineContent = { Text("Buat kode baru", fontWeight = FontWeight.SemiBold) },
-                            supportingContent = { Text("Kode lama nggak berlaku lagi setelah kamu buat yang baru.") },
+                            headlineContent = { Text(stringResource(R.string.security_new_code_title), fontWeight = FontWeight.SemiBold) },
+                            supportingContent = { Text(stringResource(R.string.security_new_code_desc)) },
                             leadingContent = {
                                 Icon(
                                     imageVector = Icons.Default.Warning,
@@ -173,7 +175,7 @@ fun SecuritySettingsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             trailingContent = {
                                 TextButton(onClick = { viewModel.openVerifyCurrentPin(PendingSecurityAction.VIEW_RECOVERY_CODE) }) {
-                                    Text("Buat")
+                                    Text(stringResource(R.string.security_new_code_action))
                                 }
                             }
                         )
@@ -187,10 +189,10 @@ fun SecuritySettingsScreen(
     if (uiState.verifyCurrentPinOpen) {
         AlertDialog(
             onDismissRequest = { viewModel.closeVerifyCurrentPin() },
-            title = { Text("Masukkan PIN saat ini", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.security_verify_title), fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text("Masukkan PIN kamu saat ini buat melanjutkan.")
+                    Text(stringResource(R.string.security_verify_desc))
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = uiState.verifyCurrentPinInput,
@@ -199,13 +201,13 @@ fun SecuritySettingsScreen(
                                 viewModel.onVerifyCurrentPinInputChanged(input)
                             }
                         },
-                        label = { Text("PIN saat ini") },
+                        label = { Text(stringResource(R.string.security_current_pin_label)) },
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         isError = uiState.verifyCurrentPinError != null,
                         supportingText = {
                             uiState.verifyCurrentPinError?.let {
-                                Text(it, color = MaterialTheme.colorScheme.error)
+                                Text(stringResource(it), color = MaterialTheme.colorScheme.error)
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -217,12 +219,12 @@ fun SecuritySettingsScreen(
                     onClick = { viewModel.submitVerifyCurrentPin() },
                     enabled = uiState.verifyCurrentPinInput.length >= 4
                 ) {
-                    Text("Lanjut")
+                    Text(stringResource(R.string.common_next))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.closeVerifyCurrentPin() }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -238,6 +240,7 @@ fun PinSetupDialogs(
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
+    val codeCopiedText = stringResource(R.string.security_code_copied)
 
     if (uiState.setupStep != SetupStep.INACTIVE) {
         when (uiState.setupStep) {
@@ -247,15 +250,15 @@ fun PinSetupDialogs(
                     onDismissRequest = { viewModel.finishPinSetup() },
                     title = {
                         Text(
-                            text = if (isConfirm) "Ulangi PIN baru" else "Masukkan PIN baru",
+                            text = if (isConfirm) stringResource(R.string.security_confirm_pin_title) else stringResource(R.string.security_enter_pin_title),
                             fontWeight = FontWeight.Bold
                         )
                     },
                     text = {
                         Column {
                             Text(
-                                text = if (isConfirm) "Ketik PIN baru kamu sekali lagi." 
-                                else "Masukkan 4 sampai 6 angka PIN baru untuk mengunci aplikasi."
+                                text = if (isConfirm) stringResource(R.string.security_confirm_pin_desc) 
+                                else stringResource(R.string.security_enter_pin_desc)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             OutlinedTextField(
@@ -265,13 +268,13 @@ fun PinSetupDialogs(
                                         viewModel.onSetupPinInputChanged(input)
                                     }
                                 },
-                                label = { Text(if (isConfirm) "Ulangi PIN" else "PIN baru") },
+                                label = { Text(if (isConfirm) stringResource(R.string.security_confirm_pin_label) else stringResource(R.string.security_new_pin_label)) },
                                 visualTransformation = PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                                 isError = uiState.setupError != null,
                                 supportingText = {
                                     uiState.setupError?.let {
-                                        Text(it, color = MaterialTheme.colorScheme.error)
+                                        Text(stringResource(it), color = MaterialTheme.colorScheme.error)
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth()
@@ -284,12 +287,12 @@ fun PinSetupDialogs(
                             enabled = if (isConfirm) uiState.confirmPinInput.length >= 4 
                             else uiState.newPinInput.length >= 4
                         ) {
-                            Text("Lanjut")
+                            Text(stringResource(R.string.common_next))
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { viewModel.finishPinSetup() }) {
-                            Text("Batal")
+                            Text(stringResource(R.string.common_cancel))
                         }
                     }
                 )
@@ -297,11 +300,11 @@ fun PinSetupDialogs(
             SetupStep.SHOW_RECOVERY_CODE -> {
                 AlertDialog(
                     onDismissRequest = { viewModel.finishPinSetup() },
-                    title = { Text("Simpan kode pemulihan", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error) },
+                    title = { Text(stringResource(R.string.security_save_code_title), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error) },
                     text = {
                         Column {
                             Text(
-                                text = "Simpan kode pemulihan ini di tempat aman. Kode ini dipakai buat membuka aplikasi kalau kamu lupa PIN.",
+                                text = stringResource(R.string.security_save_code_desc),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Spacer(modifier = Modifier.height(16.dp))
@@ -332,11 +335,11 @@ fun PinSetupDialogs(
                                         onClick = {
                                             uiState.generatedRecoveryCode?.let {
                                                 clipboardManager.setText(AnnotatedString(it))
-                                                Toast.makeText(context, "Kode disalin", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, codeCopiedText, Toast.LENGTH_SHORT).show()
                                             }
                                         }
                                     ) {
-                                        Icon(Icons.Default.ContentCopy, contentDescription = "Salin")
+                                        Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.security_copy_cd))
                                     }
                                 }
                             }
@@ -346,7 +349,7 @@ fun PinSetupDialogs(
                         Button(
                             onClick = { viewModel.finishPinSetup() }
                         ) {
-                            Text("Sudah kusimpan")
+                            Text(stringResource(R.string.security_code_saved))
                         }
                     }
                 )

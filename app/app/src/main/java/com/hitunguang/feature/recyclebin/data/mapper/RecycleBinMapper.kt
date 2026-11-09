@@ -4,6 +4,7 @@ import com.hitunguang.core.common.util.CurrencyFormatter
 import com.hitunguang.core.database.entity.DeletedItemWithDetailsEntity
 import com.hitunguang.feature.recyclebin.domain.model.RecycleBinItem
 import com.hitunguang.feature.transaction.domain.model.TransactionWithDetails
+import com.hitunguang.R
 
 object RecycleBinMapper {
     fun toDomain(entity: DeletedItemWithDetailsEntity): RecycleBinItem {
@@ -30,12 +31,16 @@ object RecycleBinMapper {
 
         val title: String
         val subtitle: String
+        var titleRes: Int? = null
+        var subtitleRes: Int? = null
+        var subtitleArgRes: Int? = null
         val amountText: String?
         val isExpense: Boolean
 
         when (entity.entityType) {
             "TRANSACTION" -> {
-                title = entity.transaction?.title ?: "Transaksi Terhapus"
+                title = entity.transaction?.title.orEmpty()
+                if (entity.transaction?.title == null) titleRes = R.string.recycle_item_transaction_deleted
                 val accName = entity.accountName.orEmpty()
                 val catName = entity.categoryName
                 subtitle = if (accName.isNotEmpty() && !catName.isNullOrEmpty()) {
@@ -51,43 +56,50 @@ object RecycleBinMapper {
                 amountText = "${if (isTxExpense) "-" else "+"}${CurrencyFormatter.format(amount)}"
             }
             "CATEGORY" -> {
-                title = entity.category?.name ?: "Kategori Terhapus"
-                val typeText = when (entity.category?.categoryType) {
-                    "INCOME" -> "Pemasukan"
-                    "EXPENSE" -> "Pengeluaran"
-                    else -> "Transfer"
+                title = entity.category?.name.orEmpty()
+                if (entity.category?.name == null) titleRes = R.string.recycle_item_category_deleted
+                subtitleArgRes = when (entity.category?.categoryType) {
+                    "INCOME" -> R.string.recycle_category_income
+                    "EXPENSE" -> R.string.recycle_category_expense
+                    else -> R.string.recycle_category_transfer
                 }
-                subtitle = "Kategori • $typeText"
+                subtitleRes = R.string.recycle_subtitle_category
+                subtitle = ""
                 amountText = null
                 isExpense = entity.category?.categoryType != "INCOME"
             }
             "WALLET" -> {
-                title = entity.account?.name ?: "Dompet Terhapus"
-                val walletType = when (entity.account?.accountType) {
-                    "CASH" -> "Tunai"
-                    "BANK" -> "Bank"
-                    "E_WALLET" -> "E-Wallet"
-                    else -> "Lainnya"
+                title = entity.account?.name.orEmpty()
+                if (entity.account?.name == null) titleRes = R.string.recycle_item_wallet_deleted
+                subtitleArgRes = when (entity.account?.accountType) {
+                    "CASH" -> R.string.recycle_wallet_cash
+                    "BANK" -> R.string.recycle_wallet_bank
+                    "E_WALLET" -> R.string.recycle_wallet_ewallet
+                    else -> R.string.recycle_other
                 }
-                subtitle = "Dompet • $walletType"
+                subtitleRes = R.string.recycle_subtitle_wallet
+                subtitle = ""
                 val balance = entity.account?.currentBalance ?: 0L
                 amountText = CurrencyFormatter.format(balance)
                 isExpense = false
             }
             "BUDGET" -> {
-                title = entity.budgetCategoryName?.let { "Anggaran $it" } ?: "Anggaran"
-                val budgetType = when (entity.budget?.budgetType) {
-                    "MONTHLY" -> "Bulanan"
-                    "WEEKLY" -> "Mingguan"
-                    else -> "Lainnya"
+                title = entity.budgetCategoryName.orEmpty()
+                titleRes = if (entity.budgetCategoryName != null) R.string.recycle_item_budget_named else R.string.recycle_item_budget
+                subtitleArgRes = when (entity.budget?.budgetType) {
+                    "MONTHLY" -> R.string.recycle_budget_monthly
+                    "WEEKLY" -> R.string.recycle_budget_weekly
+                    else -> R.string.recycle_other
                 }
-                subtitle = "Anggaran • $budgetType"
+                subtitleRes = R.string.recycle_subtitle_budget
+                subtitle = ""
                 val amount = entity.budget?.amount ?: 0L
                 amountText = CurrencyFormatter.format(amount)
                 isExpense = true
             }
             else -> {
-                title = "Data terhapus"
+                title = ""
+                titleRes = R.string.recycle_item_data_deleted
                 subtitle = ""
                 amountText = null
                 isExpense = false
@@ -102,6 +114,9 @@ object RecycleBinMapper {
             expireAt = entity.expireAt,
             title = title,
             subtitle = subtitle,
+            titleRes = titleRes,
+            subtitleRes = subtitleRes,
+            subtitleArgRes = subtitleArgRes,
             amountText = amountText,
             isExpense = isExpense,
             transactionDetails = transactionDetails,

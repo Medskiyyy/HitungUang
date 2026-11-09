@@ -30,6 +30,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hitunguang.core.designsystem.theme.Spacing
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
 
 @Composable
 fun BudgetStep(
@@ -60,7 +62,7 @@ fun BudgetStep(
                 )
                 Spacer(modifier = Modifier.width(Spacing.medium))
                 Text(
-                    text = "Atur batas pengeluaran bulanan",
+                    text = stringResource(R.string.onboarding_budget_title),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -69,7 +71,7 @@ fun BudgetStep(
             Spacer(modifier = Modifier.height(Spacing.medium))
 
             Text(
-                text = "Tentukan batas pengeluaran bulananmu biar keuangan lebih terkontrol.\n\nLangkah ini boleh dilewati, bisa diatur nanti.",
+                text = stringResource(R.string.onboarding_budget_desc),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -80,8 +82,8 @@ fun BudgetStep(
                 value = budgetAmount,
                 // Keep digits only (users may type "2.000.000"); dots are shown by the visual transformation
                 onValueChange = { onBudgetAmountChange(it.filter(Char::isDigit).take(15)) },
-                label = { Text("Anggaran bulanan (Rp)") },
-                placeholder = { Text("Contoh: 2.000.000") },
+                label = { Text(stringResource(R.string.onboarding_budget_label)) },
+                placeholder = { Text(stringResource(R.string.onboarding_budget_placeholder)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 visualTransformation = ThousandSeparatorTransformation,
                 modifier = Modifier.fillMaxWidth(),
@@ -108,7 +110,7 @@ fun BudgetStep(
                         .weight(1f)
                         .height(50.dp)
                 ) {
-                    Text("Kembali")
+                    Text(stringResource(R.string.common_back))
                 }
 
                 Spacer(modifier = Modifier.width(Spacing.large))
@@ -120,7 +122,7 @@ fun BudgetStep(
                         .weight(1f)
                         .height(50.dp)
                 ) {
-                    Text("Simpan")
+                    Text(stringResource(R.string.common_save))
                 }
             }
 
@@ -134,7 +136,7 @@ fun BudgetStep(
                     .height(48.dp)
             ) {
                 Text(
-                    "Lewati dulu →",
+                    stringResource(R.string.onboarding_budget_skip),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

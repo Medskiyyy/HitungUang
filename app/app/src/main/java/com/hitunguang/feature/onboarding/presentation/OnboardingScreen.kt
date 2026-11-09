@@ -42,6 +42,8 @@ import com.hitunguang.feature.onboarding.presentation.components.ProfileStep
 import com.hitunguang.feature.onboarding.presentation.components.SecurityStep
 import com.hitunguang.feature.onboarding.presentation.components.TutorialStep
 import com.hitunguang.feature.onboarding.presentation.components.WelcomeStep
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
 
 @Composable
 fun OnboardingScreen(
@@ -201,13 +203,13 @@ fun OnboardingStepper(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Langkah $visibleStep dari $visibleTotal",
+                text = stringResource(R.string.onboarding_step_progress, visibleStep, visibleTotal),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Medium
             )
             Text(
-                text = "${(visibleStep * 100 / visibleTotal)}%",
+                text = stringResource(R.string.onboarding_step_percent, visibleStep * 100 / visibleTotal),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold

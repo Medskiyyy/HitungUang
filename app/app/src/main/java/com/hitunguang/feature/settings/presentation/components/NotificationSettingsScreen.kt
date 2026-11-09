@@ -53,6 +53,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.hitunguang.feature.settings.presentation.NotificationViewModel
 import java.util.Calendar
 import java.util.Locale
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,14 +79,16 @@ fun NotificationSettingsScreen(
         )
     }
 
+    val permissionGrantedText = stringResource(R.string.settings_notif_permission_granted)
+    val permissionDeniedText = stringResource(R.string.settings_notif_permission_denied)
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
             hasNotificationPermission = isGranted
             if (isGranted) {
-                Toast.makeText(context, "Izin notifikasi diberikan", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, permissionGrantedText, Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(context, "Izin notifikasi ditolak", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, permissionDeniedText, Toast.LENGTH_SHORT).show()
             }
         }
     )
@@ -92,10 +96,10 @@ fun NotificationSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Pengaturan Notifikasi", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.settings_notif_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 }
             )
@@ -109,7 +113,7 @@ fun NotificationSettingsScreen(
                 .padding(horizontal = 16.dp)
         ) {
             Text(
-                text = "Atur pengingat harian, ringkasan mingguan/bulanan, dan peringatan anggaran.",
+                text = stringResource(R.string.settings_notif_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 8.dp)
@@ -140,14 +144,14 @@ fun NotificationSettingsScreen(
                                 tint = MaterialTheme.colorScheme.onErrorContainer
                             )
                             Text(
-                                text = "Izin notifikasi belum aktif",
+                                text = stringResource(R.string.settings_notif_permission_missing_title),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )
                         }
                         Text(
-                            text = "Aplikasi butuh izin buat menampilkan pengingat dan peringatan anggaran.",
+                            text = stringResource(R.string.settings_notif_permission_missing_desc),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer
                         )
@@ -161,7 +165,7 @@ fun NotificationSettingsScreen(
                             ),
                             modifier = Modifier.align(Alignment.End)
                         ) {
-                            Text("Izinkan notifikasi")
+                            Text(stringResource(R.string.settings_notif_permission_allow))
                         }
                     }
                 }
@@ -177,8 +181,8 @@ fun NotificationSettingsScreen(
                     Column {
                         // Daily Reminder Switch
                         ListItem(
-                            headlineContent = { Text("Pengingat Harian", fontWeight = FontWeight.SemiBold) },
-                            supportingContent = { Text("Diingatkan buat mencatat pemasukan dan pengeluaran tiap hari") },
+                            headlineContent = { Text(stringResource(R.string.settings_notif_daily_title), fontWeight = FontWeight.SemiBold) },
+                            supportingContent = { Text(stringResource(R.string.settings_notif_daily_desc)) },
                             leadingContent = {
                                 Icon(
                                     imageVector = if (settings.dailyReminderEnabled) Icons.Default.NotificationsActive else Icons.Default.Notifications,
@@ -208,8 +212,8 @@ fun NotificationSettingsScreen(
                             val currentMinute = parts.getOrNull(1)?.toIntOrNull() ?: 0
 
                             ListItem(
-                                headlineContent = { Text("Waktu Pengingat", fontWeight = FontWeight.SemiBold) },
-                                supportingContent = { Text("Ketuk buat ubah jam pengingat") },
+                                headlineContent = { Text(stringResource(R.string.settings_notif_time_title), fontWeight = FontWeight.SemiBold) },
+                                supportingContent = { Text(stringResource(R.string.settings_notif_time_desc)) },
                                 leadingContent = {
                                     Icon(
                                         imageVector = Icons.Default.AccessTime,
@@ -244,8 +248,8 @@ fun NotificationSettingsScreen(
 
                         // Weekly Review Switch
                         ListItem(
-                            headlineContent = { Text("Ringkasan Mingguan", fontWeight = FontWeight.SemiBold) },
-                            supportingContent = { Text("Ringkasan pengeluaran mingguan, tiap hari Minggu pukul 19:00") },
+                            headlineContent = { Text(stringResource(R.string.settings_notif_weekly_title), fontWeight = FontWeight.SemiBold) },
+                            supportingContent = { Text(stringResource(R.string.settings_notif_weekly_desc)) },
                             leadingContent = {
                                 Icon(
                                     imageVector = Icons.Default.DateRange,
@@ -269,8 +273,8 @@ fun NotificationSettingsScreen(
 
                         // Monthly Review Switch
                         ListItem(
-                            headlineContent = { Text("Ringkasan Bulanan", fontWeight = FontWeight.SemiBold) },
-                            supportingContent = { Text("Ringkasan keuangan bulanan, tiap awal bulan pukul 19:00") },
+                            headlineContent = { Text(stringResource(R.string.settings_notif_monthly_title), fontWeight = FontWeight.SemiBold) },
+                            supportingContent = { Text(stringResource(R.string.settings_notif_monthly_desc)) },
                             leadingContent = {
                                 Icon(
                                     imageVector = Icons.Default.CalendarMonth,

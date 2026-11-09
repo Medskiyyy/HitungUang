@@ -2,6 +2,7 @@ package com.hitunguang.core.backup
 
 import android.database.sqlite.SQLiteDatabase
 import java.io.File
+import com.hitunguang.R
 
 object RestoreFiles {
     const val DB_NAME = "hitunguang.db"
@@ -10,18 +11,18 @@ object RestoreFiles {
     private val DATA_DIRS = listOf("attachments", "receipts")
 
     fun validateDatabase(dbFile: File) {
-        if (!dbFile.isFile) throw IllegalArgumentException("Isi cadangan nggak lengkap: databasenya nggak ketemu.")
+        if (!dbFile.isFile) throw BackupUserException(R.string.backup_error_incomplete)
         val db = try {
             SQLiteDatabase.openDatabase(dbFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
         } catch (e: Exception) {
-            throw IllegalArgumentException("Cadangan ini rusak atau bukan cadangan yang benar.", e)
+            throw BackupUserException(R.string.backup_error_corrupt_or_invalid, e)
         }
         try {
             db.use { checkOpenDatabase(it) }
         } catch (e: IllegalArgumentException) {
             throw e
         } catch (e: Exception) {
-            throw IllegalArgumentException("Cadangan ini rusak.", e)
+            throw BackupUserException(R.string.backup_error_corrupt, e)
         }
     }
 
@@ -30,13 +31,13 @@ object RestoreFiles {
             if (c.moveToFirst()) c.getInt(0) else 0
         }
         if (version > MAX_SCHEMA_VERSION) {
-            throw IllegalArgumentException("Cadangan ini dibuat dari versi aplikasi yang lebih baru. Perbarui aplikasinya dulu, ya.")
+            throw BackupUserException(R.string.backup_error_newer_version)
         }
         val integrity = db.rawQuery("PRAGMA integrity_check", null).use { c ->
             if (c.moveToFirst()) c.getString(0) else null
         }
         if (integrity != "ok") {
-            throw IllegalArgumentException("Cadangan ini rusak.")
+            throw BackupUserException(R.string.backup_error_corrupt)
         }
     }
 

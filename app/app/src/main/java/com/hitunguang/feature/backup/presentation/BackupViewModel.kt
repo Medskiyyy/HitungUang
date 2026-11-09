@@ -26,6 +26,9 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import androidx.annotation.StringRes
+import com.hitunguang.core.backup.BackupUserException
+import com.hitunguang.R
 
 @HiltViewModel
 class BackupViewModel @Inject constructor(
@@ -75,22 +78,22 @@ class BackupViewModel @Inject constructor(
     }
 
     fun onFolderPermissionFailed() {
-        _uiState.update { it.copy(errorMessage = "Folder nggak bisa diakses. Coba pilih folder lain ya.") }
+        _uiState.update { it.copy(errorMessage = context.getString(R.string.backup_error_folder_inaccessible)) }
     }
 
     fun onBackupNow() {
         val folderUri = _uiState.value.backupFolderUri ?: run {
-            _uiState.update { it.copy(errorMessage = "Pilih folder cadangan dulu.") }
+            _uiState.update { it.copy(errorMessage = context.getString(R.string.backup_error_choose_folder)) }
             return
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isBackingUp = true, errorMessage = null, successMessage = null) }
             createBackupUseCase(folderUri).fold(
                 onSuccess = { fileName ->
-                    _uiState.update { it.copy(isBackingUp = false, successMessage = "Berhasil dicadangkan: $fileName") }
+                    _uiState.update { it.copy(isBackingUp = false, successMessage = context.getString(R.string.backup_success, fileName)) }
                 },
                 onFailure = { error ->
-                    _uiState.update { it.copy(isBackingUp = false, errorMessage = error.message ?: "Gagal mencadangkan. Cek folder tujuan, lalu coba lagi.") }
+                    _uiState.update { it.copy(isBackingUp = false, errorMessage = backupErrorText(error, R.string.backup_error_failed)) }
                 }
             )
         }
@@ -107,7 +110,7 @@ class BackupViewModel @Inject constructor(
         _uiState.update { it.copy(showRestoreConfirmDialog = false, pendingRestoreUri = null, isRestoring = true) }
         viewModelScope.launch {
             restoreBackupUseCase(uri).onFailure { error ->
-                _uiState.update { it.copy(isRestoring = false, errorMessage = error.message ?: "Gagal memulihkan. Cek file cadangannya, lalu coba lagi.") }
+                _uiState.update { it.copy(isRestoring = false, errorMessage = backupErrorText(error, R.string.backup_error_restore_failed)) }
             }
             // On success, app will restart automatically
         }
@@ -154,6 +157,11 @@ class BackupViewModel @Inject constructor(
             rescheduleWorkers(updated.backupFrequency, enabled)
         }
     }
+
+    private fun backupErrorText(error: Throwable, @StringRes fallbackRes: Int): String =
+        (error as? BackupUserException)?.let { context.getString(it.messageRes) }
+            ?: error.message
+            ?: context.getString(fallbackRes)
 
     fun clearMessage() {
         _uiState.update { it.copy(successMessage = null, errorMessage = null) }

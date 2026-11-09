@@ -29,14 +29,17 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
+import androidx.annotation.StringRes
 
 @Composable
 fun SecurityStep(
     isPinEnabled: Boolean,
     pin: String,
-    pinError: String?,
+    @StringRes pinError: Int?,
     confirmPin: String,
-    confirmPinError: String?,
+    @StringRes confirmPinError: Int?,
     biometricEnabled: Boolean,
     recoveryCode: String?,
     onPinEnabledToggled: (Boolean) -> Unit,
@@ -60,7 +63,7 @@ fun SecurityStep(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = "Keamanan Aplikasi",
+                text = stringResource(R.string.onboarding_security_title),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -68,7 +71,7 @@ fun SecurityStep(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "Lindungi data keuanganmu dari orang lain. PIN dan sidik jari bisa diaktifkan sekarang atau nanti.",
+                text = stringResource(R.string.onboarding_security_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -82,11 +85,11 @@ fun SecurityStep(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Aktifkan PIN",
+                        text = stringResource(R.string.onboarding_security_enable_pin_title),
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "Pakai PIN buat membuka aplikasi",
+                        text = stringResource(R.string.onboarding_security_enable_pin_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -103,13 +106,13 @@ fun SecurityStep(
                 OutlinedTextField(
                     value = pin,
                     onValueChange = { if (it.length <= 6 && it.all { c -> c in '0'..'9' }) onPinChange(it) },
-                    label = { Text("PIN baru (4–6 angka)") },
+                    label = { Text(stringResource(R.string.onboarding_security_new_pin_label)) },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                     isError = pinError != null,
                     supportingText = {
                         if (pinError != null) {
-                            Text(text = pinError, color = MaterialTheme.colorScheme.error)
+                            Text(text = stringResource(pinError), color = MaterialTheme.colorScheme.error)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -121,13 +124,13 @@ fun SecurityStep(
                 OutlinedTextField(
                     value = confirmPin,
                     onValueChange = { if (it.length <= 6 && it.all { c -> c in '0'..'9' }) onConfirmPinChange(it) },
-                    label = { Text("Ulangi PIN baru") },
+                    label = { Text(stringResource(R.string.onboarding_security_confirm_pin_label)) },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                     isError = confirmPinError != null,
                     supportingText = {
                         if (confirmPinError != null) {
-                            Text(text = confirmPinError, color = MaterialTheme.colorScheme.error)
+                            Text(text = stringResource(confirmPinError), color = MaterialTheme.colorScheme.error)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -143,11 +146,11 @@ fun SecurityStep(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Aktifkan sidik jari",
+                            text = stringResource(R.string.security_enable_fingerprint_title),
                             style = MaterialTheme.typography.titleMedium
                         )
                         Text(
-                            text = "Buka aplikasi pakai sidik jari",
+                            text = stringResource(R.string.security_enable_fingerprint_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -168,13 +171,13 @@ fun SecurityStep(
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
-                                text = "Simpan Kode Pemulihanmu",
+                                text = stringResource(R.string.onboarding_security_recovery_title),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Tulis kode ini dan simpan di tempat aman. Kode ini dipakai buat masuk kalau kamu lupa PIN.",
+                                text = stringResource(R.string.onboarding_security_recovery_desc),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )
@@ -205,7 +208,7 @@ fun SecurityStep(
                     .weight(1f)
                     .height(50.dp)
             ) {
-                Text("Kembali")
+                Text(stringResource(R.string.common_back))
             }
             
             Spacer(modifier = Modifier.width(16.dp))
@@ -216,7 +219,7 @@ fun SecurityStep(
                     .weight(1f)
                     .height(50.dp)
             ) {
-                Text(if (isPinEnabled) "Lanjut" else "Lewati")
+                Text(if (isPinEnabled) stringResource(R.string.common_next) else stringResource(R.string.common_skip))
             }
         }
     }

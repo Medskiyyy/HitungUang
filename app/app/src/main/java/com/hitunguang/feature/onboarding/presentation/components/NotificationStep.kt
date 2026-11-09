@@ -28,6 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
 
 @Composable
 fun NotificationStep(
@@ -60,7 +62,7 @@ fun NotificationStep(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = "Izin Notifikasi",
+                text = stringResource(R.string.onboarding_notif_title),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -68,7 +70,7 @@ fun NotificationStep(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "Aplikasi akan mengirim pengingat harian buat mencatat keuangan, plus peringatan kalau anggaran bulananmu hampir habis.",
+                text = stringResource(R.string.onboarding_notif_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -84,11 +86,11 @@ fun NotificationStep(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Aktifkan pengingat harian",
+                        text = stringResource(R.string.onboarding_notif_daily_title),
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "Diingatkan setiap pukul 20:00",
+                        text = stringResource(R.string.onboarding_notif_daily_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -116,7 +118,7 @@ fun NotificationStep(
                     .weight(1f)
                     .height(50.dp)
             ) {
-                Text("Kembali")
+                Text(stringResource(R.string.common_back))
             }
             
             Spacer(modifier = Modifier.width(16.dp))
@@ -127,7 +129,7 @@ fun NotificationStep(
                     .weight(1f)
                     .height(50.dp)
             ) {
-                Text("Lanjut")
+                Text(stringResource(R.string.common_next))
             }
         }
     }

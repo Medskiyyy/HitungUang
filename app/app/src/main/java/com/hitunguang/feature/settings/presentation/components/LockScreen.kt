@@ -52,6 +52,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.hitunguang.feature.settings.presentation.SecurityViewModel
 import kotlinx.coroutines.delay
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
 
 @Composable
 fun LockScreen(
@@ -93,14 +95,14 @@ fun LockScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "HitungUang",
+                text = stringResource(R.string.lock_app_name),
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
 
             Text(
-                text = "Aplikasi Catatan Keuangan Pribadi",
+                text = stringResource(R.string.lock_app_tagline),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -114,7 +116,7 @@ fun LockScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = if (uiState.isLockedOut) "Terlalu banyak percobaan salah" else "Masukkan PIN kamu",
+                        text = if (uiState.isLockedOut) stringResource(R.string.lock_too_many_attempts) else stringResource(R.string.lock_enter_pin),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = if (uiState.isLockedOut || uiState.pinError != null) MaterialTheme.colorScheme.error 
@@ -153,15 +155,17 @@ fun LockScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if (uiState.pinError != null && !uiState.isLockedOut) {
-                        Text(
-                            text = if (uiState.remainingAttempts > 0) {
-                                "${uiState.pinError} (Sisa ${uiState.remainingAttempts} percobaan)"
-                            } else {
-                                uiState.pinError ?: ""
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.error
-                        )
+                        uiState.pinError?.let { pinErrorRes ->
+                            Text(
+                                text = if (uiState.remainingAttempts > 0) {
+                                    stringResource(R.string.lock_pin_error_with_attempts, stringResource(pinErrorRes), uiState.remainingAttempts)
+                                } else {
+                                    stringResource(pinErrorRes)
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
 
                     if (uiState.isLockedOut) {
@@ -175,7 +179,7 @@ fun LockScreen(
                         }
                         val secondsLeft = ((uiState.lockoutUntil - now + 999) / 1000).coerceAtLeast(0)
                         Text(
-                            text = "Coba lagi dalam $secondsLeft detik, atau pakai kode pemulihan kamu.",
+                            text = stringResource(R.string.lock_retry_in, secondsLeft),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center,
@@ -234,7 +238,7 @@ fun LockScreen(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Fingerprint,
-                                            contentDescription = "Buka dengan sidik jari",
+                                            contentDescription = stringResource(R.string.lock_fingerprint_cd),
                                             tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.size(28.dp)
                                         )
@@ -254,7 +258,7 @@ fun LockScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Backspace,
-                                        contentDescription = "Hapus",
+                                        contentDescription = stringResource(R.string.common_delete),
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
@@ -265,7 +269,7 @@ fun LockScreen(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     TextButton(onClick = { viewModel.enterRecoveryMode(true) }) {
-                        Text("Lupa PIN?", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.lock_forgot_pin), fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -284,13 +288,13 @@ fun LockScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Pulihkan Akses",
+                            text = stringResource(R.string.lock_recovery_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Masukkan 16 karakter kode pemulihan buat bikin PIN baru.",
+                            text = stringResource(R.string.lock_recovery_desc),
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -304,13 +308,13 @@ fun LockScreen(
                                     viewModel.onRecoveryCodeChanged(input)
                                 }
                             },
-                            label = { Text("Kode Pemulihan") },
-                            placeholder = { Text("KODE16KARAKTER") },
+                            label = { Text(stringResource(R.string.lock_recovery_code_label)) },
+                            placeholder = { Text(stringResource(R.string.lock_recovery_code_placeholder)) },
                             singleLine = true,
                             isError = uiState.recoveryCodeError != null,
                             supportingText = {
                                 uiState.recoveryCodeError?.let {
-                                    Text(it, color = MaterialTheme.colorScheme.error)
+                                    Text(stringResource(it), color = MaterialTheme.colorScheme.error)
                                 }
                             },
                             modifier = Modifier.fillMaxWidth()
@@ -323,11 +327,11 @@ fun LockScreen(
                             horizontalArrangement = Arrangement.End
                         ) {
                             TextButton(onClick = { viewModel.enterRecoveryMode(false) }) {
-                                Text("Batal")
+                                Text(stringResource(R.string.common_cancel))
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             Button(onClick = { viewModel.verifyRecoveryCode() }) {
-                                Text("Kirim")
+                                Text(stringResource(R.string.common_send))
                             }
                         }
                     }

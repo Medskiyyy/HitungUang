@@ -20,6 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
 
 @Composable
 fun BackupStep(
@@ -50,7 +52,7 @@ fun BackupStep(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = "Cadangkan Data",
+                text = stringResource(R.string.onboarding_backup_title),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -58,7 +60,7 @@ fun BackupStep(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "Data kamu cuma ada di HP ini. Pilih folder buat cadangan otomatis tiap minggu, biar aman kalau aplikasinya kehapus. Lebih aman lagi kalau foldernya kamu salin ke Drive atau PC.",
+                text = stringResource(R.string.onboarding_backup_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -69,13 +71,13 @@ fun BackupStep(
                 onClick = { folderPickerLauncher.launch(null) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(if (backupUri != null) "Ubah folder cadangan" else "Pilih folder cadangan")
+                Text(if (backupUri != null) stringResource(R.string.onboarding_backup_change_folder) else stringResource(R.string.onboarding_backup_choose_folder))
             }
 
             if (backupUri != null) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Folder terpilih:",
+                    text = stringResource(R.string.onboarding_backup_selected_folder),
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(
@@ -86,7 +88,7 @@ fun BackupStep(
             } else {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Folder belum dipilih, jadi cadangan otomatis mati.",
+                    text = stringResource(R.string.onboarding_backup_no_folder),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )
@@ -103,7 +105,7 @@ fun BackupStep(
                     .weight(1f)
                     .height(50.dp)
             ) {
-                Text("Kembali")
+                Text(stringResource(R.string.common_back))
             }
             
             Spacer(modifier = Modifier.width(16.dp))
@@ -114,7 +116,7 @@ fun BackupStep(
                     .weight(1f)
                     .height(50.dp)
             ) {
-                Text(if (backupUri != null) "Lanjut" else "Lewati")
+                Text(if (backupUri != null) stringResource(R.string.common_next) else stringResource(R.string.common_skip))
             }
         }
     }

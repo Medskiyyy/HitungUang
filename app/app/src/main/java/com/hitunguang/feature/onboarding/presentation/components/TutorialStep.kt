@@ -38,10 +38,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hitunguang.core.designsystem.theme.Spacing
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
+import androidx.annotation.StringRes
 
 data class TutorialPage(
-    val title: String,
-    val description: String,
+    @StringRes val title: Int,
+    @StringRes val description: Int,
     val icon: ImageVector
 )
 
@@ -54,28 +57,28 @@ fun TutorialStep(
     val pages = remember {
         listOf(
             TutorialPage(
-                title = "Beranda",
-                description = "Pantau total saldo, ringkasan pengeluaran, grafik kategori, dan status anggaran bulanan.",
+                title = R.string.onboarding_tutorial_home_title,
+                description = R.string.onboarding_tutorial_home_desc,
                 icon = Icons.Default.Dashboard
             ),
             TutorialPage(
-                title = "Pencatatan Cepat",
-                description = "Catat pengeluaran, pemasukan, dan transfer antar dompet dengan mudah. Draf otomatis menyimpan isian yang belum selesai.",
+                title = R.string.onboarding_tutorial_quick_title,
+                description = R.string.onboarding_tutorial_quick_desc,
                 icon = Icons.Default.ReceiptLong
             ),
             TutorialPage(
-                title = "Pindai Struk",
-                description = "Foto struk belanja, lalu aplikasi membaca teksnya tanpa internet, mengambil daftar barang, dan menghitung total.",
+                title = R.string.onboarding_tutorial_scan_title,
+                description = R.string.onboarding_tutorial_scan_desc,
                 icon = Icons.Default.QrCodeScanner
             ),
             TutorialPage(
-                title = "Anggaran",
-                description = "Atur batas pengeluaran per kategori. Kamu dapat pengingat kalau hampir atau sudah melewati batas.",
+                title = R.string.onboarding_tutorial_budget_title,
+                description = R.string.onboarding_tutorial_budget_desc,
                 icon = Icons.Default.BarChart
             ),
             TutorialPage(
-                title = "Cadangan & Keamanan",
-                description = "Data kamu dicadangkan ke folder pilihanmu. Kunci aplikasi dengan PIN atau sidik jari.",
+                title = R.string.onboarding_tutorial_backup_title,
+                description = R.string.onboarding_tutorial_backup_desc,
                 icon = Icons.Default.Backup
             )
         )
@@ -96,13 +99,13 @@ fun TutorialStep(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = "Panduan Singkat",
+                text = stringResource(R.string.onboarding_tutorial_title),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(Spacing.small))
             Text(
-                text = "${currentPageIndex + 1} dari ${pages.size}",
+                text = stringResource(R.string.onboarding_tutorial_progress, currentPageIndex + 1, pages.size),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -125,7 +128,7 @@ fun TutorialStep(
             ) {
                 Icon(
                     imageVector = page.icon,
-                    contentDescription = page.title,
+                    contentDescription = stringResource(page.title),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(56.dp)
                 )
@@ -134,7 +137,7 @@ fun TutorialStep(
             Spacer(modifier = Modifier.height(Spacing.huge))
 
             Text(
-                text = page.title,
+                text = stringResource(page.title),
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
@@ -143,7 +146,7 @@ fun TutorialStep(
             Spacer(modifier = Modifier.height(Spacing.medium))
 
             Text(
-                text = page.description,
+                text = stringResource(page.description),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -192,7 +195,7 @@ fun TutorialStep(
                     .height(50.dp)
             ) {
                 Text(
-                    if (currentPageIndex > 0) "Sebelumnya" else "Kembali"
+                    if (currentPageIndex > 0) stringResource(R.string.onboarding_tutorial_previous) else stringResource(R.string.common_back)
                 )
             }
 
@@ -211,7 +214,7 @@ fun TutorialStep(
                     .height(50.dp)
             ) {
                 Text(
-                    if (currentPageIndex == pages.lastIndex) "Selesai" else "Lanjut"
+                    if (currentPageIndex == pages.lastIndex) stringResource(R.string.common_done) else stringResource(R.string.common_next)
                 )
             }
         }

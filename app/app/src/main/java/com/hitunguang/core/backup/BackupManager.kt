@@ -16,10 +16,9 @@ import java.util.Locale
 import java.util.zip.ZipOutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.hitunguang.R
 
-class BackupFolderPermissionException : Exception(
-    "Izin ke folder cadangan sudah hilang. Pilih folder cadangan lagi, ya."
-)
+class BackupFolderPermissionException : BackupUserException(R.string.backup_error_folder_permission_lost)
 
 @Singleton
 class BackupManager @Inject constructor(
@@ -66,7 +65,7 @@ class BackupManager @Inject constructor(
                 folderDocUri,
                 "application/zip",
                 fileName
-            ) ?: return@withContext Result.failure(IllegalStateException("Gagal mencadangkan. Cek folder tujuan, lalu coba lagi."))
+            ) ?: return@withContext Result.failure(BackupUserException(R.string.backup_error_failed))
 
             context.contentResolver.openOutputStream(zipUri)?.use { outputStream ->
                 ZipOutputStream(outputStream.buffered()).use { zip ->
@@ -87,7 +86,7 @@ class BackupManager @Inject constructor(
                     zip.write(settingsJson.toByteArray(Charsets.UTF_8))
                     zip.closeEntry()
                 }
-            } ?: return@withContext Result.failure(IllegalStateException("Gagal mencadangkan. Cek folder tujuan, lalu coba lagi."))
+            } ?: return@withContext Result.failure(BackupUserException(R.string.backup_error_failed))
 
             // 7. Update lastBackupAt timestamp
             val currentSettings = settingsDataStore.backupSettings.firstOrNull()

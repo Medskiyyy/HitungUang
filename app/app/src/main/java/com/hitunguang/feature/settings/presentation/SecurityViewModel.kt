@@ -24,13 +24,15 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import androidx.annotation.StringRes
+import com.hitunguang.R
 
 data class SecurityUiState(
     val isLockStateKnown: Boolean = false,
     val isAppLocked: Boolean = false,
 val securitySettings: SecuritySettings? = null,
     val pinInput: String = "",
-    val pinError: String? = null,
+    @StringRes val pinError: Int? = null,
     val remainingAttempts: Int = 5,
     val isLockedOut: Boolean = false,
     val lockoutUntil: Long = 0L,
@@ -40,19 +42,19 @@ val securitySettings: SecuritySettings? = null,
     val isRecoveryMode: Boolean = false,
     val isRecoveryReset: Boolean = false,
 val recoveryCodeInput: String = "",
-    val recoveryCodeError: String? = null,
+    @StringRes val recoveryCodeError: Int? = null,
     
     // PIN Setup / Change states inside settings
     val setupStep: SetupStep = SetupStep.INACTIVE,
     val newPinInput: String = "",
     val confirmPinInput: String = "",
-    val setupError: String? = null,
+    @StringRes val setupError: Int? = null,
     val generatedRecoveryCode: String? = null,
     
     // Verify current PIN before disable/change state
     val verifyCurrentPinOpen: Boolean = false,
     val verifyCurrentPinInput: String = "",
-    val verifyCurrentPinError: String? = null,
+    @StringRes val verifyCurrentPinError: Int? = null,
     val pendingAction: PendingSecurityAction = PendingSecurityAction.NONE
 )
 
@@ -157,7 +159,7 @@ viewModelScope.launch {
             lockoutUntil = if (duration > 0) System.currentTimeMillis() + duration else 0L
         )
         settingsRepository.savePinLockState(updated)
-        _uiState.update { it.copy(pinInput = "", pinError = "PIN salah") }
+        _uiState.update { it.copy(pinInput = "", pinError = R.string.security_pin_wrong) }
         applyLockState(updated)
     }
 
@@ -237,7 +239,7 @@ viewModelScope.launch {
     fun verifyRecoveryCode() {
         val code = _uiState.value.recoveryCodeInput
         if (code.isBlank()) {
-            _uiState.update { it.copy(recoveryCodeError = "Kodenya belum diisi") }
+            _uiState.update { it.copy(recoveryCodeError = R.string.lock_recovery_code_empty) }
             return
         }
 
@@ -262,7 +264,7 @@ viewModelScope.launch {
                     )
                 }
             } else {
-                _uiState.update { it.copy(recoveryCodeError = "Kode pemulihan salah") }
+                _uiState.update { it.copy(recoveryCodeError = R.string.lock_recovery_code_wrong) }
             }
         }
     }
@@ -294,13 +296,13 @@ viewModelScope.launch {
         val state = _uiState.value
         if (state.setupStep == SetupStep.ENTER_NEW_PIN) {
             if (!isValidPinFormat(state.newPinInput)) {
-                _uiState.update { it.copy(setupError = "PIN harus 4-6 angka") }
+                _uiState.update { it.copy(setupError = R.string.security_pin_format_error) }
                 return
             }
             _uiState.update { it.copy(setupStep = SetupStep.CONFIRM_NEW_PIN, setupError = null) }
         } else if (state.setupStep == SetupStep.CONFIRM_NEW_PIN) {
             if (state.newPinInput != state.confirmPinInput) {
-                _uiState.update { it.copy(setupError = "PIN-nya beda. Ketik ulang, ya.") }
+                _uiState.update { it.copy(setupError = R.string.security_pin_mismatch) }
                 return
             }
             // Save new PIN
@@ -384,7 +386,7 @@ viewModelScope.launch {
                     else -> {}
                 }
             } else {
-                _uiState.update { it.copy(verifyCurrentPinError = "PIN saat ini salah") }
+                _uiState.update { it.copy(verifyCurrentPinError = R.string.security_current_pin_wrong) }
             }
         }
     }

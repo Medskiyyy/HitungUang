@@ -3,6 +3,7 @@ package com.hitunguang.feature.backup
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import androidx.test.core.app.ApplicationProvider
+import com.hitunguang.core.backup.BackupUserException
 import com.hitunguang.core.backup.RestoreFiles
 import com.hitunguang.core.backup.ZipHelper
 import org.junit.Assert.assertEquals
@@ -65,7 +66,7 @@ class RestoreFilesTest {
             RestoreFiles.validateDatabase(db)
             fail("expected failure")
         } catch (e: IllegalArgumentException) {
-            assertTrue(e.message!!.contains("versi aplikasi"))
+            assertTrue(context.getString((e as BackupUserException).messageRes).contains("versi aplikasi"))
         }
     }
 

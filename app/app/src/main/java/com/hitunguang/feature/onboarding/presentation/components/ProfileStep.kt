@@ -19,11 +19,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
+import androidx.annotation.StringRes
 
 @Composable
 fun ProfileStep(
     name: String,
-    nameError: String?,
+    @StringRes nameError: Int?,
     occupation: String,
     onNameChange: (String) -> Unit,
     onOccupationChange: (String) -> Unit,
@@ -43,7 +46,7 @@ fun ProfileStep(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = "Kenalan dulu, yuk",
+                text = stringResource(R.string.onboarding_profile_title),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -51,7 +54,7 @@ fun ProfileStep(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "Masukkan namamu biar aplikasinya terasa lebih personal.",
+                text = stringResource(R.string.onboarding_profile_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -61,11 +64,11 @@ fun ProfileStep(
             OutlinedTextField(
                 value = name,
                 onValueChange = onNameChange,
-                label = { Text("Nama panggilan *") },
+                label = { Text(stringResource(R.string.onboarding_profile_name_label)) },
                 isError = nameError != null,
                 supportingText = {
                     if (nameError != null) {
-                        Text(text = nameError, color = MaterialTheme.colorScheme.error)
+                        Text(text = stringResource(nameError), color = MaterialTheme.colorScheme.error)
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -77,7 +80,7 @@ fun ProfileStep(
             OutlinedTextField(
                 value = occupation,
                 onValueChange = onOccupationChange,
-                label = { Text("Pekerjaan atau kegiatan (opsional)") },
+                label = { Text(stringResource(R.string.onboarding_profile_occupation_label)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -93,7 +96,7 @@ fun ProfileStep(
                     .weight(1f)
                     .height(50.dp)
             ) {
-                Text("Kembali")
+                Text(stringResource(R.string.common_back))
             }
             
             Spacer(modifier = Modifier.width(16.dp))
@@ -104,7 +107,7 @@ fun ProfileStep(
                     .weight(1f)
                     .height(50.dp)
             ) {
-                Text("Lanjut")
+                Text(stringResource(R.string.common_next))
             }
         }
     }

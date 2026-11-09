@@ -15,6 +15,7 @@ import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.hitunguang.R
 
 @Singleton
 class RestoreManager @Inject constructor(
@@ -42,7 +43,7 @@ class RestoreManager @Inject constructor(
 
             if (!valid) {
                 return@withContext Result.failure(
-                    IllegalArgumentException("File yang dipilih bukan file cadangan HitungUang yang benar.")
+                    BackupUserException(R.string.backup_error_not_hitunguang)
                 )
             }
 

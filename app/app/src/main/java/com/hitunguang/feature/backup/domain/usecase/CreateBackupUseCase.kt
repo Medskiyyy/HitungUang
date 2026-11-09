@@ -4,6 +4,8 @@ import com.hitunguang.core.backup.BackupManager
 import com.hitunguang.core.datastore.SettingsDataStore
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
+import com.hitunguang.core.backup.BackupUserException
+import com.hitunguang.R
 
 class CreateBackupUseCase @Inject constructor(
     private val backupManager: BackupManager,
@@ -15,7 +17,7 @@ class CreateBackupUseCase @Inject constructor(
     suspend operator fun invoke(folderUri: String? = null): Result<String> {
         val uri = folderUri
             ?: settingsDataStore.backupSettings.firstOrNull()?.backupFolderUri
-            ?: return Result.failure(IllegalStateException("Folder cadangan belum dipilih. Pilih folder dulu di Cadangan & Pemulihan."))
+            ?: return Result.failure(BackupUserException(R.string.backup_error_folder_not_chosen))
 
         return backupManager.createBackup(uri)
     }

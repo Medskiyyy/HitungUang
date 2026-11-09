@@ -50,6 +50,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.max
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,12 +67,12 @@ fun RecycleBinScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tempat Sampah", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.recycle_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Kembali"
+                            contentDescription = stringResource(R.string.common_back)
                         )
                     }
                 }
@@ -103,7 +105,7 @@ fun RecycleBinScreen(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Yang kamu hapus disimpan 30 hari di sini, lalu dihapus permanen otomatis.",
+                        text = stringResource(R.string.recycle_info),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -122,14 +124,14 @@ fun RecycleBinScreen(
                         CircularProgressIndicator()
                     }
                 }
-                uiState.error != null -> {
+                uiState.error != null || uiState.errorRes != null -> {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = uiState.error ?: "Ada yang gagal. Coba lagi, ya.",
+                            text = uiState.error ?: stringResource(uiState.errorRes ?: R.string.recycle_error_generic),
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center
                         )
@@ -148,7 +150,7 @@ fun RecycleBinScreen(
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                         Text(
-                            text = "Tempat Sampah masih kosong. Transaksi, kategori, anggaran, atau dompet yang kamu hapus mampir ke sini dulu.",
+                            text = stringResource(R.string.recycle_empty),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -177,20 +179,24 @@ fun RecycleBinScreen(
     }
 
     itemToDeletePermanently?.let { item ->
-        val title = item.title
+        val title = item.displayTitle()
         val typeName = when (item.entityType) {
-            "TRANSACTION" -> "Transaksi"
-            "CATEGORY" -> "Kategori"
-            "WALLET" -> "Dompet"
-            "BUDGET" -> "Anggaran"
-            else -> "Data"
+            "TRANSACTION" -> stringResource(R.string.recycle_type_transaction)
+            "CATEGORY" -> stringResource(R.string.recycle_type_category)
+            "WALLET" -> stringResource(R.string.recycle_type_wallet)
+            "BUDGET" -> stringResource(R.string.recycle_type_budget)
+            else -> stringResource(R.string.recycle_type_data)
         }
-        val extraWarning = if (item.entityType == "TRANSACTION") " dan foto lampirannya ikut terhapus" else ""
+        val confirmText = stringResource(
+            if (item.entityType == "TRANSACTION") R.string.recycle_delete_confirm_with_attachments else R.string.recycle_delete_confirm,
+            title,
+            typeName
+        )
         AlertDialog(
             onDismissRequest = { itemToDeletePermanently = null },
-            title = { Text("Hapus permanen?", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.recycle_delete_title), fontWeight = FontWeight.Bold) },
             text = {
-                Text("Hapus \"$title\" ($typeName) secara permanen? Ini nggak bisa dibatalkan$extraWarning.")
+                Text(confirmText)
             },
             confirmButton = {
                 Button(
@@ -204,17 +210,27 @@ fun RecycleBinScreen(
                         contentColor = MaterialTheme.colorScheme.onError
                     )
                 ) {
-                    Text("Hapus")
+                    Text(stringResource(R.string.common_delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { itemToDeletePermanently = null }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
     }
 }
+
+@Composable
+private fun RecycleBinItem.displayTitle(): String =
+    titleRes?.let { stringResource(it, title) } ?: title
+
+@Composable
+private fun RecycleBinItem.displaySubtitle(): String =
+    subtitleRes?.let { res ->
+        subtitleArgRes?.let { stringResource(res, stringResource(it)) } ?: stringResource(res)
+    } ?: subtitle
 
 @Composable
 fun RecycleBinItemCard(
@@ -244,13 +260,13 @@ fun RecycleBinItemCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = item.title,
+                        text = item.displayTitle(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = item.subtitle,
+                        text = item.displaySubtitle(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -275,12 +291,12 @@ fun RecycleBinItemCard(
             ) {
                 Column {
                     Text(
-                        text = "Dihapus: $dateStr",
+                        text = stringResource(R.string.recycle_deleted_on, dateStr),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "Sisa waktu: $remainingDays hari",
+                        text = stringResource(R.string.recycle_remaining_days, remainingDays),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
                         color = if (remainingDays <= 7) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
@@ -295,7 +311,7 @@ fun RecycleBinItemCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.DeleteForever,
-                                contentDescription = "Hapus Permanen",
+                                contentDescription = stringResource(R.string.recycle_delete_forever_cd),
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
@@ -313,7 +329,7 @@ fun RecycleBinItemCard(
                             modifier = Modifier.width(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Pulihkan", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.common_restore), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }

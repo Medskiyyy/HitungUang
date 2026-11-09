@@ -38,6 +38,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hitunguang.core.designsystem.theme.Spacing
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
 
 @Composable
 fun WelcomeStep(
@@ -167,7 +169,7 @@ fun WelcomeStep(
             Spacer(modifier = Modifier.height(Spacing.huge))
 
             Text(
-                text = "HitungUang",
+                text = stringResource(R.string.onboarding_welcome_app_name),
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Bold
                 ),
@@ -178,7 +180,7 @@ fun WelcomeStep(
             Spacer(modifier = Modifier.height(Spacing.extraSmall))
 
             Text(
-                text = "Catat keuangan tanpa internet.",
+                text = stringResource(R.string.onboarding_welcome_tagline),
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -187,7 +189,7 @@ fun WelcomeStep(
             Spacer(modifier = Modifier.height(Spacing.large))
 
             Text(
-                text = "Catat pemasukan dan pengeluaran, pantau anggaran, dan pindai struk belanja. Semua data tersimpan di HP kamu, tanpa internet.",
+                text = stringResource(R.string.onboarding_welcome_desc),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -202,7 +204,7 @@ fun WelcomeStep(
                     .height(56.dp)
             ) {
                 Text(
-                    text = "Mulai sekarang",
+                    text = stringResource(R.string.onboarding_welcome_start),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )

@@ -41,6 +41,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hitunguang.feature.onboarding.presentation.AccountDraft
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
 
 @Composable
 fun AccountStep(
@@ -67,7 +69,7 @@ fun AccountStep(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = "Atur Dompet",
+                text = stringResource(R.string.onboarding_account_title),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -75,7 +77,7 @@ fun AccountStep(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "Kamu butuh minimal satu dompet buat mencatat transaksi. Kami sudah siapin satu dompet awal buat kamu.",
+                text = stringResource(R.string.onboarding_account_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -117,7 +119,11 @@ fun AccountStep(
                                         style = MaterialTheme.typography.titleMedium
                                     )
                                     Text(
-                                        text = "${when (account.type) { "BANK" -> "Bank"; "E_WALLET" -> "E-Wallet"; else -> "Tunai" }} • Saldo: ${CurrencyFormatter.format(account.initialBalance)}",
+                                        text = stringResource(
+                                            R.string.onboarding_account_summary,
+                                            stringResource(when (account.type) { "BANK" -> R.string.onboarding_account_type_bank; "E_WALLET" -> R.string.onboarding_account_type_ewallet; else -> R.string.onboarding_account_type_cash }),
+                                            CurrencyFormatter.format(account.initialBalance)
+                                        ),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -132,7 +138,7 @@ fun AccountStep(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Delete,
-                                        contentDescription = "Hapus dompet"
+                                        contentDescription = stringResource(R.string.onboarding_account_delete_cd)
                                     )
                                 }
                             }
@@ -149,10 +155,10 @@ fun AccountStep(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Tambah dompet",
+                    contentDescription = stringResource(R.string.onboarding_account_add_cd),
                     modifier = Modifier.padding(end = 8.dp)
                 )
-                Text("Tambah dompet baru")
+                Text(stringResource(R.string.onboarding_account_add_new))
             }
         }
         
@@ -168,7 +174,7 @@ fun AccountStep(
                     .weight(1f)
                     .height(50.dp)
             ) {
-                Text("Kembali")
+                Text(stringResource(R.string.common_back))
             }
             
             Spacer(modifier = Modifier.width(16.dp))
@@ -179,7 +185,7 @@ fun AccountStep(
                     .weight(1f)
                     .height(50.dp)
             ) {
-                Text("Lanjut")
+                Text(stringResource(R.string.common_next))
             }
         }
     }
@@ -191,38 +197,38 @@ fun AccountStep(
 
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
-            title = { Text("Tambah dompet baru") },
+            title = { Text(stringResource(R.string.onboarding_account_add_new)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
                         value = accountName,
                         onValueChange = { accountName = it },
-                        label = { Text("Nama dompet") },
+                        label = { Text(stringResource(R.string.onboarding_account_name_label)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Column {
-                        Text("Tipe dompet", style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(R.string.onboarding_account_type_label), style = MaterialTheme.typography.bodySmall)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(
                                 selected = accountType == "CASH",
                                 onClick = { accountType = "CASH" }
                             )
-                            Text("Tunai")
+                            Text(stringResource(R.string.onboarding_account_type_cash))
                             Spacer(modifier = Modifier.width(16.dp))
                             RadioButton(
                                 selected = accountType == "BANK",
                                 onClick = { accountType = "BANK" }
                             )
-                            Text("Bank")
+                            Text(stringResource(R.string.onboarding_account_type_bank))
                         }
                     }
 
                     OutlinedTextField(
                         value = initialBalanceStr,
                         onValueChange = { initialBalanceStr = it },
-                        label = { Text("Saldo awal (Rp)") },
+                        label = { Text(stringResource(R.string.onboarding_account_balance_label)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth()
@@ -246,12 +252,12 @@ fun AccountStep(
                         }
                     }
                 ) {
-                    Text("Simpan")
+                    Text(stringResource(R.string.common_save))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddDialog = false }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
