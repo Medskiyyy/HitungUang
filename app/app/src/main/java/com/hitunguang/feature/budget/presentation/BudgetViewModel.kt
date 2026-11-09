@@ -8,6 +8,7 @@ import com.hitunguang.feature.budget.domain.usecase.AutoResetBudgetsUseCase
 import com.hitunguang.feature.budget.domain.usecase.CreateBudgetUseCase
 import com.hitunguang.feature.budget.domain.usecase.DeleteBudgetUseCase
 import com.hitunguang.feature.budget.domain.usecase.UpdateBudgetUseCase
+import com.hitunguang.feature.budget.domain.util.BudgetSpending
 import com.hitunguang.feature.category.domain.repository.CategoryRepository
 import com.hitunguang.feature.transaction.domain.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,36 +32,50 @@ class BudgetViewModel @Inject constructor(
     private val autoResetBudgetsUseCase: AutoResetBudgetsUseCase
 ) : ViewModel() {
 
+    private data class FormState(
+        val showFormDialog: Boolean,
+        val budgetToEdit: Budget?,
+        val error: String?,
+        val requestNotificationPermission: Boolean
+    )
+
     private val _showFormDialog = MutableStateFlow(false)
     private val _budgetToEdit = MutableStateFlow<Budget?>(null)
+    private val _saveError = MutableStateFlow<String?>(null)
+    private val _requestNotificationPermission = MutableStateFlow(false)
+
+    private val formState = combine(
+        _showFormDialog,
+        _budgetToEdit,
+        _saveError,
+        _requestNotificationPermission
+    ) { showForm, editBudget, error, requestPermission ->
+        FormState(showForm, editBudget, error, requestPermission)
+    }
+
+    init {
+        // Roll over expired budgets once when the screen opens (the daily worker covers the rest)
+        viewModelScope.launch {
+            try {
+                autoResetBudgetsUseCase()
+            } catch (e: Exception) {
+                // Rollover is retried by the daily worker
+            }
+        }
+    }
 
     val uiState: StateFlow<BudgetUiState> = combine(
         budgetRepository.getAllBudgets(),
         transactionRepository.getAllTransactionsWithDetails(),
         categoryRepository.getAllCategories(),
-        _showFormDialog,
-        _budgetToEdit
-    ) { budgets, transactions, categories, showForm, editBudget ->
+        budgetRepository.getTransferFees(),
+        formState
+    ) { budgets, transactions, categories, transferFees, form ->
         
         val now = System.currentTimeMillis()
 
-        // Trigger auto reset rollover in background if there's any expired active budget
-        val expiredBudgets = budgets.filter { it.isActive && now > it.endDate }
-        if (expiredBudgets.isNotEmpty()) {
-            viewModelScope.launch {
-                autoResetBudgetsUseCase(expiredBudgets)
-            }
-        }
-
         val budgetsWithProgress = budgets.map { budget ->
-            val spentAmount = transactions
-                .filter {
-                    !it.isDeleted && 
-                    it.transactionDate in budget.startDate..budget.endDate &&
-                    (it.transactionType == "EXPENSE" || it.transactionType == "TRANSFER_FEE") &&
-                    (budget.categoryId == null || it.categoryId == budget.categoryId)
-                }
-                .sumOf { it.amount }
+            val spentAmount = BudgetSpending.spentAmount(budget, transactions, transferFees)
 
             val progressPercent = if (budget.amount > 0) {
                 (spentAmount.toFloat() / budget.amount.toFloat()) * 100f
@@ -96,9 +111,11 @@ class BudgetViewModel @Inject constructor(
             activeBudgets = activeBudgets,
             completedBudgets = completedBudgets,
             categories = categories,
-            showFormDialog = showForm,
-            budgetToEdit = editBudget,
-            isLoading = false
+            showFormDialog = form.showFormDialog,
+            budgetToEdit = form.budgetToEdit,
+            isLoading = false,
+            error = form.error,
+            requestNotificationPermission = form.requestNotificationPermission
         )
     }.stateIn(
         scope = viewModelScope,
@@ -107,11 +124,13 @@ class BudgetViewModel @Inject constructor(
     )
 
     fun showCreateDialog() {
+        _saveError.value = null
         _budgetToEdit.value = null
         _showFormDialog.value = true
     }
 
     fun showEditDialog(budget: Budget) {
+        _saveError.value = null
         _budgetToEdit.value = budget
         _showFormDialog.value = true
     }
@@ -119,6 +138,11 @@ class BudgetViewModel @Inject constructor(
     fun dismissFormDialog() {
         _showFormDialog.value = false
         _budgetToEdit.value = null
+        _saveError.value = null
+    }
+
+    fun onNotificationPermissionRequested() {
+        _requestNotificationPermission.value = false
     }
 
     fun saveBudget(
@@ -140,6 +164,8 @@ class BudgetViewModel @Inject constructor(
                         thresholdPercent = thresholdPercent,
                         startDate = startDate,
                         endDate = endDate,
+                        // Editing a past budget into a current period reactivates it
+                        isActive = System.currentTimeMillis() <= endDate,
                         updatedAt = System.currentTimeMillis()
                     )
                     updateBudgetUseCase(updated)
@@ -157,10 +183,12 @@ class BudgetViewModel @Inject constructor(
                         updatedAt = System.currentTimeMillis()
                     )
                     createBudgetUseCase(newBudget)
+                    // Budget alerts need POST_NOTIFICATIONS on Android 13+; the screen asks if not granted
+                    _requestNotificationPermission.value = true
                 }
                 dismissFormDialog()
             } catch (e: Exception) {
-                // Handled gracefully in tests or logs
+                _saveError.value = e.message ?: "Gagal menyimpan anggaran."
             }
         }
     }

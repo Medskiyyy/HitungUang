@@ -1,5 +1,10 @@
 package com.hitunguang.feature.budget.presentation
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +41,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -45,8 +51,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.hitunguang.core.designsystem.theme.Elevation
 import com.hitunguang.core.designsystem.theme.ExpenseRed
@@ -73,6 +81,23 @@ fun BudgetListScreen(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     val idLocale = remember { Locale("in", "ID") }
+
+    val context = LocalContext.current
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { }
+
+    // Ask for POST_NOTIFICATIONS after a budget is created, otherwise budget alerts are dropped on Android 13+
+    LaunchedEffect(uiState.requestNotificationPermission) {
+        if (uiState.requestNotificationPermission) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            ) {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            viewModel.onNotificationPermissionRequested()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -153,10 +178,11 @@ fun BudgetListScreen(
                     ) {
                         if (selectedTabIndex == 0 && uiState.activeBudgets.isNotEmpty()) {
                             item(key = "budget_summary") {
-                                val totalLimit = uiState.activeBudgets.sumOf { it.budget.amount }
-                                val totalSpent = uiState.activeBudgets.sumOf { it.spentAmount }
-                                val totalRemaining = uiState.activeBudgets.sumOf { it.remainingAmount }
-                                val totalProgress = if (totalLimit > 0) totalSpent.toFloat() / totalLimit.toFloat() else 0f
+                                val summary = uiState.summary
+                                val totalLimit = summary.limit
+                                val totalSpent = summary.spent
+                                val totalRemaining = summary.remaining
+                                val totalProgress = summary.progress
 
                                 val safeCount = uiState.activeBudgets.count { !it.isOverBudget && !it.isThresholdReached }
                                 val warningCount = uiState.activeBudgets.count { !it.isOverBudget && it.isThresholdReached }
@@ -279,6 +305,7 @@ fun BudgetListScreen(
         BudgetFormDialog(
             budget = uiState.budgetToEdit,
             categories = uiState.categories,
+            errorMessage = uiState.error,
             onDismiss = { viewModel.dismissFormDialog() },
             onSave = { categoryId, budgetType, amount, threshold, start, end ->
                 viewModel.saveBudget(categoryId, budgetType, amount, threshold, start, end)
