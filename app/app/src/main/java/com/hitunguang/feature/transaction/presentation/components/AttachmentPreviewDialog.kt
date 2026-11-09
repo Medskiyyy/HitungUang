@@ -1,5 +1,7 @@
 package com.hitunguang.feature.transaction.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
@@ -46,7 +48,7 @@ fun AttachmentPreviewDialog(
             // Main Image with Zoom & Pan Gestures
             AsyncImage(
                 model = File(attachment.filePath),
-                contentDescription = "Pratinjau lampiran",
+                contentDescription = stringResource(R.string.attachment_preview_cd),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxSize()
@@ -95,7 +97,7 @@ fun AttachmentPreviewDialog(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Tutup",
+                        contentDescription = stringResource(R.string.common_close),
                         tint = Color.White
                     )
                 }

@@ -1,5 +1,8 @@
 package com.hitunguang.feature.transaction.domain.usecase
 
+import com.hitunguang.feature.transaction.domain.model.UserStateException
+import com.hitunguang.feature.transaction.domain.model.UserArgumentException
+import com.hitunguang.R
 import com.hitunguang.core.common.util.CurrencyFormatter
 import com.hitunguang.core.balance.BalanceCalculator
 import com.hitunguang.core.database.dao.AccountDao
@@ -15,10 +18,10 @@ class CreateTransactionUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(transaction: Transaction) {
         if (transaction.title.trim().isEmpty()) {
-            throw IllegalArgumentException("Judulnya belum diisi.")
+            throw UserArgumentException(R.string.txn_error_title_empty, fallbackMessage = "Judulnya belum diisi.")
         }
         if (transaction.amount <= 0) {
-            throw IllegalArgumentException("Nominal transaksi harus lebih dari 0.")
+            throw UserArgumentException(R.string.txn_error_amount_positive, fallbackMessage = "Nominal transaksi harus lebih dari 0.")
         }
 
         val balanceDifference = BalanceCalculator.calculateDifference(
@@ -29,7 +32,11 @@ class CreateTransactionUseCase @Inject constructor(
         if (balanceDifference < 0) {
             val currentBalance = accountDao.getAccountBalance(transaction.accountId)
             if (currentBalance + balanceDifference < 0) {
-                throw IllegalStateException("Saldo nggak cukup. Saldo sekarang: ${CurrencyFormatter.format(currentBalance)}, butuh: ${CurrencyFormatter.format(-balanceDifference)}.")
+                throw UserStateException(
+                    R.string.txn_error_insufficient_balance,
+                    listOf(CurrencyFormatter.format(currentBalance), CurrencyFormatter.format(-balanceDifference)),
+                    "Saldo nggak cukup. Saldo sekarang: ${CurrencyFormatter.format(currentBalance)}, butuh: ${CurrencyFormatter.format(-balanceDifference)}."
+                )
             }
         }
 

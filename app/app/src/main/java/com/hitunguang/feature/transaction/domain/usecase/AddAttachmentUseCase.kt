@@ -1,5 +1,7 @@
 package com.hitunguang.feature.transaction.domain.usecase
 
+import com.hitunguang.feature.transaction.domain.model.UserStateException
+import com.hitunguang.R
 import android.net.Uri
 import com.hitunguang.core.filemanager.AttachmentFileManager
 import com.hitunguang.feature.transaction.domain.model.Attachment
@@ -14,7 +16,7 @@ class AddAttachmentUseCase @Inject constructor(
     suspend operator fun invoke(transactionId: String, uri: Uri): Attachment {
         val currentCount = attachmentRepository.getAttachmentCount(transactionId)
         if (currentCount >= 5) {
-            throw IllegalStateException("Maksimal 5 lampiran per transaksi.")
+            throw UserStateException(R.string.attachment_max_reached, fallbackMessage = "Maksimal 5 lampiran per transaksi.")
         }
 
         val savedFile = fileManager.saveAttachment(uri)

@@ -118,7 +118,8 @@ class DraftSystemTest {
             deleteAttachmentUseCase = deleteAttachmentUseCase,
             saveDraftUseCase = saveDraftUseCase,
             getDraftUseCase = getDraftUseCase,
-            clearDraftUseCase = clearDraftUseCase
+            clearDraftUseCase = clearDraftUseCase,
+            context = context
         )
     }
 

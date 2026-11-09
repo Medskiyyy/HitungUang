@@ -1,5 +1,7 @@
 package com.hitunguang.feature.transfer.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -53,7 +55,7 @@ fun TransferDetailDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Detail Transfer", fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.transfer_detail_title), fontWeight = FontWeight.Bold)
         },
         text = {
             Column(
@@ -76,7 +78,7 @@ fun TransferDetailDialog(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Dari",
+                                text = stringResource(R.string.transfer_from),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -98,7 +100,7 @@ fun TransferDetailDialog(
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Ke",
+                                text = stringResource(R.string.transfer_to),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -115,19 +117,19 @@ fun TransferDetailDialog(
 
                 // Details list
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DetailRow(label = "Nominal transfer", value = CurrencyFormatter.format(transfer.amount))
+                    DetailRow(label = stringResource(R.string.transfer_label_amount), value = CurrencyFormatter.format(transfer.amount))
                     if (transfer.adminFee > 0L) {
-                        DetailRow(label = "Biaya admin", value = CurrencyFormatter.format(transfer.adminFee))
+                        DetailRow(label = stringResource(R.string.transfer_label_fee), value = CurrencyFormatter.format(transfer.adminFee))
                         DetailRow(
-                            label = "Total dipotong", 
+                            label = stringResource(R.string.transfer_label_total),
                             value = CurrencyFormatter.format(transfer.amount + transfer.adminFee),
                             fontWeight = FontWeight.Bold
                         )
                     }
                     HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                    DetailRow(label = "Tanggal", value = dateFormatter.format(Date(transfer.transferDate)))
+                    DetailRow(label = stringResource(R.string.transfer_label_date), value = dateFormatter.format(Date(transfer.transferDate)))
                     if (!transfer.note.isNullOrBlank()) {
-                        DetailRow(label = "Catatan", value = transfer.note)
+                        DetailRow(label = stringResource(R.string.transfer_label_note), value = transfer.note)
                     }
                 }
             }
@@ -139,12 +141,12 @@ fun TransferDetailDialog(
             ) {
                 Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.width(18.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Batalkan transfer")
+                Text(stringResource(R.string.transfer_cancel_action))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Tutup")
+                Text(stringResource(R.string.common_close))
             }
         }
     )
@@ -152,9 +154,9 @@ fun TransferDetailDialog(
     if (showRevertConfirm) {
         AlertDialog(
             onDismissRequest = { showRevertConfirm = false },
-            title = { Text("Batalkan transfer?", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.transfer_cancel_title), fontWeight = FontWeight.Bold) },
             text = {
-                Text("Batalkan transfer ini? Saldo kedua dompet dikembalikan seperti semula dan catatan transfernya dihapus permanen.")
+                Text(stringResource(R.string.transfer_cancel_message))
             },
             confirmButton = {
                 Button(
@@ -168,12 +170,12 @@ fun TransferDetailDialog(
                         contentColor = MaterialTheme.colorScheme.onError
                     )
                 ) {
-                    Text("Batalkan")
+                    Text(stringResource(R.string.transfer_cancel_confirm))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showRevertConfirm = false }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )

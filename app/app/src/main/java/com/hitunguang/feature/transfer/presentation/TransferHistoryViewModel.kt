@@ -1,12 +1,15 @@
 package com.hitunguang.feature.transfer.presentation
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hitunguang.R
 import com.hitunguang.feature.account.domain.repository.AccountRepository
 import com.hitunguang.feature.transfer.domain.model.Transfer
 import com.hitunguang.feature.transfer.domain.repository.TransferRepository
 import com.hitunguang.feature.transfer.domain.usecase.RevertTransferUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -30,7 +33,8 @@ data class TransferHistoryUiState(
 class TransferHistoryViewModel @Inject constructor(
     private val transferRepository: TransferRepository,
     private val accountRepository: AccountRepository,
-    private val revertTransferUseCase: RevertTransferUseCase
+    private val revertTransferUseCase: RevertTransferUseCase,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     val uiState: StateFlow<TransferHistoryUiState> = combine(
@@ -41,8 +45,8 @@ class TransferHistoryViewModel @Inject constructor(
         val mappedTransfers = transfers.map { transfer ->
             TransferWithAccountNames(
                 transfer = transfer,
-                fromAccountName = accountMap[transfer.fromAccountId]?.name ?: "Dompet terhapus",
-                toAccountName = accountMap[transfer.toAccountId]?.name ?: "Dompet terhapus"
+                fromAccountName = accountMap[transfer.fromAccountId]?.name ?: context.getString(R.string.transfer_deleted_wallet),
+                toAccountName = accountMap[transfer.toAccountId]?.name ?: context.getString(R.string.transfer_deleted_wallet)
             )
         }
         TransferHistoryUiState(

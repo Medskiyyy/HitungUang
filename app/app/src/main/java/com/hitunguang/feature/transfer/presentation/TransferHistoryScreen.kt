@@ -1,5 +1,7 @@
 package com.hitunguang.feature.transfer.presentation
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -58,12 +60,12 @@ fun TransferHistoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Riwayat Transfer", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.transfer_history_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Kembali"
+                            contentDescription = stringResource(R.string.common_back)
                         )
                     }
                 }
@@ -94,7 +96,7 @@ fun TransferHistoryScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = uiState.error ?: "Ada yang gagal. Coba lagi, ya.",
+                            text = uiState.error ?: stringResource(R.string.transfer_error_generic),
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center
                         )
@@ -113,7 +115,7 @@ fun TransferHistoryScreen(
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
                         Text(
-                            text = "Belum ada transfer. Mulai dari tombol Transfer Saldo di layar Dompet.",
+                            text = stringResource(R.string.transfer_history_empty),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -212,7 +214,7 @@ fun TransferHistoryItemCard(
             if (item.transfer.adminFee > 0L) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Biaya admin: ${CurrencyFormatter.format(item.transfer.adminFee)}",
+                    text = stringResource(R.string.transfer_history_fee, CurrencyFormatter.format(item.transfer.adminFee)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )

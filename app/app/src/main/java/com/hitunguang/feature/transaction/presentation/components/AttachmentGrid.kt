@@ -1,5 +1,7 @@
 package com.hitunguang.feature.transaction.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,7 +34,7 @@ fun AttachmentGrid(
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = "Lampiran (${attachments.size}/5)",
+            text = stringResource(R.string.attachment_title, attachments.size),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -46,7 +48,7 @@ fun AttachmentGrid(
 
         if (items.isEmpty()) {
             Text(
-                text = "Belum ada lampiran",
+                text = stringResource(R.string.attachment_empty),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 modifier = Modifier.padding(vertical = 8.dp)
@@ -85,7 +87,7 @@ fun AttachmentGrid(
                                             }
                                             AsyncImage(
                                                 model = imageModel,
-                                                contentDescription = "Lampiran",
+                                                contentDescription = stringResource(R.string.attachment_cd),
                                                 contentScale = ContentScale.Crop,
                                                 modifier = Modifier.fillMaxSize()
                                             )
@@ -104,7 +106,7 @@ fun AttachmentGrid(
                                                 ) {
                                                     Icon(
                                                         imageVector = Icons.Default.Close,
-                                                        contentDescription = "Hapus Lampiran",
+                                                        contentDescription = stringResource(R.string.attachment_delete_cd),
                                                         tint = Color.White,
                                                         modifier = Modifier.size(16.dp)
                                                     )
@@ -132,13 +134,13 @@ fun AttachmentGrid(
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Add,
-                                                    contentDescription = "Tambah Lampiran",
+                                                    contentDescription = stringResource(R.string.attachment_add_cd),
                                                     tint = MaterialTheme.colorScheme.primary,
                                                     modifier = Modifier.size(32.dp)
                                                 )
                                                 Spacer(modifier = Modifier.height(4.dp))
                                                 Text(
-                                                    text = "Tambah",
+                                                    text = stringResource(R.string.common_add),
                                                     style = MaterialTheme.typography.labelMedium,
                                                     color = MaterialTheme.colorScheme.primary
                                                 )

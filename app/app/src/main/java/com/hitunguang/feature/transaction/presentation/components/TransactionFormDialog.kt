@@ -1,5 +1,7 @@
 package com.hitunguang.feature.transaction.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -226,6 +228,11 @@ fun TransactionFormDialog(
     }
 
     val isEditMode = transaction != null
+    val amountMinError = stringResource(R.string.txn_error_amount_min)
+    val titleRequiredError = stringResource(R.string.txn_form_title_required)
+    val validationAmountMsg = stringResource(R.string.txn_validation_amount)
+    val validationWalletMsg = stringResource(R.string.txn_validation_wallet)
+    val validationCategoryMsg = stringResource(R.string.txn_validation_category)
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scrollState = rememberScrollState()
 
@@ -253,7 +260,7 @@ fun TransactionFormDialog(
                     .padding(horizontal = Spacing.large)
             ) {
                 Text(
-                    text = if (isEditMode) "Edit transaksi" else "Tambah transaksi",
+                    text = if (isEditMode) stringResource(R.string.txn_form_edit_title) else stringResource(R.string.txn_form_add_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(vertical = Spacing.medium)
@@ -272,7 +279,7 @@ fun TransactionFormDialog(
                             .fillMaxWidth()
                             .padding(Spacing.extraSmall)
                     ) {
-                        listOf("EXPENSE" to "Pengeluaran", "INCOME" to "Pemasukan").forEach { (itemType, label) ->
+                        listOf("EXPENSE" to stringResource(R.string.txn_type_expense), "INCOME" to stringResource(R.string.txn_type_income)).forEach { (itemType, label) ->
                             val isSelected = type == itemType
                             val backgroundColor = if (isSelected) {
                                 if (itemType == "EXPENSE") ExpenseRed else IncomeGreen
@@ -321,11 +328,11 @@ fun TransactionFormDialog(
                             if (it.all { char -> char.isDigit() }) {
                                 amountStr = it
                                 val amount = it.toLongOrNull() ?: 0L
-                                amountError = if (amount <= 0L) "Nominal harus lebih besar dari 0" else null
+                                amountError = if (amount <= 0L) amountMinError else null
                             }
                         },
                         placeholder = { Text("0") },
-                        label = { Text("Nominal") },
+                        label = { Text(stringResource(R.string.txn_label_amount)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         isError = amountError != null,
                         supportingText = { amountError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
@@ -343,9 +350,9 @@ fun TransactionFormDialog(
                     value = title,
                     onValueChange = {
                         title = it
-                        titleError = if (it.isBlank()) "Judulnya belum diisi" else null
+                        titleError = if (it.isBlank()) titleRequiredError else null
                     },
-                    label = { Text("Judul *") },
+                    label = { Text(stringResource(R.string.txn_form_title_label)) },
                     isError = titleError != null,
                     supportingText = { titleError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                     singleLine = true,
@@ -358,7 +365,7 @@ fun TransactionFormDialog(
                 // Horizontal Category Picker
                 Column {
                     Text(
-                        "Kategori",
+                        stringResource(R.string.txn_label_category),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.padding(bottom = Spacing.small)
                     )
@@ -372,7 +379,7 @@ fun TransactionFormDialog(
                                 FilterChip(
                                     selected = true,
                                     onClick = {},
-                                    label = { Text(transaction?.categoryName ?: "Tanpa kategori") },
+                                    label = { Text(transaction?.categoryName ?: stringResource(R.string.txn_no_category)) },
                                     shape = RoundedCornerShape(Radius.medium)
                                 )
                             }
@@ -401,7 +408,7 @@ fun TransactionFormDialog(
                             FilterChip(
                                 selected = false,
                                 onClick = { showCategoryPicker = true },
-                                label = { Text("Lainnya") },
+                                label = { Text(stringResource(R.string.txn_category_other)) },
                                 trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = null) },
                                 shape = RoundedCornerShape(Radius.medium)
                             )
@@ -414,7 +421,7 @@ fun TransactionFormDialog(
                 // Dompet Selector
                 Column {
                     Text(
-                        "Dompet *",
+                        stringResource(R.string.txn_form_wallet_label),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.padding(bottom = Spacing.small)
                     )
@@ -446,12 +453,12 @@ fun TransactionFormDialog(
                                 Spacer(modifier = Modifier.width(Spacing.medium))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        currentAccount?.name ?: "Pilih dompet",
+                                        currentAccount?.name ?: stringResource(R.string.txn_form_wallet_placeholder),
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
-                                        "Saldo: Rp ${currentAccount?.currentBalance?.let { NumberFormat.getNumberInstance(Locale("in", "ID")).format(it) } ?: "0"}",
+                                        stringResource(R.string.txn_form_balance, currentAccount?.currentBalance?.let { NumberFormat.getNumberInstance(Locale("in", "ID")).format(it) } ?: "0"),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -503,7 +510,7 @@ fun TransactionFormDialog(
                 // Tanggal Picker
                 Column {
                     Text(
-                        "Tanggal transaksi",
+                        stringResource(R.string.txn_form_date_label),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.padding(bottom = Spacing.small)
                     )
@@ -539,7 +546,7 @@ fun TransactionFormDialog(
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("Catatan (opsional)") },
+                    label = { Text(stringResource(R.string.txn_form_note_label)) },
                     shape = RoundedCornerShape(Radius.medium),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -572,22 +579,22 @@ fun TransactionFormDialog(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Batal")
+                        Text(stringResource(R.string.common_cancel))
                     }
                     Button(
                         onClick = {
                             val amount = amountStr.toLongOrNull() ?: 0L
                             if (amount <= 0L) {
-                                validationMessage = "Nominal belum diisi"
+                                validationMessage = validationAmountMsg
                                 showValidationDialog = true
                             } else if (selectedAccountId.isBlank()) {
-                                validationMessage = "Pilih dompetnya dulu"
+                                validationMessage = validationWalletMsg
                                 showValidationDialog = true
                             } else if (selectedCategoryId.isBlank() && !keepsOriginalCategory) {
-                                validationMessage = "Pilih kategorinya dulu"
+                                validationMessage = validationCategoryMsg
                                 showValidationDialog = true
                             } else if (title.isBlank()) {
-                                validationMessage = "Judulnya belum diisi"
+                                validationMessage = titleRequiredError
                                 showValidationDialog = true
                             } else {
                                 var proceed = true
@@ -625,7 +632,7 @@ fun TransactionFormDialog(
                             containerColor = if (type == "EXPENSE") ExpenseRed else IncomeGreen
                         )
                     ) {
-                        Text("Simpan")
+                        Text(stringResource(R.string.common_save))
                     }
                 }
             }
@@ -635,11 +642,11 @@ fun TransactionFormDialog(
     if (showValidationDialog) {
         AlertDialog(
             onDismissRequest = { showValidationDialog = false },
-            title = { Text("Peringatan", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.txn_warning_title), fontWeight = FontWeight.Bold) },
             text = { Text(validationMessage) },
             confirmButton = {
                 TextButton(onClick = { showValidationDialog = false }) {
-                    Text("OK")
+                    Text(stringResource(R.string.common_ok))
                 }
             }
         )
@@ -648,15 +655,15 @@ fun TransactionFormDialog(
     if (showInsufficientBalanceDialog) {
         AlertDialog(
             onDismissRequest = { showInsufficientBalanceDialog = false },
-            title = { Text("Saldo nggak cukup", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.txn_insufficient_title), fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text("Saldo dompet sekarang ${CurrencyFormatter.format(insufficientBalanceInfo.first)}")
+                    Text(stringResource(R.string.txn_insufficient_current, CurrencyFormatter.format(insufficientBalanceInfo.first)))
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("Transaksi ini butuh ${CurrencyFormatter.format(insufficientBalanceInfo.second)}")
+                    Text(stringResource(R.string.txn_insufficient_needed, CurrencyFormatter.format(insufficientBalanceInfo.second)))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Pilih dompet lain atau kurangi nominalnya.",
+                        stringResource(R.string.txn_insufficient_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -664,7 +671,7 @@ fun TransactionFormDialog(
             },
             confirmButton = {
                 TextButton(onClick = { showInsufficientBalanceDialog = false }) {
-                    Text("Tutup")
+                    Text(stringResource(R.string.common_close))
                 }
             },
             dismissButton = {
@@ -672,7 +679,7 @@ fun TransactionFormDialog(
                     showInsufficientBalanceDialog = false
                     // Scroll to or focus account selector - just dismiss for now
                 }) {
-                    Text("Pilih dompet lain")
+                    Text(stringResource(R.string.txn_insufficient_pick_other))
                 }
             }
         )
@@ -689,12 +696,12 @@ fun TransactionFormDialog(
                         showDatePicker = false
                     }
                 ) {
-                    Text("Pilih")
+                    Text(stringResource(R.string.common_choose))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         ) {
@@ -705,7 +712,7 @@ fun TransactionFormDialog(
     if (showAttachmentSourceDialog) {
         AlertDialog(
             onDismissRequest = { showAttachmentSourceDialog = false },
-            title = { Text("Pilih sumber foto") },
+            title = { Text(stringResource(R.string.txn_photo_source_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     TextButton(
@@ -717,7 +724,7 @@ fun TransactionFormDialog(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Kamera", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.txn_photo_camera), style = MaterialTheme.typography.bodyLarge)
                     }
                     TextButton(
                         onClick = {
@@ -728,14 +735,14 @@ fun TransactionFormDialog(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Galeri", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.txn_photo_gallery), style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             },
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { showAttachmentSourceDialog = false }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )

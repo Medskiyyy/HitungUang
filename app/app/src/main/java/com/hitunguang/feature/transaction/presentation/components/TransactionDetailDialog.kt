@@ -1,5 +1,7 @@
 package com.hitunguang.feature.transaction.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,7 +41,7 @@ fun TransactionDetailDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Detail Transaksi", fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.txn_detail_title), fontWeight = FontWeight.Bold)
         },
         text = {
             Column(
@@ -47,12 +49,12 @@ fun TransactionDetailDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Column {
-                    Text("Judul", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.txn_label_title), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(transaction.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 }
 
                 Column {
-                    Text("Nominal", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.txn_label_amount), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
                         text = "${if (isExpense) "-" else "+"}${CurrencyFormatter.format(transaction.amount)}",
                         style = MaterialTheme.typography.titleLarge,
@@ -62,28 +64,28 @@ fun TransactionDetailDialog(
                 }
 
                 Column {
-                    Text("Tipe", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(if (isExpense) "Pengeluaran" else "Pemasukan", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.txn_label_type), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(if (isExpense) stringResource(R.string.txn_type_expense) else stringResource(R.string.txn_type_income), style = MaterialTheme.typography.bodyMedium)
                 }
 
                 Column {
-                    Text("Dompet", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.txn_label_wallet), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(transaction.accountName, style = MaterialTheme.typography.bodyMedium)
                 }
 
                 Column {
-                    Text("Kategori", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(transaction.categoryName ?: "Tanpa kategori", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.txn_label_category), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(transaction.categoryName ?: stringResource(R.string.txn_no_category), style = MaterialTheme.typography.bodyMedium)
                 }
 
                 Column {
-                    Text("Tanggal", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.txn_label_date), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(dateFormatter.format(Date(transaction.transactionDate)), style = MaterialTheme.typography.bodyMedium)
                 }
 
                 if (!transaction.note.isNullOrBlank()) {
                     Column {
-                        Text("Catatan", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.txn_label_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(transaction.note, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
@@ -105,7 +107,7 @@ fun TransactionDetailDialog(
                 horizontalArrangement = Arrangement.End
             ) {
                 OutlinedButton(onClick = onEdit) {
-                    Text("Edit")
+                    Text(stringResource(R.string.common_edit))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
@@ -115,13 +117,13 @@ fun TransactionDetailDialog(
                         contentColor = MaterialTheme.colorScheme.onError
                     )
                 ) {
-                    Text("Hapus")
+                    Text(stringResource(R.string.common_delete))
                 }
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Tutup")
+                Text(stringResource(R.string.common_close))
             }
         }
     )

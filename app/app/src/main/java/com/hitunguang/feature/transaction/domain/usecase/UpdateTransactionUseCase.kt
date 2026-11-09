@@ -1,5 +1,8 @@
 package com.hitunguang.feature.transaction.domain.usecase
 
+import com.hitunguang.feature.transaction.domain.model.UserStateException
+import com.hitunguang.feature.transaction.domain.model.UserArgumentException
+import com.hitunguang.R
 import com.hitunguang.core.balance.BalanceCalculator
 import com.hitunguang.core.database.dao.AccountDao
 import com.hitunguang.feature.transaction.domain.model.Transaction
@@ -14,10 +17,10 @@ class UpdateTransactionUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(oldTransaction: Transaction, newTransaction: Transaction) {
         if (newTransaction.title.trim().isEmpty()) {
-            throw IllegalArgumentException("Judulnya belum diisi.")
+            throw UserArgumentException(R.string.txn_error_title_empty, fallbackMessage = "Judulnya belum diisi.")
         }
         if (newTransaction.amount <= 0) {
-            throw IllegalArgumentException("Nominal transaksi harus lebih dari 0.")
+            throw UserArgumentException(R.string.txn_error_amount_positive, fallbackMessage = "Nominal transaksi harus lebih dari 0.")
         }
 
         val oldBalanceDiff = BalanceCalculator.calculateDifference(
@@ -33,7 +36,7 @@ class UpdateTransactionUseCase @Inject constructor(
             if (newBalanceDiff < 0) {
                 val newAccountBalance = accountDao.getAccountBalance(newTransaction.accountId)
                 if (newAccountBalance + newBalanceDiff < 0) {
-                    throw IllegalStateException("Saldo dompet tujuan nggak cukup.")
+                    throw UserStateException(R.string.txn_error_target_balance, fallbackMessage = "Saldo dompet tujuan nggak cukup.")
                 }
             }
         } else {
@@ -42,7 +45,7 @@ class UpdateTransactionUseCase @Inject constructor(
             if (netDifference < 0) {
                 val currentBalance = accountDao.getAccountBalance(newTransaction.accountId)
                 if (currentBalance + netDifference < 0) {
-                    throw IllegalStateException("Saldo nggak cukup buat perubahan ini.")
+                    throw UserStateException(R.string.txn_error_update_balance, fallbackMessage = "Saldo nggak cukup buat perubahan ini.")
                 }
             }
         }

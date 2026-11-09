@@ -1,5 +1,7 @@
 package com.hitunguang.feature.transfer.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,9 +58,10 @@ fun TransferDialog(
     var showDatePicker by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
 
+    val savedMessage = stringResource(R.string.transfer_saved)
     LaunchedEffect(uiState.success) {
         if (uiState.success) {
-            showSnackbar("Transfer berhasil disimpan")
+            showSnackbar(savedMessage)
             onDismiss()
         }
     }
@@ -70,7 +73,7 @@ fun TransferDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Transfer Saldo", fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.transfer_dialog_title), fontWeight = FontWeight.Bold)
         },
         text = {
             Column(
@@ -79,14 +82,14 @@ fun TransferDialog(
             ) {
                 // From Account Dropdown
                 Column {
-                    Text("Dari Dompet *", style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.transfer_from_label), style = MaterialTheme.typography.bodySmall)
                     Spacer(modifier = Modifier.height(4.dp))
                     Box(modifier = Modifier.fillMaxWidth()) {
                         OutlinedButton(
                             onClick = { fromAccountExpanded = true },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(uiState.fromAccount?.name ?: "Pilih dompet asal")
+                            Text(uiState.fromAccount?.name ?: stringResource(R.string.transfer_from_placeholder))
                         }
                         DropdownMenu(
                             expanded = fromAccountExpanded,
@@ -95,7 +98,7 @@ fun TransferDialog(
                         ) {
                             accounts.forEach { acc ->
                                 DropdownMenuItem(
-                                    text = { Text("${acc.name} (Saldo: ${CurrencyFormatter.format(acc.currentBalance)})") },
+                                    text = { Text(stringResource(R.string.transfer_account_balance, acc.name, CurrencyFormatter.format(acc.currentBalance))) },
                                     onClick = {
                                         viewModel.onFromAccountSelected(acc)
                                         fromAccountExpanded = false
@@ -108,14 +111,14 @@ fun TransferDialog(
 
                 // To Account Dropdown
                 Column {
-                    Text("Ke Dompet *", style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.transfer_to_label), style = MaterialTheme.typography.bodySmall)
                     Spacer(modifier = Modifier.height(4.dp))
                     Box(modifier = Modifier.fillMaxWidth()) {
                         OutlinedButton(
                             onClick = { toAccountExpanded = true },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(uiState.toAccount?.name ?: "Pilih dompet tujuan")
+                            Text(uiState.toAccount?.name ?: stringResource(R.string.transfer_to_placeholder))
                         }
                         DropdownMenu(
                             expanded = toAccountExpanded,
@@ -124,7 +127,7 @@ fun TransferDialog(
                         ) {
                             accounts.forEach { acc ->
                                 DropdownMenuItem(
-                                    text = { Text("${acc.name} (Saldo: ${CurrencyFormatter.format(acc.currentBalance)})") },
+                                    text = { Text(stringResource(R.string.transfer_account_balance, acc.name, CurrencyFormatter.format(acc.currentBalance))) },
                                     onClick = {
                                         viewModel.onToAccountSelected(acc)
                                         toAccountExpanded = false
@@ -139,7 +142,7 @@ fun TransferDialog(
                 OutlinedTextField(
                     value = uiState.amount,
                     onValueChange = { viewModel.onAmountChanged(it) },
-                    label = { Text("Nominal transfer *") },
+                    label = { Text(stringResource(R.string.transfer_amount_label)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
@@ -149,7 +152,7 @@ fun TransferDialog(
                 OutlinedTextField(
                     value = uiState.adminFee,
                     onValueChange = { viewModel.onAdminFeeChanged(it) },
-                    label = { Text("Biaya admin") },
+                    label = { Text(stringResource(R.string.transfer_label_fee)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
@@ -157,7 +160,7 @@ fun TransferDialog(
 
                 // Date Picker Button
                 Column {
-                    Text("Tanggal transfer", style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.transfer_date_label), style = MaterialTheme.typography.bodySmall)
                     Spacer(modifier = Modifier.height(4.dp))
                     val dateFormatter = SimpleDateFormat("d MMM yyyy", Locale("id", "ID"))
                     OutlinedButton(
@@ -172,7 +175,7 @@ fun TransferDialog(
                 OutlinedTextField(
                     value = uiState.note,
                     onValueChange = { viewModel.onNoteChanged(it) },
-                    label = { Text("Catatan (opsional)") },
+                    label = { Text(stringResource(R.string.transfer_note_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -183,12 +186,12 @@ fun TransferDialog(
                 onClick = { viewModel.executeTransfer() },
                 enabled = !uiState.isSaving
             ) {
-                Text("Transfer")
+                Text(stringResource(R.string.transfer_confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Batal")
+                Text(stringResource(R.string.common_cancel))
             }
         }
     )
@@ -204,12 +207,12 @@ fun TransferDialog(
                         showDatePicker = false
                     }
                 ) {
-                    Text("Pilih")
+                    Text(stringResource(R.string.common_choose))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         ) {
@@ -220,11 +223,11 @@ fun TransferDialog(
     if (showErrorDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.clearError() },
-            title = { Text("Peringatan", fontWeight = FontWeight.Bold) },
-            text = { Text(uiState.error ?: "Ada yang gagal. Coba lagi, ya.") },
+            title = { Text(stringResource(R.string.transfer_warning_title), fontWeight = FontWeight.Bold) },
+            text = { Text(uiState.error ?: stringResource(R.string.transfer_error_generic)) },
             confirmButton = {
                 TextButton(onClick = { viewModel.clearError() }) {
-                    Text("OK")
+                    Text(stringResource(R.string.common_ok))
                 }
             }
         )

@@ -1,5 +1,7 @@
 package com.hitunguang.feature.transaction.presentation
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,12 +59,12 @@ fun SearchScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Cari Transaksi", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.search_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Kembali"
+                            contentDescription = stringResource(R.string.common_back)
                         )
                     }
                 }
@@ -80,7 +82,7 @@ fun SearchScreen(
             OutlinedTextField(
                 value = query,
                 onValueChange = { viewModel.onQueryChanged(it) },
-                placeholder = { Text("Cari judul, catatan, atau kategori...") },
+                placeholder = { Text(stringResource(R.string.search_placeholder)) },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -92,7 +94,7 @@ fun SearchScreen(
                         IconButton(onClick = { viewModel.onQueryChanged("") }) {
                             Icon(
                                 imageVector = Icons.Default.Clear,
-                                contentDescription = "Bersihkan"
+                                contentDescription = stringResource(R.string.search_clear_cd)
                             )
                         }
                     }
@@ -115,7 +117,7 @@ fun SearchScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Ketik kata kunci untuk mulai mencari",
+                        text = stringResource(R.string.search_prompt),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -126,7 +128,7 @@ fun SearchScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Tidak ada transaksi yang cocok",
+                        text = stringResource(R.string.search_empty),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

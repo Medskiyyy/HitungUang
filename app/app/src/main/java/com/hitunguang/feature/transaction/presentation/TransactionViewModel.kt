@@ -1,5 +1,6 @@
 package com.hitunguang.feature.transaction.presentation
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hitunguang.feature.account.domain.model.Account
@@ -10,6 +11,7 @@ import com.hitunguang.feature.transaction.domain.model.Attachment
 import com.hitunguang.feature.transaction.domain.model.Transaction
 import com.hitunguang.feature.transaction.domain.model.TransactionDraft
 import com.hitunguang.feature.transaction.domain.model.TransactionWithDetails
+import com.hitunguang.feature.transaction.domain.model.userMessage
 import com.hitunguang.feature.transaction.domain.usecase.AddAttachmentUseCase
 import com.hitunguang.feature.transaction.domain.usecase.ClearDraftUseCase
 import com.hitunguang.feature.transaction.domain.usecase.CreateTransactionUseCase
@@ -21,6 +23,7 @@ import com.hitunguang.feature.transaction.domain.usecase.GetTransactionsUseCase
 import com.hitunguang.feature.transaction.domain.usecase.SaveDraftUseCase
 import com.hitunguang.feature.transaction.domain.usecase.UpdateTransactionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -58,7 +61,8 @@ class TransactionViewModel @Inject constructor(
     private val deleteAttachmentUseCase: DeleteAttachmentUseCase,
     private val saveDraftUseCase: SaveDraftUseCase,
     private val getDraftUseCase: GetDraftUseCase,
-    private val clearDraftUseCase: ClearDraftUseCase
+    private val clearDraftUseCase: ClearDraftUseCase,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private var attachmentsJob: kotlinx.coroutines.Job? = null
@@ -302,7 +306,7 @@ class TransactionViewModel @Inject constructor(
                 clearDraft()
                 hideCreateDialog()
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update { it.copy(error = e.userMessage(context)) }
             }
         }
     }
@@ -351,7 +355,7 @@ class TransactionViewModel @Inject constructor(
                 updateTransactionUseCase(oldTransaction, newTransaction)
                 hideEditDialog()
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update { it.copy(error = e.userMessage(context)) }
             }
         }
     }
@@ -380,7 +384,7 @@ class TransactionViewModel @Inject constructor(
                 deleteTransactionUseCase(transaction)
                 hideDeleteDialog()
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update { it.copy(error = e.userMessage(context)) }
             } finally {
                 _uiState.update { it.copy(isDeleting = false) }
             }
@@ -419,7 +423,7 @@ class TransactionViewModel @Inject constructor(
             try {
                 addAttachmentUseCase(transactionId, uri)
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update { it.copy(error = e.userMessage(context)) }
             }
         }
     }
@@ -429,7 +433,7 @@ class TransactionViewModel @Inject constructor(
             try {
                 deleteAttachmentUseCase(attachment)
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update { it.copy(error = e.userMessage(context)) }
             }
         }
     }

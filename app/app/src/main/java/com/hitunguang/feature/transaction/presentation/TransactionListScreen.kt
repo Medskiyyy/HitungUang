@@ -1,5 +1,7 @@
 package com.hitunguang.feature.transaction.presentation
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -94,7 +96,12 @@ fun TransactionListScreen(
     var showFilterBottomSheet by remember { mutableStateOf(false) }
 
 
-    val groupedTransactions = remember(transactions) {
+    val savedMessage = stringResource(R.string.txn_saved)
+    val updatedMessage = stringResource(R.string.txn_updated)
+    val deletedMessage = stringResource(R.string.txn_deleted)
+    val todayLabel = stringResource(R.string.txn_group_today)
+    val yesterdayLabel = stringResource(R.string.txn_group_yesterday)
+    val groupedTransactions = remember(transactions, todayLabel, yesterdayLabel) {
         val formatter = SimpleDateFormat("d MMM yyyy", Locale("id", "ID"))
         val todayStr = formatter.format(Date())
         val yesterdayStr = formatter.format(Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000L))
@@ -102,45 +109,45 @@ fun TransactionListScreen(
         transactions.groupBy {
             val dateStr = formatter.format(Date(it.transactionDate))
             when (dateStr) {
-                todayStr -> "Hari ini"
-                yesterdayStr -> "Kemarin"
+                todayStr -> todayLabel
+                yesterdayStr -> yesterdayLabel
                 else -> dateStr
             }
         }
     }
 
     val periods = listOf(
-        "ALL" to "Semua",
-        "TODAY" to "Hari ini",
-        "WEEKLY" to "Minggu ini",
-        "MONTHLY" to "Bulan ini",
-        "YEARLY" to "Tahun ini",
-        "CUSTOM" to "Pilih tanggal"
+        "ALL" to stringResource(R.string.txn_period_all),
+        "TODAY" to stringResource(R.string.txn_period_today),
+        "WEEKLY" to stringResource(R.string.txn_period_week),
+        "MONTHLY" to stringResource(R.string.txn_period_month),
+        "YEARLY" to stringResource(R.string.txn_period_year),
+        "CUSTOM" to stringResource(R.string.txn_period_custom)
     )
 
     val sorts = listOf(
-        "NEWEST" to "Terbaru",
-        "OLDEST" to "Terlama",
-        "HIGHEST" to "Tertinggi",
-        "LOWEST" to "Terendah"
+        "NEWEST" to stringResource(R.string.txn_sort_newest),
+        "OLDEST" to stringResource(R.string.txn_sort_oldest),
+        "HIGHEST" to stringResource(R.string.txn_sort_highest),
+        "LOWEST" to stringResource(R.string.txn_sort_lowest)
     )
 
     val sdf = remember { SimpleDateFormat("dd/MM", Locale("id", "ID")) }
     val customRangeLabel = if (selectedPeriod == "CUSTOM" && customDateRange != null) {
-        "Pilih tanggal (${sdf.format(Date(customDateRange!!.first))} - ${sdf.format(Date(customDateRange!!.second))})"
+        stringResource(R.string.txn_period_custom_range, sdf.format(Date(customDateRange!!.first)), sdf.format(Date(customDateRange!!.second)))
     } else {
-        "Pilih tanggal"
+        stringResource(R.string.txn_period_custom)
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Riwayat Transaksi", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.txn_list_title), fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = onSearchClick) {
                         Icon(
                             imageVector = Icons.Default.Search,
-                            contentDescription = "Cari"
+                            contentDescription = stringResource(R.string.common_search)
                         )
                     }
                 }
@@ -154,7 +161,7 @@ fun TransactionListScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Tambah Transaksi"
+                    contentDescription = stringResource(R.string.txn_add_cd)
                 )
             }
         },
@@ -182,12 +189,12 @@ fun TransactionListScreen(
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val currentPeriodLabel = periods.find { it.first == selectedPeriod }?.second ?: "Semua"
-                val currentSortLabel = sorts.find { it.first == selectedSort }?.second ?: "Terbaru"
+                val currentPeriodLabel = periods.find { it.first == selectedPeriod }?.second ?: stringResource(R.string.txn_period_all)
+                val currentSortLabel = sorts.find { it.first == selectedSort }?.second ?: stringResource(R.string.txn_sort_newest)
                 val filterText = if (selectedPeriod == "ALL" && selectedSort == "NEWEST") {
-                    "Filter ▼"
+                    stringResource(R.string.txn_filter_default)
                 } else {
-                    "Filter: $currentPeriodLabel • $currentSortLabel ▼"
+                    stringResource(R.string.txn_filter_active, currentPeriodLabel, currentSortLabel)
                 }
 
                 Button(
@@ -224,7 +231,7 @@ fun TransactionListScreen(
                     )
                     Spacer(modifier = Modifier.height(Spacing.large))
                     Text(
-                        text = "Belum ada transaksi. Ketuk + buat mencatat yang pertama.",
+                        text = stringResource(R.string.txn_list_empty),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -365,12 +372,12 @@ fun TransactionListScreen(
                     },
                     enabled = dateRangePickerState.selectedStartDateMillis != null && dateRangePickerState.selectedEndDateMillis != null
                 ) {
-                    Text("Pilih")
+                    Text(stringResource(R.string.common_choose))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDateRangePicker = false }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         ) {
@@ -400,7 +407,7 @@ fun TransactionListScreen(
             onManageCategoriesClick = onManageCategoriesClick,
             onSave = { accountId, categoryId, type, title, note, amount, date ->
                 viewModel.createTransaction(accountId, categoryId, type, title, note, amount, date)
-                showSnackbar("Transaksi berhasil disimpan")
+                showSnackbar(savedMessage)
             }
         )
     }
@@ -435,7 +442,7 @@ fun TransactionListScreen(
                     transactionDate = date,
                     createdAt = uiState.transactionToEdit!!.createdAt
                 )
-                showSnackbar("Transaksi berhasil diperbarui")
+                showSnackbar(updatedMessage)
             }
         )
     }
@@ -458,7 +465,7 @@ fun TransactionListScreen(
             onDismiss = { viewModel.hideDeleteDialog() },
             onConfirm = {
                 viewModel.deleteTransaction()
-                showSnackbar("Transaksi berhasil dihapus")
+                showSnackbar(deletedMessage)
             }
         )
     }
@@ -481,7 +488,7 @@ fun TransactionListScreen(
                     .padding(Spacing.large)
             ) {
                 Text(
-                    text = "Filter Transaksi",
+                    text = stringResource(R.string.txn_filter_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = Spacing.large)
@@ -489,7 +496,7 @@ fun TransactionListScreen(
 
                 // Period Section
                 Text(
-                    text = "Periode",
+                    text = stringResource(R.string.txn_filter_period),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -526,7 +533,7 @@ fun TransactionListScreen(
                         remainingPeriods.forEach { (chipValue, label) ->
                             val isSelected = selectedPeriod == chipValue
                             val displayLabel = if (chipValue == "CUSTOM" && customDateRange != null) {
-                                "${sdf.format(Date(customDateRange!!.first))} - ${sdf.format(Date(customDateRange!!.second))}"
+                                stringResource(R.string.txn_range, sdf.format(Date(customDateRange!!.first)), sdf.format(Date(customDateRange!!.second)))
                             } else label
                             FilterChip(
                                 selected = isSelected,
@@ -549,7 +556,7 @@ fun TransactionListScreen(
 
                 // Sort Section
                 Text(
-                    text = "Urutkan berdasarkan",
+                    text = stringResource(R.string.txn_filter_sort),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -596,7 +603,7 @@ fun TransactionListScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(Radius.medium)
                 ) {
-                    Text("Terapkan", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.common_apply), fontWeight = FontWeight.Bold)
                 }
             }
         }

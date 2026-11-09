@@ -1,5 +1,7 @@
 package com.hitunguang.feature.transaction.presentation.components
 
+import com.hitunguang.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,22 +21,22 @@ fun DeleteTransactionDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Hapus transaksi?")
+            Text(stringResource(R.string.txn_delete_title))
         },
         text = {
-            Text("Hapus \"${transaction.title}\"? Saldo dompet akan dikembalikan. Transaksinya masuk Tempat Sampah dan bisa dipulihkan dalam 30 hari.")
+            Text(stringResource(R.string.txn_delete_message, transaction.title))
         },
         confirmButton = {
             TextButton(
                 onClick = onConfirm,
                 enabled = !isProcessing
             ) {
-                Text("Hapus", color = MaterialTheme.colorScheme.error)
+                Text(stringResource(R.string.common_delete), color = MaterialTheme.colorScheme.error)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Batal")
+                Text(stringResource(R.string.common_cancel))
             }
         },
         modifier = modifier

@@ -49,7 +49,7 @@ class TransferModuleTest {
         accountRepo = AccountRepositoryImpl(db.accountDao())
         executeTransferUseCase = ExecuteTransferUseCase(transferRepo, db.accountDao())
 
-        viewModel = TransferViewModel(executeTransferUseCase, accountRepo)
+        viewModel = TransferViewModel(executeTransferUseCase, accountRepo, context)
     }
 
     @After
