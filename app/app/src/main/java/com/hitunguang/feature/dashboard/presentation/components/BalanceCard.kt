@@ -49,7 +49,8 @@ fun BalanceCard(
     totalIncome: Long,
     totalExpense: Long,
     netDifference: Long,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    periodLabel: String? = null
 ) {
     val formattedBalance = CurrencyFormatter.format(totalBalance)
     val isDark = isSystemInDarkTheme()
@@ -145,7 +146,7 @@ fun BalanceCard(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = "Pemasukan",
+                            text = if (periodLabel != null) "Pemasukan $periodLabel" else "Pemasukan",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                         )
@@ -163,7 +164,7 @@ fun BalanceCard(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = "Pengeluaran",
+                            text = if (periodLabel != null) "Pengeluaran $periodLabel" else "Pengeluaran",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                         )

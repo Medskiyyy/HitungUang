@@ -3,9 +3,14 @@ package com.hitunguang.core.notification.worker
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.hitunguang.core.common.util.CurrencyFormatter
 import com.hitunguang.core.datastore.SettingsDataStore
 import com.hitunguang.core.notification.NotificationHelper
 import com.hitunguang.core.notification.NotificationScheduler
+import com.hitunguang.core.notification.ReviewPeriods
+import com.hitunguang.feature.budget.domain.repository.BudgetRepository
+import com.hitunguang.feature.budget.domain.util.BudgetDates
+import com.hitunguang.feature.budget.domain.util.BudgetSpending
 import com.hitunguang.feature.transaction.domain.repository.TransactionRepository
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -13,6 +18,8 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.firstOrNull
 import timber.log.Timber
+import java.time.LocalDate
+import java.time.ZoneId
 
 class ReviewWorker(
     context: Context,
@@ -26,6 +33,7 @@ class ReviewWorker(
         fun settingsDataStore(): SettingsDataStore
         fun transactionRepository(): TransactionRepository
         fun notificationScheduler(): NotificationScheduler
+        fun budgetRepository(): BudgetRepository
     }
 
     override suspend fun doWork(): Result {
@@ -37,30 +45,32 @@ class ReviewWorker(
         val settingsDataStore = entryPoint.settingsDataStore()
         val transactionRepository = entryPoint.transactionRepository()
         val scheduler = entryPoint.notificationScheduler()
+        val budgetRepository = entryPoint.budgetRepository()
 
         val settings = settingsDataStore.notificationSettings.firstOrNull() ?: return Result.success()
         val isWeekly = tags.contains("weekly_review")
 
         return try {
-            val now = System.currentTimeMillis()
+            val zoneId = ZoneId.systemDefault()
+            val today = LocalDate.now(zoneId)
             if (isWeekly) {
                 if (!settings.weeklyReviewEnabled) {
                     Timber.d("Weekly review is disabled, skipping.")
                     return Result.success()
                 }
 
-                // Calculate last 7 days total expenses
-                val sevenDaysAgo = now - 7L * 24 * 60 * 60 * 1000L
-                val transactions = transactionRepository.getAllTransactions().firstOrNull() ?: emptyList()
-                val totalExpense = transactions
-                    .filter { it.transactionType == "EXPENSE" && !it.isDeleted && it.transactionDate in sevenDaysAgo..now }
-                    .sumOf { it.amount }
+                // Previous Monday-Sunday week in local time
+                val (weekStart, weekEnd) = ReviewPeriods.previousWeek(today)
+                val totalExpense = totalExpenseBetween(
+                    transactionRepository, budgetRepository,
+                    BudgetDates.startOfDay(weekStart, zoneId), BudgetDates.endOfDay(weekEnd, zoneId)
+                )
 
                 notificationHelper.showNotification(
                     channelId = NotificationHelper.CHANNEL_REVIEW,
                     notificationId = NotificationHelper.ID_REVIEW,
                     title = "Review Keuangan Mingguan",
-                    message = "Total pengeluaran Anda minggu ini adalah Rp $totalExpense."
+                    message = "Total pengeluaran Anda minggu lalu adalah ${CurrencyFormatter.format(totalExpense)}."
                 )
 
                 // Reschedule for next week
@@ -71,18 +81,19 @@ class ReviewWorker(
                     return Result.success()
                 }
 
-                // Calculate last 30 days total expenses
-                val thirtyDaysAgo = now - 30L * 24 * 60 * 60 * 1000L
-                val transactions = transactionRepository.getAllTransactions().firstOrNull() ?: emptyList()
-                val totalExpense = transactions
-                    .filter { it.transactionType == "EXPENSE" && !it.isDeleted && it.transactionDate in thirtyDaysAgo..now }
-                    .sumOf { it.amount }
+                // Previous calendar month in local time
+                val (monthStart, monthEnd) = ReviewPeriods.previousMonth(today)
+                val monthName = ReviewPeriods.monthName(monthStart)
+                val totalExpense = totalExpenseBetween(
+                    transactionRepository, budgetRepository,
+                    BudgetDates.startOfDay(monthStart, zoneId), BudgetDates.endOfDay(monthEnd, zoneId)
+                )
 
                 notificationHelper.showNotification(
                     channelId = NotificationHelper.CHANNEL_REVIEW,
                     notificationId = NotificationHelper.ID_REVIEW + 1, // Use a distinct ID for monthly so it doesn't overwrite weekly if both are shown
-                    title = "Review Keuangan Bulanan",
-                    message = "Total pengeluaran Anda bulan ini adalah Rp $totalExpense."
+                    title = "Ringkasan $monthName",
+                    message = "Total pengeluaran Anda bulan $monthName ${monthStart.year} adalah ${CurrencyFormatter.format(totalExpense)}."
                 )
 
                 // Reschedule for next month
@@ -94,5 +105,16 @@ class ReviewWorker(
             Timber.e(e, "Error showing review notification")
             Result.retry()
         }
+    }
+
+    private suspend fun totalExpenseBetween(
+        transactionRepository: TransactionRepository,
+        budgetRepository: BudgetRepository,
+        startMillis: Long,
+        endMillis: Long
+    ): Long {
+        val transactions = transactionRepository.getAllTransactionsWithDetails().firstOrNull() ?: emptyList()
+        val transferFees = budgetRepository.getTransferFees().firstOrNull() ?: emptyList()
+        return BudgetSpending.totalExpense(transactions, transferFees, startMillis, endMillis)
     }
 }

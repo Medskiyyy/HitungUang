@@ -19,5 +19,31 @@ data class BudgetUiState(
     val showFormDialog: Boolean = false,
     val budgetToEdit: Budget? = null,
     val isLoading: Boolean = false,
-    val error: String? = null
-)
+    val error: String? = null,
+    val requestNotificationPermission: Boolean = false
+) {
+    val summary: BudgetSummary get() = BudgetSummary.of(activeBudgets)
+}
+
+data class BudgetSummary(
+    val limit: Long,
+    val spent: Long,
+    val remaining: Long
+) {
+    val progress: Float get() = if (limit > 0) spent.toFloat() / limit.toFloat() else 0f
+
+    companion object {
+        /**
+         * A GLOBAL budget already covers every category, so when one is active it alone is the
+         * summary; otherwise the CATEGORY budgets are summed. Summing both would double count.
+         */
+        fun of(activeBudgets: List<BudgetWithProgress>): BudgetSummary {
+            val scope = activeBudgets.filter { it.budget.budgetType == "GLOBAL" }.ifEmpty { activeBudgets }
+            return BudgetSummary(
+                limit = scope.sumOf { it.budget.amount },
+                spent = scope.sumOf { it.spentAmount },
+                remaining = scope.sumOf { it.remainingAmount }
+            )
+        }
+    }
+}

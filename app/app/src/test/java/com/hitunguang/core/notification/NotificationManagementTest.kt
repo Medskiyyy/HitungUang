@@ -24,6 +24,7 @@ import com.hitunguang.feature.budget.data.repository.BudgetRepositoryImpl
 import com.hitunguang.feature.budget.domain.model.Budget
 import com.hitunguang.feature.budget.domain.repository.BudgetRepository
 import com.hitunguang.feature.budget.domain.usecase.CheckBudgetThresholdUseCase
+import com.hitunguang.feature.budget.domain.util.BudgetDates
 import com.hitunguang.feature.category.data.repository.CategoryRepositoryImpl
 import com.hitunguang.feature.category.domain.repository.CategoryRepository
 import com.hitunguang.feature.settings.data.repository.SettingsRepositoryImpl
@@ -55,6 +56,9 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import java.io.File
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 
 class TestApplication : Application(),
     dagger.hilt.internal.GeneratedComponent,
@@ -317,6 +321,13 @@ class NotificationManagementTest {
         val notifications = shadowNotificationManager.allNotifications
         assertEquals(1, notifications.size)
         assertEquals("Anggaran Hampir Habis!", Shadows.shadowOf(notifications[0]).contentTitle)
+        assertTrue(Shadows.shadowOf(notifications[0]).contentText.toString().contains("Rp 85.000"))
+
+        // Same level again (e.g. another check without crossing a new level) must not re-fire
+        notificationManager.cancelAll()
+        val resultRepeat = worker.doWork()
+        assertEquals(ListenableWorker.Result.success(), resultRepeat)
+        assertTrue(shadowNotificationManager.allNotifications.isEmpty())
 
         // 3. Transaction total crosses 100% limit:spent 105,000
         notificationManager.cancelAll()
@@ -387,6 +398,13 @@ class NotificationManagementTest {
         settingsRepository.saveNotificationSettings(defaultSettings)
 
         val now = System.currentTimeMillis()
+        val zoneId = ZoneId.systemDefault()
+        // Noon of a day inside the previous Monday-Sunday week
+        val previousWeekStart = ReviewPeriods.previousWeek(LocalDate.now(zoneId)).first
+        val previousWeekTime = previousWeekStart.atTime(LocalTime.NOON).atZone(zoneId).toInstant().toEpochMilli()
+        // Noon of a day inside the previous calendar month
+        val previousMonthStart = ReviewPeriods.previousMonth(LocalDate.now(zoneId)).first
+        val previousMonthTime = previousMonthStart.atTime(LocalTime.NOON).atZone(zoneId).toInstant().toEpochMilli()
         val tx = Transaction(
             id = "tx-weekly",
             accountId = "acc-1",
@@ -396,13 +414,16 @@ class NotificationManagementTest {
             title = "Belanja Mingguan",
             note = null,
             amount = 150000L,
-            transactionDate = now - 10000L, // inside last 7 days
+            transactionDate = previousWeekTime,
             isDeleted = false,
             deletedAt = null,
             createdAt = now,
             updatedAt = now
         )
         transactionRepository.insertTransaction(tx, -150000L)
+        // Current-week expense must not be counted in last week's review
+        transactionRepository.insertTransaction(tx.copy(id = "tx-this-week", amount = 1000L, transactionDate = now), -1000L)
+        transactionRepository.insertTransaction(tx.copy(id = "tx-monthly", amount = 70000L, transactionDate = previousMonthTime), -70000L)
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val shadowNotificationManager = Shadows.shadowOf(notificationManager)
@@ -418,7 +439,8 @@ class NotificationManagementTest {
         assertEquals(1, shadowNotificationManager.allNotifications.size)
         val weeklyNotif = shadowNotificationManager.allNotifications[0]
         assertEquals("Review Keuangan Mingguan", Shadows.shadowOf(weeklyNotif).contentTitle)
-        assertTrue(Shadows.shadowOf(weeklyNotif).contentText.toString().contains("150000"))
+        val expectedWeekly = 150000L + if (previousMonthTime in BudgetDates.startOfDay(previousWeekStart)..BudgetDates.endOfDay(previousWeekStart.plusDays(6))) 70000L else 0L
+        assertTrue(Shadows.shadowOf(weeklyNotif).contentText.toString().contains(com.hitunguang.core.common.util.CurrencyFormatter.format(expectedWeekly)))
 
         // Run Monthly Review Worker
         notificationManager.cancelAll()
@@ -430,7 +452,9 @@ class NotificationManagementTest {
         assertEquals(ListenableWorker.Result.success(), monthlyResult)
         assertEquals(1, shadowNotificationManager.allNotifications.size)
         val monthlyNotif = shadowNotificationManager.allNotifications[0]
-        assertEquals("Review Keuangan Bulanan", Shadows.shadowOf(monthlyNotif).contentTitle)
-        assertTrue(Shadows.shadowOf(monthlyNotif).contentText.toString().contains("150000"))
+        assertEquals("Ringkasan ${ReviewPeriods.monthName(previousMonthStart)}", Shadows.shadowOf(monthlyNotif).contentTitle)
+        val previousMonthRange = BudgetDates.startOfDay(previousMonthStart)..BudgetDates.endOfDay(previousMonthStart.withDayOfMonth(previousMonthStart.lengthOfMonth()))
+        val expectedMonthly = 70000L + (if (previousWeekTime in previousMonthRange) 150000L else 0L)
+        assertTrue(Shadows.shadowOf(monthlyNotif).contentText.toString().contains(com.hitunguang.core.common.util.CurrencyFormatter.format(expectedMonthly)))
     }
 }

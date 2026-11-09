@@ -5,7 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.hitunguang.feature.account.domain.model.Account
 import com.hitunguang.feature.account.domain.repository.AccountRepository
 import com.hitunguang.feature.budget.domain.model.Budget
+import com.hitunguang.feature.budget.domain.model.TransferFee
 import com.hitunguang.feature.budget.domain.repository.BudgetRepository
+import com.hitunguang.feature.budget.domain.usecase.AutoResetBudgetsUseCase
+import com.hitunguang.feature.budget.domain.util.BudgetDates
+import com.hitunguang.feature.budget.domain.util.BudgetSpending
 import com.hitunguang.feature.category.domain.model.Category
 import com.hitunguang.feature.category.domain.repository.CategoryRepository
 import com.hitunguang.feature.onboarding.domain.repository.UserProfileRepository
@@ -14,14 +18,19 @@ import com.hitunguang.feature.settings.domain.repository.SettingsRepository
 import com.hitunguang.feature.transaction.domain.model.TransactionWithDetails
 import com.hitunguang.feature.transaction.domain.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
@@ -35,8 +44,35 @@ class DashboardViewModel @Inject constructor(
     private val categoryRepository: CategoryRepository,
     private val transactionRepository: TransactionRepository,
     private val budgetRepository: BudgetRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val autoResetBudgetsUseCase: AutoResetBudgetsUseCase
 ) : ViewModel() {
+
+    private data class DashboardData(
+        val categories: List<Category>,
+        val transactions: List<TransactionWithDetails>,
+        val budgets: List<Budget>,
+        val transferFees: List<TransferFee>
+    )
+
+    init {
+        // Roll over expired budgets once per dashboard load (the daily worker covers the rest)
+        viewModelScope.launch {
+            try {
+                autoResetBudgetsUseCase()
+            } catch (e: Exception) {
+                // Rollover is retried by the daily worker
+            }
+        }
+    }
+
+    // Emits the local date now and again at every local midnight so period bounds never go stale
+    private val currentDate: Flow<LocalDate> = flow {
+        while (true) {
+            emit(LocalDate.now(ZoneId.systemDefault()))
+            delay(BudgetDates.millisUntilNextMidnight(System.currentTimeMillis()) + 1L)
+        }
+    }.distinctUntilChanged()
 
     private val flow1 = combine(
         userProfileRepository.getUserProfile(),
@@ -49,14 +85,15 @@ class DashboardViewModel @Inject constructor(
     private val flow2 = combine(
         categoryRepository.getAllCategories(),
         transactionRepository.getAllTransactionsWithDetails(),
-        budgetRepository.getActiveBudgets()
-    ) { categories, transactions, budgets ->
-        Triple(categories, transactions, budgets)
+        budgetRepository.getActiveBudgets(),
+        budgetRepository.getTransferFees()
+    ) { categories, transactions, budgets, transferFees ->
+        DashboardData(categories, transactions, budgets, transferFees)
     }
 
-    val uiState: StateFlow<DashboardUiState> = combine(flow1, flow2) { f1, f2 ->
+    val uiState: StateFlow<DashboardUiState> = combine(flow1, flow2, currentDate) { f1, f2, _ ->
         val (profile, appSettings, accounts) = f1
-        val (categories, transactions, budgets) = f2
+        val (categories, transactions, budgets, transferFees) = f2
 
         val userName = profile?.name ?: "Pengguna"
         val hideBalance = appSettings?.hideBalance ?: false
@@ -78,9 +115,7 @@ class DashboardViewModel @Inject constructor(
             .filter { it.transactionType == "INCOME" }
             .sumOf { it.amount }
 
-        val totalExpense = periodTransactions
-            .filter { it.transactionType == "EXPENSE" || it.transactionType == "TRANSFER_FEE" }
-            .sumOf { it.amount }
+        val totalExpense = BudgetSpending.totalExpense(transactions, transferFees, startTime, endTime)
 
         val netDifference = totalIncome - totalExpense
 
@@ -97,9 +132,7 @@ class DashboardViewModel @Inject constructor(
             .filter { it.transactionType == "INCOME" }
             .sumOf { it.amount }
 
-        val previousTotalExpense = prevPeriodTransactions
-            .filter { it.transactionType == "EXPENSE" || it.transactionType == "TRANSFER_FEE" }
-            .sumOf { it.amount }
+        val previousTotalExpense = BudgetSpending.totalExpense(transactions, transferFees, prevStartTime, prevEndTime)
 
         val periodLabel = when (selectedPeriod) {
             "TODAY" -> "kemarin"
@@ -144,16 +177,10 @@ class DashboardViewModel @Inject constructor(
             )
             .take(6)
 
-        // Budgets Progress
-        val budgetProgressList = budgets.map { budget ->
-            val spentAmount = transactions
-                .filter {
-                    !it.isDeleted && 
-                    it.transactionDate in budget.startDate..budget.endDate &&
-                    (it.transactionType == "EXPENSE" || it.transactionType == "TRANSFER_FEE") &&
-                    (budget.categoryId == null || it.categoryId == budget.categoryId)
-                }
-                .sumOf { it.amount }
+        // Budgets Progress: only budgets whose period contains now
+        val now = System.currentTimeMillis()
+        val budgetProgressList = budgets.filter { now in it.startDate..it.endDate }.map { budget ->
+            val spentAmount = BudgetSpending.spentAmount(budget, transactions, transferFees)
 
             val progressPercent = if (budget.amount > 0) {
                 (spentAmount.toFloat() / budget.amount.toFloat()) * 100f
@@ -173,8 +200,8 @@ class DashboardViewModel @Inject constructor(
             )
         }
 
-        // Expense distribution
-        val expenseTransactions = periodTransactions.filter { it.transactionType == "EXPENSE" || it.transactionType == "TRANSFER_FEE" }
+        // Expense distribution (category-only: transfer admin fees have no category)
+        val expenseTransactions = periodTransactions.filter { it.transactionType == "EXPENSE" }
         val categoryMap = expenseTransactions.groupBy { it.categoryId }
         val expenseCategoriesDistribution = categoryMap.mapNotNull { (catId, txs) ->
             val category = categories.find { it.id == catId } ?: Category(
@@ -220,6 +247,7 @@ class DashboardViewModel @Inject constructor(
             totalBalance = totalBalance,
             hideBalance = hideBalance,
             selectedPeriod = selectedPeriod,
+            currentPeriodLabel = currentPeriodLabel(selectedPeriod),
             totalIncome = totalIncome,
             totalExpense = totalExpense,
             netDifference = netDifference,
@@ -279,6 +307,14 @@ class DashboardViewModel @Inject constructor(
             val updated = currentSettings.copy(dashboardPeriod = period, updatedAt = System.currentTimeMillis())
             settingsRepository.saveAppSettings(updated)
         }
+    }
+
+    private fun currentPeriodLabel(period: String): String = when (period) {
+        "TODAY" -> "hari ini"
+        "WEEKLY" -> "minggu ini"
+        "MONTHLY" -> "bulan ini"
+        "YEARLY" -> "tahun ini"
+        else -> "periode ini"
     }
 
     private fun getPeriodBounds(period: String): Pair<Long, Long> {

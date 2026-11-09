@@ -115,7 +115,8 @@ fun DashboardScreen(
                     onToggleHideBalance = { viewModel.toggleHideBalance() },
                     totalIncome = uiState.totalIncome,
                     totalExpense = uiState.totalExpense,
-                    netDifference = uiState.netDifference
+                    netDifference = uiState.netDifference,
+                    periodLabel = uiState.currentPeriodLabel
                 )
 
                 // First-run guidance: disappears once wallet, transaction and budget exist

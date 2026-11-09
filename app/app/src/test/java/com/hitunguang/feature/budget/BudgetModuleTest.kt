@@ -14,6 +14,7 @@ import com.hitunguang.feature.budget.domain.usecase.AutoResetBudgetsUseCase
 import com.hitunguang.feature.budget.domain.usecase.CreateBudgetUseCase
 import com.hitunguang.feature.budget.domain.usecase.DeleteBudgetUseCase
 import com.hitunguang.feature.budget.domain.usecase.UpdateBudgetUseCase
+import com.hitunguang.feature.budget.domain.util.BudgetDates
 import com.hitunguang.feature.budget.presentation.BudgetViewModel
 import com.hitunguang.feature.category.data.repository.CategoryRepositoryImpl
 import com.hitunguang.feature.category.domain.repository.CategoryRepository
@@ -36,6 +37,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -242,8 +244,9 @@ class BudgetModuleTest {
         )
         budgetRepository.insertBudget(expiredBudget)
 
-        // Invoke autoResetBudgetsUseCase
-        autoResetBudgetsUseCase(listOf(expiredBudget))
+        // Invoke autoResetBudgetsUseCase twice: the second run must not create a duplicate successor
+        autoResetBudgetsUseCase()
+        autoResetBudgetsUseCase()
 
         val allBudgets = budgetRepository.getAllBudgets().first()
         // Should have 2 budgets: 1 inactive (old) and 1 active (new rollover)
@@ -261,14 +264,10 @@ class BudgetModuleTest {
         assertEquals(50000L, newBudget.amount)
         assertEquals(80, newBudget.thresholdPercent)
         
-        // Verify the new dates are a valid shift of the old dates
-        val duration = 1000L
-        val step = 1001L
-        val startShift = newBudget.startDate - 1000L
-        val endShift = newBudget.endDate - 2000L
-        assertEquals(startShift, endShift)
-        assertEquals(0L, startShift % step)
-        assertTrue(newBudget.endDate >= System.currentTimeMillis() - 5000L)
+        // A one-day period rolls forward day by day until it contains today
+        val today = LocalDate.now()
+        assertEquals(BudgetDates.startOfDay(today), newBudget.startDate)
+        assertEquals(BudgetDates.endOfDay(today), newBudget.endDate)
     }
 
     @Test
@@ -293,7 +292,7 @@ class BudgetModuleTest {
         db.transactionDao().insertTransaction(
             TransactionEntity("t-1", "acc-1", "cat-1", null, "EXPENSE", "Lunch", null, 30000L, 15000L, false, null, 15000L, 15000L)
         )
-        // 2. Matching Transfer Fee (within range, correct category): 5,000
+        // 2. Legacy TRANSFER_FEE row (ignored: transfers.admin_fee is the source of truth): 5,000
         db.transactionDao().insertTransaction(
             TransactionEntity("t-2", "acc-1", "cat-1", null, "TRANSFER_FEE", "Fee", null, 5000L, 16000L, false, null, 16000L, 16000L)
         )
@@ -333,10 +332,10 @@ class BudgetModuleTest {
         // Verify the old budget is in completed list
         val oldBudgetProgress = completed.find { it.budget.id == "b-vm" }
         assertNotNull(oldBudgetProgress)
-        // spentAmount = 30,000 (Lunch) + 5,000 (Transfer Fee) = 35,000
-        assertEquals(35000L, oldBudgetProgress!!.spentAmount)
-        assertEquals(65000L, oldBudgetProgress.remainingAmount)
-        assertEquals(35f, oldBudgetProgress.progressPercent, 0.01f)
+        // spentAmount = 30,000 (Lunch) only
+        assertEquals(30000L, oldBudgetProgress!!.spentAmount)
+        assertEquals(70000L, oldBudgetProgress.remainingAmount)
+        assertEquals(30f, oldBudgetProgress.progressPercent, 0.01f)
         assertFalse(oldBudgetProgress.isOverBudget)
         assertFalse(oldBudgetProgress.isThresholdReached)
         assertEquals("Makanan", oldBudgetProgress.categoryName)

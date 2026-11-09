@@ -3,6 +3,7 @@ package com.hitunguang.feature.budget.data.repository
 import com.hitunguang.core.database.dao.BudgetDao
 import com.hitunguang.feature.budget.data.mapper.BudgetMapper
 import com.hitunguang.feature.budget.domain.model.Budget
+import com.hitunguang.feature.budget.domain.model.TransferFee
 import com.hitunguang.feature.budget.domain.repository.BudgetRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -34,6 +35,16 @@ class BudgetRepositoryImpl @Inject constructor(
 
     override suspend fun updateBudget(budget: Budget) {
         budgetDao.updateBudget(BudgetMapper.toEntity(budget))
+    }
+
+    override fun getTransferFees(): Flow<List<TransferFee>> {
+        return budgetDao.getTransferFees().map { list ->
+            list.map { TransferFee(transferDate = it.transferDate, adminFee = it.adminFee) }
+        }
+    }
+
+    override suspend fun rollOverBudget(completed: Budget, successor: Budget) {
+        budgetDao.rollOverBudget(BudgetMapper.toEntity(completed), BudgetMapper.toEntity(successor))
     }
 
     override suspend fun deleteBudget(budget: Budget) {

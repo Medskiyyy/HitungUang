@@ -35,6 +35,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.hitunguang.core.designsystem.theme.Radius
 import com.hitunguang.core.designsystem.theme.Spacing
 import com.hitunguang.feature.budget.domain.model.Budget
+import com.hitunguang.feature.budget.domain.util.BudgetDates
 import com.hitunguang.feature.category.domain.model.Category
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -45,6 +46,7 @@ import java.util.Locale
 fun BudgetFormDialog(
     budget: Budget?,
     categories: List<Category>,
+    errorMessage: String? = null,
     onDismiss: () -> Unit,
     onSave: (
         categoryId: String?,
@@ -60,8 +62,9 @@ fun BudgetFormDialog(
     var selectedCategoryId by remember { mutableStateOf(budget?.categoryId ?: "") }
     var amountStr by remember { mutableStateOf(budget?.amount?.toString() ?: "") }
     var thresholdStr by remember { mutableStateOf(budget?.thresholdPercent?.toString() ?: "80") }
-    var startDateMillis by remember { mutableStateOf(budget?.startDate ?: System.currentTimeMillis()) }
-    var endDateMillis by remember { mutableStateOf(budget?.endDate ?: (System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000)) }
+    // Local millis: start of the first day and 23:59:59.999 of the last day
+    var startDateMillis by remember { mutableStateOf(BudgetDates.startOfDay(budget?.startDate ?: System.currentTimeMillis())) }
+    var endDateMillis by remember { mutableStateOf(BudgetDates.endOfDay(budget?.endDate ?: (System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000))) }
 
     var categoryExpanded by remember { mutableStateOf(false) }
     var showStartDatePicker by remember { mutableStateOf(false) }
@@ -215,6 +218,9 @@ fun BudgetFormDialog(
                 dateError?.let {
                     Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 }
+                errorMessage?.let {
+                    Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                }
             }
         },
         confirmButton = {
@@ -266,13 +272,13 @@ fun BudgetFormDialog(
     )
 
     if (showStartDatePicker) {
-        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = startDateMillis)
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = BudgetDates.localToPicker(startDateMillis))
         DatePickerDialog(
             onDismissRequest = { showStartDatePicker = false },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        startDateMillis = datePickerState.selectedDateMillis ?: startDateMillis
+                        datePickerState.selectedDateMillis?.let { startDateMillis = BudgetDates.pickerToLocalStart(it) }
                         showStartDatePicker = false
                     }
                 ) {
@@ -290,13 +296,13 @@ fun BudgetFormDialog(
     }
 
     if (showEndDatePicker) {
-        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = endDateMillis)
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = BudgetDates.localToPicker(endDateMillis))
         DatePickerDialog(
             onDismissRequest = { showEndDatePicker = false },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        endDateMillis = datePickerState.selectedDateMillis ?: endDateMillis
+                        datePickerState.selectedDateMillis?.let { endDateMillis = BudgetDates.pickerToLocalEnd(it) }
                         showEndDatePicker = false
                     }
                 ) {
