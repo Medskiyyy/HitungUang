@@ -28,7 +28,7 @@ class RecycleBinViewModel @Inject constructor(
             RecycleBinUiState(isLoading = false, items = items)
         }
         .catch { e ->
-            emit(RecycleBinUiState(error = e.localizedMessage ?: "Unknown error"))
+            emit(RecycleBinUiState(error = e.localizedMessage ?: "Ada yang gagal. Coba lagi, ya."))
         }
         .stateIn(
             scope = viewModelScope,

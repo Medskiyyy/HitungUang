@@ -28,7 +28,7 @@ object BitmapDecoder {
 
         val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
         val bitmap = resolver.openInputStream(uri).use { BitmapFactory.decodeStream(it, null, options) }
-            ?: throw IllegalArgumentException("Could not decode image from URI")
+            ?: throw IllegalArgumentException("Gambarnya nggak bisa dibuka. Coba pilih foto lain.")
 
         val orientation = try {
             resolver.openInputStream(uri)?.use {

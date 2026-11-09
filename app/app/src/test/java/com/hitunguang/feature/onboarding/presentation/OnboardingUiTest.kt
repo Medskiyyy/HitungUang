@@ -30,7 +30,7 @@ class OnboardingUiTest {
 
         // Verify text exists
         composeTestRule.onNodeWithText("HitungUang").assertExists()
-        composeTestRule.onNodeWithText("Keuangan pribadi, 100% offline.").assertExists()
+        composeTestRule.onNodeWithText("Catat keuangan tanpa internet.").assertExists()
         composeTestRule.onNodeWithText("Mulai Sekarang").assertExists()
 
         // Perform click and verify callback

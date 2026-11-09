@@ -178,7 +178,7 @@ fun WelcomeStep(
             Spacer(modifier = Modifier.height(Spacing.extraSmall))
 
             Text(
-                text = "Keuangan pribadi, 100% offline.",
+                text = "Catat keuangan tanpa internet.",
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -187,7 +187,7 @@ fun WelcomeStep(
             Spacer(modifier = Modifier.height(Spacing.large))
 
             Text(
-                text = "Catat pemasukan & pengeluaran, pantau budget, dan pindai struk belanja — semua data tersimpan aman di perangkat Anda tanpa internet.",
+                text = "Catat pemasukan dan pengeluaran, pantau anggaran, dan pindai struk belanja. Semua data tersimpan di HP kamu, tanpa internet.",
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant

@@ -93,7 +93,7 @@ fun TransferHistoryScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = uiState.error ?: "Terjadi kesalahan",
+                            text = uiState.error ?: "Ada yang gagal. Coba lagi, ya.",
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center
                         )

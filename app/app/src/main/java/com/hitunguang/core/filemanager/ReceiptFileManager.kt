@@ -47,7 +47,7 @@ class ReceiptFileManager @Inject constructor(
         val file = File.createTempFile(PICKED_PHOTO_PREFIX, ".jpg", context.cacheDir)
         try {
             val input = context.contentResolver.openInputStream(sourceUri)
-                ?: throw IllegalArgumentException("Could not open picked image")
+                ?: throw IllegalArgumentException("Fotonya nggak bisa dibuka. Coba pilih foto lain.")
             input.use { inputStream ->
                 FileOutputStream(file).use { inputStream.copyTo(it) }
             }

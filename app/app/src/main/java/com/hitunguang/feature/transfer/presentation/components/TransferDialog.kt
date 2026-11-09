@@ -220,7 +220,7 @@ fun TransferDialog(
         AlertDialog(
             onDismissRequest = { viewModel.clearError() },
             title = { Text("Peringatan", fontWeight = FontWeight.Bold) },
-            text = { Text(uiState.error ?: "Terjadi kesalahan") },
+            text = { Text(uiState.error ?: "Ada yang gagal. Coba lagi, ya.") },
             confirmButton = {
                 TextButton(onClick = { viewModel.clearError() }) {
                     Text("OK")

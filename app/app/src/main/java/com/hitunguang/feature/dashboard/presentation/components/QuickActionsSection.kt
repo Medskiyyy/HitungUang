@@ -19,7 +19,6 @@ import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.TrendingDown
 import androidx.compose.material.icons.filled.TrendingUp
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -92,11 +91,11 @@ fun QuickActionsSection(
                 modifier = Modifier.weight(1f)
             )
             QuickActionButton(
-                title = "Lainnya",
-                icon = Icons.Default.Menu,
+                title = "Pindai struk",
+                icon = Icons.Default.QrCodeScanner,
                 iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
                 backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-                onClick = onScanClick, // Fallback to scan or open menu later
+                onClick = onScanClick,
                 modifier = Modifier.weight(1f)
             )
         }

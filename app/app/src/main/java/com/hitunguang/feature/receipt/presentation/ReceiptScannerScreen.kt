@@ -120,7 +120,7 @@ fun ReceiptScannerScreen(
                 actions = {
                     if (uiState.imageUri != null || uiState.rawText != null) {
                         IconButton(onClick = { viewModel.reset() }) {
-                            Icon(imageVector = Icons.Default.Clear, contentDescription = "Reset")
+                            Icon(imageVector = Icons.Default.Clear, contentDescription = "Ulangi")
                         }
                     }
                 }

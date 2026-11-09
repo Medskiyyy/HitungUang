@@ -55,7 +55,7 @@ fun TutorialStep(
         listOf(
             TutorialPage(
                 title = "Dashboard Utama",
-                description = "Pantau total saldo, ringkasan pengeluaran, grafik kategori, dan status budget bulanan secara real-time.",
+                description = "Pantau total saldo, ringkasan pengeluaran, grafik kategori, dan status anggaran bulanan.",
                 icon = Icons.Default.Dashboard
             ),
             TutorialPage(
@@ -75,7 +75,7 @@ fun TutorialStep(
             ),
             TutorialPage(
                 title = "Cadangan & Keamanan",
-                description = "Data dienkripsi dan dicadangkan ke folder pilihan Anda. Lengkapi dengan PIN atau sidik jari.",
+                description = "Data kamu dicadangkan ke folder pilihanmu. Kunci aplikasi dengan PIN atau sidik jari.",
                 icon = Icons.Default.Backup
             )
         )

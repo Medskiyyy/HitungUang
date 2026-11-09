@@ -332,7 +332,7 @@ fun PinSetupDialogs(
                                         onClick = {
                                             uiState.generatedRecoveryCode?.let {
                                                 clipboardManager.setText(AnnotatedString(it))
-                                                Toast.makeText(context, "Kode disalin ke clipboard", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, "Kode disalin", Toast.LENGTH_SHORT).show()
                                             }
                                         }
                                     ) {

@@ -106,7 +106,7 @@ fun AccountStep(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Wallet,
-                                    contentDescription = "Wallet Icon",
+                                    contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.padding(end = 12.dp)
                                 )

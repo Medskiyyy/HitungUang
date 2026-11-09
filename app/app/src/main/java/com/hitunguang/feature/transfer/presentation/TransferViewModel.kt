@@ -116,7 +116,7 @@ class TransferViewModel @Inject constructor(
                 executeTransferUseCase(transfer)
                 _uiState.update { it.copy(isSaving = false, success = true) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isSaving = false, error = e.localizedMessage ?: "Terjadi kesalahan") }
+                _uiState.update { it.copy(isSaving = false, error = e.localizedMessage ?: "Ada yang gagal. Coba lagi, ya.") }
             }
         }
     }

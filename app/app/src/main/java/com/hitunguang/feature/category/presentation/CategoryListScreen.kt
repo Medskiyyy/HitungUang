@@ -195,7 +195,7 @@ fun CategoryListScreen(
                                     IconButton(onClick = { viewModel.togglePinCategory(category) }) {
                                         Icon(
                                             imageVector = Icons.Default.PushPin,
-                                            contentDescription = if (category.isPinned) "Unpin" else "Pin",
+                                            contentDescription = if (category.isPinned) "Lepas sematan" else "Sematkan",
                                             tint = if (category.isPinned)
                                                 MaterialTheme.colorScheme.primary
                                             else

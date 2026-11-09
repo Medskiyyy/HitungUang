@@ -280,7 +280,6 @@ fun MainAppScreen(
     appSettings: AppSettings?
 ) {
     var currentTab by rememberSaveable { mutableStateOf(MainTab.DASHBOARD) }
-    var showScanPlaceholder by rememberSaveable { mutableStateOf(false) }
     var showSettingsPlaceholder by rememberSaveable { mutableStateOf(false) }
     var showThemeSettingsDialog by rememberSaveable { mutableStateOf(false) }
     var showCategoryListScreen by rememberSaveable { mutableStateOf(false) }
@@ -432,19 +431,6 @@ fun MainAppScreen(
                 }
             }
         }
-    }
-
-    if (showScanPlaceholder) {
-        AlertDialog(
-            onDismissRequest = { showScanPlaceholder = false },
-            title = { Text("Scan Struk (OCR)", fontWeight = FontWeight.Bold) },
-            text = { Text("Fitur scan struk (OCR) secara offline akan segera hadir pada Milestone 20-22!") },
-            confirmButton = {
-                TextButton(onClick = { showScanPlaceholder = false }) {
-                    Text("OK")
-                }
-            }
-        )
     }
 
     if (showSettingsPlaceholder) {
