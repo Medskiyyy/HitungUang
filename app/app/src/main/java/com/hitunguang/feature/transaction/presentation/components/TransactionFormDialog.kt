@@ -284,7 +284,7 @@ fun TransactionFormDialog(
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(Spacing.extraHuge)
+                                    .height(48.dp)
                                     .clip(RoundedCornerShape(Radius.medium))
                                     .background(backgroundColor)
                                     .clickable { type = itemType },

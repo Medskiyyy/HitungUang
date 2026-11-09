@@ -567,8 +567,7 @@ fun ReceiptReviewScreen(
                                         ) {
                                             Text("Barang ke-${index + 1}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                             IconButton(
-                                                onClick = { viewModel.removeItem(index) },
-                                                modifier = Modifier.size(24.dp)
+                                                onClick = { viewModel.removeItem(index) }
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Delete,
