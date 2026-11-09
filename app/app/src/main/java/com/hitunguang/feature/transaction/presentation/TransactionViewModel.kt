@@ -111,19 +111,10 @@ class TransactionViewModel @Inject constructor(
                     endMs = calendar.timeInMillis
                 }
                 "WEEKLY" -> {
-                    calendar.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.MONDAY)
-                    calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
-                    calendar.set(java.util.Calendar.MINUTE, 0)
-                    calendar.set(java.util.Calendar.SECOND, 0)
-                    calendar.set(java.util.Calendar.MILLISECOND, 0)
-                    startMs = calendar.timeInMillis
-
-                    calendar.add(java.util.Calendar.DAY_OF_YEAR, 6)
-                    calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
-                    calendar.set(java.util.Calendar.MINUTE, 59)
-                    calendar.set(java.util.Calendar.SECOND, 59)
-                    calendar.set(java.util.Calendar.MILLISECOND, 999)
-                    endMs = calendar.timeInMillis
+                    val zone = java.time.ZoneId.systemDefault()
+                    val range = TransactionDateRanges.weekRange(java.time.LocalDate.now(zone), zone)
+                    startMs = range.first
+                    endMs = range.second
                 }
                 "MONTHLY" -> {
                     calendar.set(java.util.Calendar.DAY_OF_MONTH, 1)

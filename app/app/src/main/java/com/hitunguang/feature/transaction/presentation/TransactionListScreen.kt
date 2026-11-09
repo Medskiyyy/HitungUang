@@ -355,13 +355,8 @@ fun TransactionListScreen(
                         val start = dateRangePickerState.selectedStartDateMillis
                         val end = dateRangePickerState.selectedEndDateMillis
                         if (start != null && end != null) {
-                            val calendar = java.util.Calendar.getInstance()
-                            calendar.timeInMillis = end
-                            calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
-                            calendar.set(java.util.Calendar.MINUTE, 59)
-                            calendar.set(java.util.Calendar.SECOND, 59)
-                            calendar.set(java.util.Calendar.MILLISECOND, 999)
-                            viewModel.setCustomDateRange(start, calendar.timeInMillis)
+                            val range = TransactionDateRanges.pickerRangeToLocal(start, end, java.time.ZoneId.systemDefault())
+                            viewModel.setCustomDateRange(range.first, range.second)
                             viewModel.setPeriod("CUSTOM")
                         }
                         showDateRangePicker = false
