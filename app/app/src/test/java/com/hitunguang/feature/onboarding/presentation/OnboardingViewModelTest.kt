@@ -10,6 +10,7 @@ import com.hitunguang.feature.account.data.repository.AccountRepositoryImpl
 import com.hitunguang.feature.account.domain.repository.AccountRepository
 import com.hitunguang.feature.budget.data.repository.BudgetRepositoryImpl
 import com.hitunguang.feature.budget.domain.repository.BudgetRepository
+import com.hitunguang.core.security.PinHasher
 import com.hitunguang.feature.onboarding.data.repository.UserProfileRepositoryImpl
 import com.hitunguang.feature.onboarding.domain.repository.UserProfileRepository
 import com.hitunguang.feature.settings.data.repository.SettingsRepositoryImpl
@@ -23,6 +24,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -33,6 +35,9 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.io.File
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -77,7 +82,8 @@ class OnboardingViewModelTest {
             userProfileRepository = userProfileRepository,
             accountRepository = accountRepository,
             budgetRepository = budgetRepository,
-            settingsRepository = settingsRepository
+            settingsRepository = settingsRepository,
+            database = db
         )
     }
 
@@ -164,5 +170,94 @@ class OnboardingViewModelTest {
         assertEquals(OnboardingStep.PROFILE, viewModel.uiState.value.currentStep)
         viewModel.previousStep() // Back to WELCOME
         assertEquals(OnboardingStep.WELCOME, viewModel.uiState.value.currentStep)
+    }
+
+    private fun countRows(table: String): Int =
+        db.openHelper.readableDatabase.query("SELECT COUNT(*) FROM $table").use {
+            it.moveToFirst()
+            it.getInt(0)
+        }
+
+    private suspend fun goToTutorial(pin: String? = null, budget: String = "") {
+        viewModel.nextStep()
+        viewModel.updateName("Ahmad")
+        viewModel.nextStep()
+        viewModel.nextStep()
+        viewModel.updateBudgetAmount(budget)
+        viewModel.nextStep()
+        if (pin != null) {
+            viewModel.setPinEnabled(true)
+            viewModel.updatePin(pin)
+            viewModel.updateConfirmPin(pin)
+        }
+        viewModel.nextStep()
+        assertEquals(OnboardingStep.TUTORIAL, viewModel.uiState.value.currentStep)
+    }
+
+    private suspend fun awaitProfile() {
+        val start = System.currentTimeMillis()
+        while (userProfileRepository.getUserProfile().first() == null) {
+            if (System.currentTimeMillis() - start > 10_000) throw AssertionError("Profile not saved")
+            kotlinx.coroutines.delay(20)
+        }
+    }
+
+    @Test
+    fun testDoubleTapFinishCreatesSingleProfileAndAccount() = runBlocking {
+        goToTutorial(pin = "123456", budget = "500000")
+        viewModel.nextStep()
+        viewModel.nextStep()
+        viewModel.nextStep()
+        awaitProfile()
+        kotlinx.coroutines.delay(300)
+
+        assertEquals(1, countRows("user_profiles"))
+        assertEquals(1, countRows("accounts"))
+        assertEquals(1, countRows("budgets"))
+        val sec = settingsRepository.getSecuritySettings().first()!!
+        assertEquals(6, sec.pinLength)
+        assertTrue(PinHasher.verify("123456", sec.pinHash!!))
+        assertFalse(PinHasher.isLegacy(sec.pinHash!!))
+    }
+
+    @Test
+    fun testNonDigitPinRejected() = runBlocking {
+        viewModel.nextStep()
+        viewModel.updateName("Ahmad")
+        viewModel.nextStep()
+        viewModel.nextStep()
+        viewModel.nextStep()
+        viewModel.setPinEnabled(true)
+        viewModel.updatePin("12ab")
+        viewModel.updateConfirmPin("12ab")
+        viewModel.nextStep()
+        assertEquals(OnboardingStep.SECURITY, viewModel.uiState.value.currentStep)
+        assertNotNull(viewModel.uiState.value.pinError)
+    }
+
+    @Test
+    fun testOnboardingBudgetCoversCurrentCalendarMonth() = runBlocking {
+        goToTutorial(budget = "1000000")
+        viewModel.nextStep()
+        awaitProfile()
+
+        val budget = budgetRepository.getAllBudgets().first().single()
+        val zone = ZoneId.systemDefault()
+        val start = Instant.ofEpochMilli(budget.startDate).atZone(zone)
+        val end = Instant.ofEpochMilli(budget.endDate).atZone(zone)
+        val today = LocalDate.now(zone)
+        assertEquals(today.withDayOfMonth(1), start.toLocalDate())
+        assertEquals(0, start.toLocalTime().toNanoOfDay())
+        assertEquals(today.withDayOfMonth(today.lengthOfMonth()), end.toLocalDate())
+        assertEquals(java.time.LocalTime.of(23, 59, 59, 999_000_000), end.toLocalTime())
+    }
+
+    @Test
+    fun testMonthRangeMillisHandlesLeapFebruary() {
+        val zone = ZoneId.of("Asia/Jakarta")
+        val (start, end) = monthRangeMillis(LocalDate.of(2028, 2, 17), zone)
+        assertEquals(LocalDate.of(2028, 2, 1).atStartOfDay(zone).toInstant().toEpochMilli(), start)
+        assertEquals(LocalDate.of(2028, 3, 1).atStartOfDay(zone).toInstant().toEpochMilli() - 1, end)
+        assertEquals(LocalDate.of(2028, 2, 29), Instant.ofEpochMilli(end).atZone(zone).toLocalDate())
     }
 }

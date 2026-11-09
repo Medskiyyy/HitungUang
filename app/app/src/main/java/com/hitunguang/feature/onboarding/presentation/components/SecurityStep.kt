@@ -102,7 +102,7 @@ fun SecurityStep(
                 
                 OutlinedTextField(
                     value = pin,
-                    onValueChange = { if (it.length <= 6) onPinChange(it) },
+                    onValueChange = { if (it.length <= 6 && it.all { c -> c in '0'..'9' }) onPinChange(it) },
                     label = { Text("Masukkan PIN Baru (4-6 angka)") },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
@@ -120,7 +120,7 @@ fun SecurityStep(
 
                 OutlinedTextField(
                     value = confirmPin,
-                    onValueChange = { if (it.length <= 6) onConfirmPinChange(it) },
+                    onValueChange = { if (it.length <= 6 && it.all { c -> c in '0'..'9' }) onConfirmPinChange(it) },
                     label = { Text("Konfirmasi PIN Baru") },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
