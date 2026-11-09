@@ -231,10 +231,10 @@ class CategoryModuleTest {
         val readCat = repository.getCategoryById("cat-tx").first()
         assertNull(readCat)
 
-        // 2. Transaction should NOT be deleted physically but marked as deleted and categoryId is NULL
+        // 2. Transaction should NOT be deleted physically but marked as deleted and keeps its categoryId for restore
         val tx = db.transactionDao().getTransactionById("tx-1").first()
         assertNotNull(tx)
-        assertNull(tx?.categoryId)
+        assertEquals("cat-tx", tx?.categoryId)
         assertTrue(tx?.isDeleted == true)
         assertEquals(now, tx?.deletedAt)
 
