@@ -52,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.hitunguang.core.common.util.CurrencyFormatter
@@ -231,6 +232,7 @@ fun TransactionListScreen(
             } else {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(Spacing.small),
+                    contentPadding = PaddingValues(bottom = 80.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     groupedTransactions.forEach { (dateHeader, dailyTxs) ->

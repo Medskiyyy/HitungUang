@@ -101,13 +101,10 @@ val DarkOutlineVariant = Color(0xFF2A2E36)
 // GRADIENT TOKENS (used for hero cards, balance cards, etc.)
 // ============================================================================
 
-/** Balance card light gradient — primary to secondary, warm financial feel */
-val BalanceGradientStartLight = Color(0xFF0F6E62)
-val BalanceGradientEndLight = Color(0xFFD58A28)
-
-/** Balance card dark gradient */
-val BalanceGradientStartDark = Color(0xFF0F6E62)
-val BalanceGradientEndDark = Color(0xFFF8B868)
+/** Hero card gradient, same in both themes; dark enough for white text end to end */
+val HeroGradientStart = Color(0xFF0F6E62)
+val HeroGradientEnd = Color(0xFF8A5212)
+val HeroOnGradient = Color.White
 
 // ============================================================================
 // SEMANTIC STATUS COLORS

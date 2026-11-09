@@ -68,6 +68,7 @@ import com.hitunguang.feature.budget.domain.model.Budget
 import com.hitunguang.feature.budget.presentation.BudgetWithProgress
 import com.hitunguang.feature.category.domain.model.Category
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -251,7 +252,7 @@ fun BudgetListScreen(
                                                 color = MaterialTheme.colorScheme.onSurface
                                             )
                                             Text(
-                                                text = "Limit: ${CurrencyFormatter.format(totalLimit)}",
+                                                text = "Batas: ${CurrencyFormatter.format(totalLimit)}",
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
@@ -270,9 +271,9 @@ fun BudgetListScreen(
                                             Spacer(modifier = Modifier.height(Spacing.extraSmall))
 
                                             val healthSummaryList = mutableListOf<String>()
-                                            if (safeCount > 0) healthSummaryList.add("$safeCount Aman")
-                                            if (warningCount > 0) healthSummaryList.add("$warningCount Warning")
-                                            if (overCount > 0) healthSummaryList.add("$overCount Over")
+                                            if (safeCount > 0) healthSummaryList.add("$safeCount aman")
+                                            if (warningCount > 0) healthSummaryList.add("$warningCount hampir habis")
+                                            if (overCount > 0) healthSummaryList.add("$overCount lewat batas")
                                             val healthSummary = if (healthSummaryList.isEmpty()) "Tidak ada anggaran" else healthSummaryList.joinToString(" • ")
 
                                             Text(
@@ -323,10 +324,9 @@ fun BudgetProgressCard(
     modifier: Modifier = Modifier
 ) {
     val idLocale = Locale("in", "ID")
-    val dateFormatter = SimpleDateFormat("dd MMM yyyy", idLocale)
     val budget = budgetProgress.budget
-    val title = if (budget.budgetType == "GLOBAL") "Anggaran Global" else budgetProgress.categoryName ?: "Kategori Kustom"
-    val dateRangeText = "${dateFormatter.format(Date(budget.startDate))} - ${dateFormatter.format(Date(budget.endDate))}"
+    val title = if (budget.budgetType == "GLOBAL") "Semua Kategori" else budgetProgress.categoryName ?: "Tanpa Kategori"
+    val dateRangeText = formatBudgetRange(budget.startDate, budget.endDate, idLocale)
 
     val category = remember(budget.categoryId, categories) {
         categories.find { it.id == budget.categoryId }
@@ -449,7 +449,7 @@ fun BudgetProgressCard(
                 ) {
                     Column {
                         Text(
-                            text = "Limit Anggaran",
+                            text = "Batas",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -483,7 +483,7 @@ fun BudgetProgressCard(
                     Column {
                         if (budgetProgress.isOverBudget) {
                             Text(
-                                text = "Melebihi Anggaran",
+                                text = "Lewat batas",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -495,7 +495,7 @@ fun BudgetProgressCard(
                             )
                         } else {
                             Text(
-                                text = "Sisa Limit",
+                                text = "Sisa",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -525,5 +525,16 @@ fun BudgetProgressCard(
                 }
             }
         }
+    }
+}
+
+internal fun formatBudgetRange(start: Long, end: Long, locale: Locale): String {
+    val s = Calendar.getInstance().apply { timeInMillis = start }
+    val e = Calendar.getInstance().apply { timeInMillis = end }
+    val full = SimpleDateFormat("d MMM yyyy", locale)
+    return when {
+        s.get(Calendar.YEAR) != e.get(Calendar.YEAR) -> "${full.format(Date(start))} – ${full.format(Date(end))}"
+        s.get(Calendar.MONTH) != e.get(Calendar.MONTH) -> "${SimpleDateFormat("d MMM", locale).format(Date(start))} – ${full.format(Date(end))}"
+        else -> "${s.get(Calendar.DAY_OF_MONTH)}–${full.format(Date(end))}"
     }
 }

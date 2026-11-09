@@ -30,16 +30,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.hitunguang.core.common.util.CurrencyFormatter
 import com.hitunguang.core.designsystem.theme.AutoResizeText
-import com.hitunguang.core.designsystem.theme.BalanceGradientEndDark
-import com.hitunguang.core.designsystem.theme.BalanceGradientEndLight
-import com.hitunguang.core.designsystem.theme.BalanceGradientStartDark
-import com.hitunguang.core.designsystem.theme.BalanceGradientStartLight
 import com.hitunguang.core.designsystem.theme.Elevation
-import com.hitunguang.core.designsystem.theme.IncomeGreen
 import com.hitunguang.core.designsystem.theme.Radius
 import com.hitunguang.core.designsystem.theme.Spacing
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
+import com.hitunguang.core.designsystem.theme.HeroGradientEnd
+import com.hitunguang.core.designsystem.theme.HeroGradientStart
+import com.hitunguang.core.designsystem.theme.HeroOnGradient
 
 @Composable
 fun BalanceCard(
@@ -53,10 +50,6 @@ fun BalanceCard(
     periodLabel: String? = null
 ) {
     val formattedBalance = CurrencyFormatter.format(totalBalance)
-    val isDark = isSystemInDarkTheme()
-
-    val gradientStart = if (isDark) BalanceGradientStartDark else BalanceGradientStartLight
-    val gradientEnd = if (isDark) BalanceGradientEndDark else BalanceGradientEndLight
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -68,7 +61,7 @@ fun BalanceCard(
             modifier = Modifier
                 .background(
                     brush = Brush.linearGradient(
-                        colors = listOf(gradientStart, gradientEnd)
+                        colors = listOf(HeroGradientStart, HeroGradientEnd)
                     ),
                     shape = RoundedCornerShape(Radius.extraLarge)
                 )
@@ -86,21 +79,21 @@ fun BalanceCard(
                     Text(
                         text = "Total Saldo",
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
+                        color = HeroOnGradient.copy(alpha = 0.85f),
                         fontWeight = FontWeight.Medium
                     )
                     // Slightly more prominent eye button
                     IconButton(
                         onClick = onToggleHideBalance,
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(48.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(Color.White.copy(alpha = 0.12f))
                     ) {
                         Icon(
                             imageVector = if (hideBalance) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                             contentDescription = if (hideBalance) "Tampilkan Saldo" else "Sembunyikan Saldo",
-                            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
+                            tint = HeroOnGradient.copy(alpha = 0.9f),
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -113,7 +106,7 @@ fun BalanceCard(
                     Text(
                         text = "••••••",
                         style = MaterialTheme.typography.displayMedium,
-                        color = MaterialTheme.colorScheme.onPrimary,
+                        color = HeroOnGradient,
                         fontWeight = FontWeight.Bold
                     )
                 } else {
@@ -121,7 +114,7 @@ fun BalanceCard(
                         text = formattedBalance,
                         style = MaterialTheme.typography.displayMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary
+                            color = HeroOnGradient
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -130,7 +123,7 @@ fun BalanceCard(
                 Spacer(modifier = Modifier.height(Spacing.large))
 
                 HorizontalDivider(
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.15f),
+                    color = HeroOnGradient.copy(alpha = 0.15f),
                     thickness = 0.5.dp
                 )
 
@@ -148,14 +141,14 @@ fun BalanceCard(
                         Text(
                             text = if (periodLabel != null) "Pemasukan $periodLabel" else "Pemasukan",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                            color = HeroOnGradient.copy(alpha = 0.7f)
                         )
                         Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         Text(
                             text = if (hideBalance) "••••••" else CurrencyFormatter.format(totalIncome),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = IncomeGreen.copy(alpha = 0.95f) // slightly differentiated green on gradient
+                            color = HeroOnGradient
                         )
                     }
 
@@ -166,14 +159,14 @@ fun BalanceCard(
                         Text(
                             text = if (periodLabel != null) "Pengeluaran $periodLabel" else "Pengeluaran",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                            color = HeroOnGradient.copy(alpha = 0.7f)
                         )
                         Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         Text(
                             text = if (hideBalance) "••••••" else CurrencyFormatter.format(totalExpense),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary
+                            color = HeroOnGradient
                         )
                     }
                 }

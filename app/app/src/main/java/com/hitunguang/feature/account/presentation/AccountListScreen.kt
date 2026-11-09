@@ -1,5 +1,8 @@
 package com.hitunguang.feature.account.presentation
 
+import com.hitunguang.core.designsystem.theme.HeroGradientEnd
+import com.hitunguang.core.designsystem.theme.HeroGradientStart
+import com.hitunguang.core.designsystem.theme.HeroOnGradient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -205,6 +209,7 @@ fun AccountListScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .heightIn(min = 48.dp)
                                 .clickable { cashExpanded = !cashExpanded }
                                 .padding(vertical = Spacing.small),
                             verticalAlignment = Alignment.CenterVertically,
@@ -212,8 +217,8 @@ fun AccountListScreen(
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
-                                    imageVector = if (cashExpanded) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
-                                    contentDescription = if (cashExpanded) "Collapse" else "Expand",
+                                    imageVector = if (cashExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                    contentDescription = if (cashExpanded) "Tutup" else "Buka",
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(modifier = Modifier.width(Spacing.small))
@@ -249,6 +254,7 @@ fun AccountListScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .heightIn(min = 48.dp)
                                 .clickable { bankExpanded = !bankExpanded }
                                 .padding(vertical = Spacing.small),
                             verticalAlignment = Alignment.CenterVertically,
@@ -256,8 +262,8 @@ fun AccountListScreen(
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
-                                    imageVector = if (bankExpanded) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
-                                    contentDescription = if (bankExpanded) "Collapse" else "Expand",
+                                    imageVector = if (bankExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                    contentDescription = if (bankExpanded) "Tutup" else "Buka",
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(modifier = Modifier.width(Spacing.small))
@@ -293,6 +299,7 @@ fun AccountListScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .heightIn(min = 48.dp)
                                 .clickable { eWalletExpanded = !eWalletExpanded }
                                 .padding(vertical = Spacing.small),
                             verticalAlignment = Alignment.CenterVertically,
@@ -300,8 +307,8 @@ fun AccountListScreen(
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
-                                    imageVector = if (eWalletExpanded) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
-                                    contentDescription = if (eWalletExpanded) "Collapse" else "Expand",
+                                    imageVector = if (eWalletExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                    contentDescription = if (eWalletExpanded) "Tutup" else "Buka",
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(modifier = Modifier.width(Spacing.small))
@@ -397,35 +404,29 @@ fun WalletSummaryCard(
     ) {
         Box(
             modifier = Modifier
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary,
-                            MaterialTheme.colorScheme.primaryContainer
-                        )
-                    )
-                )
+                .fillMaxWidth()
+                .background(brush = Brush.linearGradient(colors = listOf(HeroGradientStart, HeroGradientEnd)))
                 .padding(Spacing.extraHuge)
         ) {
             Column {
                 Text(
                     text = "Total Saldo Anda",
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                    color = HeroOnGradient.copy(alpha = 0.7f)
                 )
                 Spacer(modifier = Modifier.height(Spacing.extraSmall))
                 Text(
                     text = CurrencyFormatter.format(totalBalance),
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = HeroOnGradient
                 )
                 Spacer(modifier = Modifier.height(Spacing.medium))
                 Text(
                     text = "$walletCount Dompet Terdaftar",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
+                    color = HeroOnGradient.copy(alpha = 0.9f)
                 )
             }
         }

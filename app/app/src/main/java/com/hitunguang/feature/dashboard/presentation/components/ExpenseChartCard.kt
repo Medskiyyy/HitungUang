@@ -48,16 +48,15 @@ fun ExpenseChartCard(
 ) {
     val totalExpense = expenseCategoriesDistribution.values.sum()
 
-    // Harmonious modern premium palette
     val colors = listOf(
-        Color(0xFF0D9488), // Teal-600
-        Color(0xFF059669), // Emerald-600
-        Color(0xFF3B82F6), // Blue-500
-        Color(0xFFF59E0B), // Amber-500
-        Color(0xFFEF4444), // Red-500
-        Color(0xFF6366F1), // Indigo-500
-        Color(0xFF06B6D4), // Cyan-500
-        Color(0xFF8B5CF6)  // Violet-500
+        Color(0xFF0F766E),
+        Color(0xFF2563EB),
+        Color(0xFFD97706),
+        Color(0xFF7C3AED),
+        Color(0xFFDB2777),
+        Color(0xFF0891B2),
+        Color(0xFF65A30D),
+        Color(0xFF64748B)
     )
 
     Card(
