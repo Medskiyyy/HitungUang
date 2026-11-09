@@ -1,5 +1,6 @@
 package com.hitunguang.feature.account.presentation.components
 
+import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -119,7 +120,7 @@ fun DeleteAccountDialog(
                                                 fontWeight = FontWeight.Bold
                                             )
                                             Text(
-                                                text = "Saldo: Rp ${other.currentBalance}",
+                                                text = "Saldo: ${CurrencyFormatter.format(other.currentBalance)}",
                                                 style = MaterialTheme.typography.bodySmall
                                             )
                                         }

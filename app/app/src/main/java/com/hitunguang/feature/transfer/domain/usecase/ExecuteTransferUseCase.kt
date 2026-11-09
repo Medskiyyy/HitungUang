@@ -1,5 +1,6 @@
 package com.hitunguang.feature.transfer.domain.usecase
 
+import com.hitunguang.core.common.util.CurrencyFormatter
 import com.hitunguang.core.database.dao.AccountDao
 import com.hitunguang.feature.transfer.domain.model.Transfer
 import com.hitunguang.feature.transfer.domain.repository.TransferRepository
@@ -23,7 +24,7 @@ class ExecuteTransferUseCase @Inject constructor(
         val totalDeduction = transfer.amount + transfer.adminFee
         val currentBalance = accountDao.getAccountBalance(transfer.fromAccountId)
         if (currentBalance < totalDeduction) {
-            throw IllegalStateException("Saldo tidak mencukupi. Saldo saat ini: $currentBalance, dibutuhkan: $totalDeduction.")
+            throw IllegalStateException("Saldo tidak mencukupi. Saldo saat ini: ${CurrencyFormatter.format(currentBalance)}, dibutuhkan: ${CurrencyFormatter.format(totalDeduction)}.")
         }
 
         transferRepository.executeTransfer(transfer)

@@ -1,5 +1,6 @@
 package com.hitunguang.feature.transfer.presentation.components
 
+import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -114,12 +115,12 @@ fun TransferDetailDialog(
 
                 // Details list
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DetailRow(label = "Nominal Transfer", value = "Rp ${transfer.amount}")
+                    DetailRow(label = "Nominal Transfer", value = CurrencyFormatter.format(transfer.amount))
                     if (transfer.adminFee > 0L) {
-                        DetailRow(label = "Biaya Admin", value = "Rp ${transfer.adminFee}")
+                        DetailRow(label = "Biaya Admin", value = CurrencyFormatter.format(transfer.adminFee))
                         DetailRow(
                             label = "Total Potongan", 
-                            value = "Rp ${transfer.amount + transfer.adminFee}",
+                            value = CurrencyFormatter.format(transfer.amount + transfer.adminFee),
                             fontWeight = FontWeight.Bold
                         )
                     }

@@ -1,5 +1,6 @@
 package com.hitunguang.feature.onboarding.presentation.components
 
+import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -116,7 +117,7 @@ fun AccountStep(
                                         style = MaterialTheme.typography.titleMedium
                                     )
                                     Text(
-                                        text = "${account.type} • Saldo: Rp ${account.initialBalance}",
+                                        text = "${when (account.type) { "BANK" -> "Bank"; "E_WALLET" -> "E-Wallet"; else -> "Tunai" }} • Saldo: ${CurrencyFormatter.format(account.initialBalance)}",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

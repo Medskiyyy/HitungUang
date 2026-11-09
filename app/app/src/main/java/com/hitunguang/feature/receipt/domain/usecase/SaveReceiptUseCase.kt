@@ -1,5 +1,6 @@
 package com.hitunguang.feature.receipt.domain.usecase
 
+import com.hitunguang.core.common.util.CurrencyFormatter
 import android.net.Uri
 import androidx.room.withTransaction
 import com.hitunguang.core.database.HitungUangDatabase
@@ -36,7 +37,7 @@ class SaveReceiptUseCase @Inject constructor(
         // so a rejected save leaves nothing behind and can simply be retried.
         val currentBalance = accountDao.getAccountBalance(accountId)
         if (currentBalance < total) {
-            throw IllegalStateException("Saldo tidak mencukupi. Saldo saat ini: $currentBalance, dibutuhkan: $total.")
+            throw IllegalStateException("Saldo tidak mencukupi. Saldo saat ini: ${CurrencyFormatter.format(currentBalance)}, dibutuhkan: ${CurrencyFormatter.format(total)}.")
         }
 
         val receiptId = UUID.randomUUID().toString()
@@ -68,7 +69,7 @@ class SaveReceiptUseCase @Inject constructor(
         
         val noteSummary = receiptItems.joinToString("\n") { item ->
             val qtyStr = if (item.quantity != null) "${item.quantity}x " else ""
-            "- ${item.itemName} (${qtyStr}Rp ${item.unitPrice})"
+            "- ${item.itemName} (${qtyStr}${CurrencyFormatter.format(item.unitPrice)})"
         }
         
         val transaction = Transaction(

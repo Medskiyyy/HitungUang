@@ -1,5 +1,6 @@
 package com.hitunguang.feature.transaction.domain.usecase
 
+import com.hitunguang.core.common.util.CurrencyFormatter
 import com.hitunguang.core.balance.BalanceCalculator
 import com.hitunguang.core.database.dao.AccountDao
 import com.hitunguang.feature.transaction.domain.model.Transaction
@@ -28,7 +29,7 @@ class CreateTransactionUseCase @Inject constructor(
         if (balanceDifference < 0) {
             val currentBalance = accountDao.getAccountBalance(transaction.accountId)
             if (currentBalance + balanceDifference < 0) {
-                throw IllegalStateException("Saldo tidak mencukupi. Saldo saat ini: $currentBalance, dibutuhkan: ${-balanceDifference}.")
+                throw IllegalStateException("Saldo tidak mencukupi. Saldo saat ini: ${CurrencyFormatter.format(currentBalance)}, dibutuhkan: ${CurrencyFormatter.format(-balanceDifference)}.")
             }
         }
 

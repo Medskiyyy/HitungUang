@@ -49,7 +49,7 @@ class OcrUiTest {
 
         // Verify content
         composeTestRule.onNodeWithText("Indomaret").assertExists()
-        composeTestRule.onNodeWithText("Total: Rp 49500").assertExists()
+        composeTestRule.onNodeWithText("Total: Rp 49.500").assertExists()
 
         // Test click callback
         composeTestRule.onNodeWithText("Indomaret").performClick()

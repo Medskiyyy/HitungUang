@@ -1,5 +1,6 @@
 package com.hitunguang.feature.receipt.presentation.components
 
+import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -128,12 +129,12 @@ fun ReceiptDetailDialog(
                                     ) {
                                         val qtyStr = if (item.quantity != null) "${item.quantity}x " else ""
                                         Text(
-                                            text = "${item.itemName} (${qtyStr}Rp ${item.unitPrice})",
+                                            text = "${item.itemName} (${qtyStr}${CurrencyFormatter.format(item.unitPrice)})",
                                             style = MaterialTheme.typography.bodySmall,
                                             modifier = Modifier.weight(1f)
                                         )
                                         Text(
-                                            text = "Rp ${item.subtotal}",
+                                            text = CurrencyFormatter.format(item.subtotal),
                                             style = MaterialTheme.typography.bodySmall,
                                             fontWeight = FontWeight.Bold
                                         )
@@ -155,7 +156,7 @@ fun ReceiptDetailDialog(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text("Subtotal", style = MaterialTheme.typography.bodyMedium)
-                                Text("Rp $it", style = MaterialTheme.typography.bodyMedium)
+                                Text(CurrencyFormatter.format(it), style = MaterialTheme.typography.bodyMedium)
                             }
                         }
                         receipt.tax?.let {
@@ -164,7 +165,7 @@ fun ReceiptDetailDialog(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text("Pajak", style = MaterialTheme.typography.bodyMedium)
-                                Text("Rp $it", style = MaterialTheme.typography.bodyMedium)
+                                Text(CurrencyFormatter.format(it), style = MaterialTheme.typography.bodyMedium)
                             }
                         }
                         Row(
@@ -172,7 +173,7 @@ fun ReceiptDetailDialog(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("Total", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text("Rp ${receipt.total}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(CurrencyFormatter.format(receipt.total), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }

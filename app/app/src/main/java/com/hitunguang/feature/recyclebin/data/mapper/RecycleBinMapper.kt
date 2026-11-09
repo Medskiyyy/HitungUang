@@ -1,5 +1,6 @@
 package com.hitunguang.feature.recyclebin.data.mapper
 
+import com.hitunguang.core.common.util.CurrencyFormatter
 import com.hitunguang.core.database.entity.DeletedItemWithDetailsEntity
 import com.hitunguang.feature.recyclebin.domain.model.RecycleBinItem
 import com.hitunguang.feature.transaction.domain.model.TransactionWithDetails
@@ -47,7 +48,7 @@ object RecycleBinMapper {
                 } ?: true
                 isExpense = isTxExpense
                 val amount = entity.transaction?.amount ?: 0L
-                amountText = "${if (isTxExpense) "-" else "+"} Rp $amount"
+                amountText = "${if (isTxExpense) "-" else "+"}${CurrencyFormatter.format(amount)}"
             }
             "CATEGORY" -> {
                 title = entity.category?.name ?: "Kategori Terhapus"
@@ -70,7 +71,7 @@ object RecycleBinMapper {
                 }
                 subtitle = "Dompet/Akun • $walletType"
                 val balance = entity.account?.currentBalance ?: 0L
-                amountText = "Rp $balance"
+                amountText = CurrencyFormatter.format(balance)
                 isExpense = false
             }
             "BUDGET" -> {
@@ -82,7 +83,7 @@ object RecycleBinMapper {
                 }
                 subtitle = "Anggaran • $budgetType"
                 val amount = entity.budget?.amount ?: 0L
-                amountText = "Rp $amount"
+                amountText = CurrencyFormatter.format(amount)
                 isExpense = true
             }
             else -> {

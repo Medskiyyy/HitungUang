@@ -1,5 +1,6 @@
 package com.hitunguang.feature.transfer.presentation.components
 
+import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -94,7 +95,7 @@ fun TransferDialog(
                         ) {
                             accounts.forEach { acc ->
                                 DropdownMenuItem(
-                                    text = { Text("${acc.name} (Saldo: Rp ${acc.currentBalance})") },
+                                    text = { Text("${acc.name} (Saldo: ${CurrencyFormatter.format(acc.currentBalance)})") },
                                     onClick = {
                                         viewModel.onFromAccountSelected(acc)
                                         fromAccountExpanded = false
@@ -123,7 +124,7 @@ fun TransferDialog(
                         ) {
                             accounts.forEach { acc ->
                                 DropdownMenuItem(
-                                    text = { Text("${acc.name} (Saldo: Rp ${acc.currentBalance})") },
+                                    text = { Text("${acc.name} (Saldo: ${CurrencyFormatter.format(acc.currentBalance)})") },
                                     onClick = {
                                         viewModel.onToAccountSelected(acc)
                                         toAccountExpanded = false

@@ -1,5 +1,6 @@
 package com.hitunguang.feature.receipt.presentation
 
+import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -198,7 +199,7 @@ fun ReceiptCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Total: Rp ${receipt.total}",
+                    text = "Total: ${CurrencyFormatter.format(receipt.total)}",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary

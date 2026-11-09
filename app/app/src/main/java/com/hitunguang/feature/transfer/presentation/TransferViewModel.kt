@@ -1,5 +1,6 @@
 package com.hitunguang.feature.transfer.presentation
 
+import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hitunguang.feature.account.domain.model.Account
@@ -95,7 +96,7 @@ class TransferViewModel @Inject constructor(
             return
         }
         if (fromAcc.currentBalance < (amountVal + feeVal)) {
-            _uiState.update { it.copy(error = "Saldo tidak mencukupi. Saldo saat ini: Rp ${fromAcc.currentBalance}, dibutuhkan: Rp ${amountVal + feeVal}.") }
+            _uiState.update { it.copy(error = "Saldo tidak mencukupi. Saldo saat ini: ${CurrencyFormatter.format(fromAcc.currentBalance)}, dibutuhkan: ${CurrencyFormatter.format(amountVal + feeVal)}.") }
             return
         }
 

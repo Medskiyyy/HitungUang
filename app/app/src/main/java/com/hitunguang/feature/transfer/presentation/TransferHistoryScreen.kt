@@ -1,5 +1,6 @@
 package com.hitunguang.feature.transfer.presentation
 
+import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -202,7 +203,7 @@ fun TransferHistoryItemCard(
                     )
                 }
                 Text(
-                    text = "Rp ${item.transfer.amount}",
+                    text = CurrencyFormatter.format(item.transfer.amount),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -211,7 +212,7 @@ fun TransferHistoryItemCard(
             if (item.transfer.adminFee > 0L) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Biaya Admin: Rp ${item.transfer.adminFee}",
+                    text = "Biaya admin: ${CurrencyFormatter.format(item.transfer.adminFee)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )

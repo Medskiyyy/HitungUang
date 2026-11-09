@@ -1,5 +1,6 @@
 package com.hitunguang.feature.transaction.presentation.components
 
+import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -53,7 +54,7 @@ fun TransactionDetailDialog(
                 Column {
                     Text("Nominal", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
-                        text = "${if (isExpense) "-" else "+"} Rp ${transaction.amount}",
+                        text = "${if (isExpense) "-" else "+"}${CurrencyFormatter.format(transaction.amount)}",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = if (isExpense) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
