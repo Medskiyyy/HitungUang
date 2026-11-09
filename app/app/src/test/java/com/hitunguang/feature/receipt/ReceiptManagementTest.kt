@@ -267,6 +267,12 @@ class ReceiptManagementTest {
             items = listOf(ParsedItemInput("Barang Baru", 1.0, 5000L, 5000L))
         )
 
+        // Retention counts from when the receipt was scanned, not its printed date.
+        db.openHelper.writableDatabase.execSQL(
+            "UPDATE receipts SET created_at = ? WHERE merchant_name = ?",
+            arrayOf<Any>(expiredDate, "Old Merchant")
+        )
+
         // Total of 2 receipts
         var receipts = receiptRepository.getAllReceipts().first()
         assertEquals(2, receipts.size)
@@ -287,6 +293,38 @@ class ReceiptManagementTest {
         assertNotNull(freshTx)
         assertEquals(10000L, oldTx?.amount)
         assertEquals(5000L, freshTx?.amount)
+    }
+
+    @Test
+    fun testAutoDeleteKeepsFreshScanWithOldPrintedDate() = runBlocking {
+        settingsDataStore.saveAppSettings(
+            AppSettings(
+                id = "default",
+                themeMode = "DARK",
+                hideBalance = false,
+                receiptAutoDeleteDays = 30,
+                dashboardPeriod = "MONTHLY",
+                createdAt = System.currentTimeMillis(),
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+
+        saveReceiptUseCase(
+            tempImageUri = createDummyImageUri(),
+            merchantName = "Old Print",
+            receiptDate = System.currentTimeMillis() - 40L * 24 * 60 * 60 * 1000L,
+            subtotal = 10000L,
+            tax = 0L,
+            total = 10000L,
+            ocrRawText = "Old",
+            accountId = "acc-1",
+            categoryId = "cat-1",
+            items = listOf(ParsedItemInput("Barang", 1.0, 10000L, 10000L))
+        )
+
+        autoDeleteReceiptsUseCase()
+
+        assertEquals(1, receiptRepository.getAllReceipts().first().size)
     }
 
     @Test
