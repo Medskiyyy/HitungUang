@@ -20,8 +20,9 @@ class AutoDeleteReceiptsUseCase @Inject constructor(
         
         val allReceipts = receiptRepository.getAllReceipts().firstOrNull() ?: return
         for (receipt in allReceipts) {
-            val dateToCheck = receipt.receiptDate ?: receipt.createdAt
-            if (dateToCheck < thresholdMillis) {
+            // Retention counts from the scan, not the printed date: an old receipt scanned
+            // today must not be deleted right away.
+            if (receipt.createdAt < thresholdMillis) {
                 // Auto delete receipt photo and DB entry to save space
                 receiptRepository.deleteReceipt(receipt)
             }

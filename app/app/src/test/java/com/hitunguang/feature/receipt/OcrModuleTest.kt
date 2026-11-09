@@ -2,6 +2,7 @@ package com.hitunguang.feature.receipt
 
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
+import com.hitunguang.core.filemanager.ReceiptFileManager
 import com.hitunguang.core.ocr.OcrManager
 import com.hitunguang.core.ocr.OcrResult
 import com.hitunguang.feature.receipt.domain.usecase.ScanReceiptUseCase
@@ -32,7 +33,7 @@ class OcrModuleTest {
         Dispatchers.setMain(testDispatcher)
         fakeOcrManager = FakeOcrManager()
         scanReceiptUseCase = ScanReceiptUseCase(fakeOcrManager)
-        viewModel = ReceiptScannerViewModel(scanReceiptUseCase)
+        viewModel = ReceiptScannerViewModel(scanReceiptUseCase, ReceiptFileManager(ApplicationProvider.getApplicationContext()))
     }
 
     @After

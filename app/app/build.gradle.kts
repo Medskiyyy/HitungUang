@@ -133,6 +133,9 @@ dependencies {
 
   // ML Kit Text Recognition
   implementation(libs.mlkit.text.recognition)
+
+  // EXIF orientation for receipt / attachment photos
+  implementation(libs.androidx.exifinterface)
 }
 
 tasks.register("printPlugins") {

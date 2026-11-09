@@ -2,7 +2,6 @@ package com.hitunguang.core.filemanager
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +28,7 @@ class AttachmentFileManager @Inject constructor(
         val uniqueName = "${UUID.randomUUID()}.jpg"
         val outputFile = File(attachmentsDir, uniqueName)
 
-        val decodedBitmap = decodeSampledBitmapFromUri(sourceUri, 1280, 1280)
+        val decodedBitmap = BitmapDecoder.decodeUpright(context, sourceUri)
         val finalBitmap = resizeBitmapIfNeeded(decodedBitmap, 1280)
 
         FileOutputStream(outputFile).use { outputStream ->
@@ -40,38 +39,6 @@ class AttachmentFileManager @Inject constructor(
         deleteTempFileIfNeeded(sourceUri)
 
         outputFile
-    }
-
-    private fun decodeSampledBitmapFromUri(uri: Uri, reqWidth: Int, reqHeight: Int): Bitmap {
-        val options = BitmapFactory.Options().apply {
-            inJustDecodeBounds = true
-        }
-        context.contentResolver.openInputStream(uri).use { inputStream ->
-            BitmapFactory.decodeStream(inputStream, null, options)
-        }
-
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
-        options.inJustDecodeBounds = false
-        
-        return context.contentResolver.openInputStream(uri).use { inputStream ->
-            BitmapFactory.decodeStream(inputStream, null, options)
-        } ?: throw IllegalArgumentException("Could not decode image from URI")
-    }
-
-    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
-        val height = options.outHeight
-        val width = options.outWidth
-        var inSampleSize = 1
-
-        if (height > reqHeight || width > reqWidth) {
-            val halfHeight = height / 2
-            val halfWidth = width / 2
-
-            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
-                inSampleSize *= 2
-            }
-        }
-        return inSampleSize
     }
 
     private fun resizeBitmapIfNeeded(bitmap: Bitmap, maxDimension: Int): Bitmap {

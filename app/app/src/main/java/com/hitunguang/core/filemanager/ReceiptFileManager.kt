@@ -2,7 +2,6 @@ package com.hitunguang.core.filemanager
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +28,7 @@ class ReceiptFileManager @Inject constructor(
         val uniqueName = "${UUID.randomUUID()}.jpg"
         val outputFile = File(receiptsDir, uniqueName)
 
-        val decodedBitmap = decodeSampledBitmapFromUri(sourceUri, 1280, 1280)
+        val decodedBitmap = BitmapDecoder.decodeUpright(context, sourceUri)
         val finalBitmap = resizeBitmapIfNeeded(decodedBitmap, 1280)
 
         FileOutputStream(outputFile).use { outputStream ->
@@ -37,41 +36,34 @@ class ReceiptFileManager @Inject constructor(
         }
         finalBitmap.recycle()
 
-        deleteTempFileIfNeeded(sourceUri)
-
         outputFile
     }
 
-    private fun decodeSampledBitmapFromUri(uri: Uri, reqWidth: Int, reqHeight: Int): Bitmap {
-        val options = BitmapFactory.Options().apply {
-            inJustDecodeBounds = true
+    /**
+     * Copies a picked image into the cache. Photo-picker URIs are only readable for a
+     * limited time, while the review screen may save the receipt much later.
+     */
+    suspend fun copyToCache(sourceUri: Uri): Uri = withContext(Dispatchers.IO) {
+        val file = File.createTempFile(PICKED_PHOTO_PREFIX, ".jpg", context.cacheDir)
+        try {
+            val input = context.contentResolver.openInputStream(sourceUri)
+                ?: throw IllegalArgumentException("Could not open picked image")
+            input.use { inputStream ->
+                FileOutputStream(file).use { inputStream.copyTo(it) }
+            }
+        } catch (e: Exception) {
+            file.delete()
+            throw e
         }
-        context.contentResolver.openInputStream(uri).use { inputStream ->
-            BitmapFactory.decodeStream(inputStream, null, options)
-        }
-
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
-        options.inJustDecodeBounds = false
-        
-        return context.contentResolver.openInputStream(uri).use { inputStream ->
-            BitmapFactory.decodeStream(inputStream, null, options)
-        } ?: throw IllegalArgumentException("Could not decode receipt image from URI")
+        Uri.fromFile(file)
     }
 
-    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
-        val height = options.outHeight
-        val width = options.outWidth
-        var inSampleSize = 1
-
-        if (height > reqHeight || width > reqWidth) {
-            val halfHeight = height / 2
-            val halfWidth = width / 2
-
-            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
-                inSampleSize *= 2
-            }
-        }
-        return inSampleSize
+    /** Deletes camera / picked temp files left behind for more than a day. */
+    suspend fun deleteStaleTempFiles() = withContext(Dispatchers.IO) {
+        val threshold = System.currentTimeMillis() - STALE_TEMP_FILE_AGE_MILLIS
+        context.cacheDir.listFiles()
+            ?.filter { isTempPhotoName(it.name) && it.lastModified() < threshold }
+            ?.forEach { it.delete() }
     }
 
     private fun resizeBitmapIfNeeded(bitmap: Bitmap, maxDimension: Int): Bitmap {
@@ -93,18 +85,19 @@ class ReceiptFileManager @Inject constructor(
         return scaledBitmap
     }
 
-    private fun deleteTempFileIfNeeded(sourceUri: Uri) {
+    /** Deletes [sourceUri] when it points at one of this app's camera / picked temp files. */
+    fun deleteTempFileIfNeeded(sourceUri: Uri) {
         try {
             if (sourceUri.scheme == "file") {
                 val file = sourceUri.path?.let { File(it) }
                 if (file != null && file.exists() && file.parentFile?.absolutePath == context.cacheDir.absolutePath) {
-                    if (file.name.startsWith("camera_photo_")) {
+                    if (isTempPhotoName(file.name)) {
                         file.delete()
                     }
                 }
             } else if (sourceUri.scheme == "content" && sourceUri.authority == "com.hitunguang.fileprovider") {
                 val fileName = sourceUri.lastPathSegment
-                if (fileName != null && fileName.startsWith("camera_photo_")) {
+                if (fileName != null && isTempPhotoName(fileName)) {
                     val fileInCache = File(context.cacheDir, fileName)
                     if (fileInCache.exists()) {
                         fileInCache.delete()
@@ -116,6 +109,9 @@ class ReceiptFileManager @Inject constructor(
         }
     }
 
+    private fun isTempPhotoName(name: String): Boolean =
+        name.startsWith(CAMERA_PHOTO_PREFIX) || name.startsWith(PICKED_PHOTO_PREFIX)
+
     suspend fun deleteFile(filePath: String): Boolean = withContext(Dispatchers.IO) {
         val file = File(filePath)
         if (file.exists()) {
@@ -123,5 +119,11 @@ class ReceiptFileManager @Inject constructor(
         } else {
             false
         }
+    }
+
+    private companion object {
+        const val CAMERA_PHOTO_PREFIX = "camera_photo_"
+        const val PICKED_PHOTO_PREFIX = "picked_photo_"
+        const val STALE_TEMP_FILE_AGE_MILLIS = 24 * 60 * 60 * 1000L
     }
 }

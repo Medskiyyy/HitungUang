@@ -248,4 +248,101 @@ class ReceiptParserTest {
         assertNull(result.items[0].quantity)
         assertEquals(5000L, result.items[0].subtotal)
     }
+
+    private fun parseLines(vararg lines: String) = parseReceiptUseCase(lines.joinToString("\n"))
+
+    @Test
+    fun `bayar is payment not total`() {
+        val result = parseLines("TOTAL 47.500", "BAYAR 50.000", "KEMBALI 2.500")
+        assertEquals(47500L, result.total)
+    }
+
+    @Test
+    fun `later total prefixed item count line is not the total`() {
+        val result = parseLines("TOTAL BELANJA 25.000", "TUNAI 50.000", "KEMBALIAN 25.000", "TOTAL ITEM 2")
+        assertEquals(25000L, result.total)
+    }
+
+    @Test
+    fun `total diskon line is not the total`() {
+        val result = parseLines("TOTAL 13.000", "TOTAL DISKON 2.000")
+        assertEquals(13000L, result.total)
+    }
+
+    @Test
+    fun `second separator does not wipe items`() {
+        val result = parseLines(
+            "INDOMARET", "JL RAYA 1", "----",
+            "INDOMIE GRG 2 3.500 7.000", "AQUA 600ML 1 4.000 4.000",
+            "----", "HARGA JUAL : 11.000", "TOTAL : 11.000"
+        )
+        assertEquals(11000L, result.total)
+        assertEquals(2, result.items.size)
+        assertEquals("INDOMIE GRG", result.items[0].name)
+        assertEquals(2.0, result.items[0].quantity ?: 0.0, 0.0)
+        assertEquals(3500L, result.items[0].unitPrice)
+        assertEquals(7000L, result.items[0].subtotal)
+        assertEquals("AQUA 600ML", result.items[1].name)
+        assertEquals(1.0, result.items[1].quantity ?: 0.0, 0.0)
+        assertEquals(4000L, result.items[1].unitPrice)
+        assertEquals(4000L, result.items[1].subtotal)
+    }
+
+    @Test
+    fun `jumlah item after second separator is not an item`() {
+        val result = parseLines("----", "KOPI 10.000", "TEH 5.000", "----", "JUMLAH ITEM 2", "TOTAL 15.000")
+        assertEquals(15000L, result.total)
+        assertEquals(2, result.items.size)
+    }
+
+    @Test
+    fun `phone number never becomes total or item`() {
+        val result = parseLines("WARUNG BU SITI", "HP 081234567890", "Nasi Rames 15.000", "Es Teh 5.000")
+        assertEquals(20000L, result.total)
+        assertEquals(2, result.items.size)
+        assertEquals("Nasi Rames", result.items[0].name)
+        assertEquals(15000L, result.items[0].subtotal)
+        assertEquals("Es Teh", result.items[1].name)
+        assertEquals(5000L, result.items[1].subtotal)
+        assertTrue(result.items.none { it.name.contains("HP") })
+    }
+
+    @Test
+    fun `without total line subtotal wins over tunai`() {
+        val result = parseLines("SUBTOTAL 47.500", "TUNAI 50.000", "KEMBALI 2.500")
+        assertEquals(47500L, result.total)
+    }
+
+    @Test
+    fun `space separated thousands are joined`() {
+        val result = parseLines("KOPI 25 000", "TOTAL 25 000")
+        assertEquals(25000L, result.total)
+        assertEquals(1, result.items.size)
+        assertEquals("KOPI", result.items[0].name)
+        assertEquals(25000L, result.items[0].subtotal)
+    }
+
+    @Test
+    fun `one digit comma decimal is dropped`() {
+        val result = parseLines("TOTAL 10.000,5")
+        assertEquals(10000L, result.total)
+    }
+
+    @Test
+    fun `two line item joins name with quantity line`() {
+        val result = parseLines("INDOMIE GORENG", "2 x 3.500 7.000", "TOTAL 7.000")
+        assertEquals(1, result.items.size)
+        assertEquals("INDOMIE GORENG", result.items[0].name)
+        assertEquals(2.0, result.items[0].quantity ?: 0.0, 0.0)
+        assertEquals(3500L, result.items[0].unitPrice)
+        assertEquals(7000L, result.items[0].subtotal)
+    }
+
+    @Test
+    fun `header lines are not items when no body delimiter exists`() {
+        val result = parseLines("TOKO MAJU", "Kasir: Budi 01", "No Trx 123456", "TRX 778899", "SABUN 5.000", "TOTAL 5.000")
+        assertEquals(1, result.items.size)
+        assertEquals("SABUN", result.items[0].name)
+        assertEquals(5000L, result.items[0].subtotal)
+    }
 }

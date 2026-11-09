@@ -81,7 +81,7 @@ class ReceiptManagementTest {
         createTransactionUseCase = CreateTransactionUseCase(transactionRepository, db.accountDao(), checkBudgetThresholdUseCase)
         deleteTransactionUseCase = DeleteTransactionUseCase(transactionRepository)
         
-        saveReceiptUseCase = SaveReceiptUseCase(receiptRepository, fileManager, createTransactionUseCase)
+        saveReceiptUseCase = SaveReceiptUseCase(receiptRepository, fileManager, createTransactionUseCase, db.accountDao(), db)
         deleteReceiptUseCase = DeleteReceiptUseCase(receiptRepository, transactionRepository, deleteTransactionUseCase)
         autoDeleteReceiptsUseCase = AutoDeleteReceiptsUseCase(receiptRepository, settingsDataStore)
 
@@ -267,6 +267,12 @@ class ReceiptManagementTest {
             items = listOf(ParsedItemInput("Barang Baru", 1.0, 5000L, 5000L))
         )
 
+        // Retention counts from when the receipt was scanned, not its printed date.
+        db.openHelper.writableDatabase.execSQL(
+            "UPDATE receipts SET created_at = ? WHERE merchant_name = ?",
+            arrayOf<Any>(expiredDate, "Old Merchant")
+        )
+
         // Total of 2 receipts
         var receipts = receiptRepository.getAllReceipts().first()
         assertEquals(2, receipts.size)
@@ -287,5 +293,69 @@ class ReceiptManagementTest {
         assertNotNull(freshTx)
         assertEquals(10000L, oldTx?.amount)
         assertEquals(5000L, freshTx?.amount)
+    }
+
+    @Test
+    fun testAutoDeleteKeepsFreshScanWithOldPrintedDate() = runBlocking {
+        settingsDataStore.saveAppSettings(
+            AppSettings(
+                id = "default",
+                themeMode = "DARK",
+                hideBalance = false,
+                receiptAutoDeleteDays = 30,
+                dashboardPeriod = "MONTHLY",
+                createdAt = System.currentTimeMillis(),
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+
+        saveReceiptUseCase(
+            tempImageUri = createDummyImageUri(),
+            merchantName = "Old Print",
+            receiptDate = System.currentTimeMillis() - 40L * 24 * 60 * 60 * 1000L,
+            subtotal = 10000L,
+            tax = 0L,
+            total = 10000L,
+            ocrRawText = "Old",
+            accountId = "acc-1",
+            categoryId = "cat-1",
+            items = listOf(ParsedItemInput("Barang", 1.0, 10000L, 10000L))
+        )
+
+        autoDeleteReceiptsUseCase()
+
+        assertEquals(1, receiptRepository.getAllReceipts().first().size)
+    }
+
+    @Test
+    fun testFailedSaveLeavesNoReceiptOrImage() = runBlocking<Unit> {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val tempFile = File(context.cacheDir, "camera_photo_test.jpg")
+        Bitmap.createBitmap(50, 50, Bitmap.Config.ARGB_8888).let { bitmap ->
+            FileOutputStream(tempFile).use { bitmap.compress(Bitmap.CompressFormat.JPEG, 80, it) }
+        }
+
+        // Balance is 100.000, so a 150.000 expense must be rejected.
+        val result = runCatching {
+            saveReceiptUseCase(
+                tempImageUri = Uri.fromFile(tempFile),
+                merchantName = "Toko Mahal",
+                receiptDate = System.currentTimeMillis(),
+                subtotal = 150000L,
+                tax = 0L,
+                total = 150000L,
+                ocrRawText = "Mahal",
+                accountId = "acc-1",
+                categoryId = "cat-1",
+                items = listOf(ParsedItemInput("Barang", 1.0, 150000L, 150000L))
+            )
+        }
+
+        assertTrue(result.isFailure)
+        assertTrue(receiptRepository.getAllReceipts().first().isEmpty())
+        assertTrue(fileManager.receiptsDir.listFiles().isNullOrEmpty())
+        // The photo is kept so the user can fix the amount and retry.
+        assertTrue(tempFile.exists())
+        tempFile.delete()
     }
 }

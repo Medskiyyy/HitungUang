@@ -3,8 +3,10 @@ package com.hitunguang.feature.receipt.presentation
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hitunguang.core.filemanager.ReceiptFileManager
 import com.hitunguang.feature.receipt.domain.usecase.ScanReceiptUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ReceiptScannerViewModel @Inject constructor(
-    private val scanReceiptUseCase: ScanReceiptUseCase
+    private val scanReceiptUseCase: ScanReceiptUseCase,
+    private val receiptFileManager: ReceiptFileManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ReceiptScannerUiState())
@@ -30,6 +33,35 @@ class ReceiptScannerViewModel @Inject constructor(
         }
     }
 
+    /** Photo-picker URIs expire, so the picked image is copied into the cache first. */
+    fun setPickedImageUri(uri: Uri) {
+        viewModelScope.launch {
+            try {
+                setImageUri(receiptFileManager.copyToCache(uri))
+            } catch (e: Exception) {
+                setErrorMessage("Gagal membaca foto dari galeri")
+            }
+        }
+    }
+
+    fun discardTempPhoto(uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) { receiptFileManager.deleteTempFileIfNeeded(uri) }
+    }
+
+    fun deleteStaleTempFiles() {
+        viewModelScope.launch { receiptFileManager.deleteStaleTempFiles() }
+    }
+
+    fun acceptLowQuality() {
+        _uiState.update { it.copy(isLowQualityAccepted = true) }
+    }
+
+    /** Clears the scan and deletes its temp photo; use [clearAll] once the photo was handed on. */
+    fun reset() {
+        _uiState.value.imageUri?.let { discardTempPhoto(it) }
+        clearAll()
+    }
+
     fun setErrorMessage(message: String) {
         _uiState.update {
             it.copy(errorMessage = message)
@@ -39,7 +71,13 @@ class ReceiptScannerViewModel @Inject constructor(
     fun startScan() {
         val uri = _uiState.value.imageUri ?: return
         _uiState.update {
-            it.copy(isScanning = true, errorMessage = null, rawText = null, scanQuality = ScanQuality.UNKNOWN)
+            it.copy(
+                isScanning = true,
+                errorMessage = null,
+                rawText = null,
+                scanQuality = ScanQuality.UNKNOWN,
+                isLowQualityAccepted = false
+            )
         }
 
         viewModelScope.launch {

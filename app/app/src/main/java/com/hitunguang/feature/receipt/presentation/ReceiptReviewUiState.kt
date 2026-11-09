@@ -13,6 +13,8 @@ data class ReceiptReviewUiState(
     val taxStr: String = "0",
     val subtotal: Long = 0L,
     val totalStr: String = "0",
+    /** True once the total comes from the receipt or the user typed it; edits then leave it alone. */
+    val isTotalPinned: Boolean = false,
     val isSaving: Boolean = false,
     val errorMessage: String? = null,
     val isSaved: Boolean = false,

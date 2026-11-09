@@ -33,6 +33,7 @@ class ReceiptReviewViewModel @Inject constructor(
     val categories: StateFlow<List<Category>> = _categories.asStateFlow()
 
     private var ocrRawText: String? = null
+    private var initializedFor: Pair<Uri, String>? = null
 
     init {
         viewModelScope.launch {
@@ -95,6 +96,9 @@ class ReceiptReviewViewModel @Inject constructor(
     }
 
     fun initializeWithOcr(imageUri: Uri, rawText: String) {
+        val key = imageUri to rawText
+        if (initializedFor == key) return
+        initializedFor = key
         ocrRawText = rawText
         val parsed = parseReceiptUseCase(rawText)
         
@@ -113,14 +117,15 @@ class ReceiptReviewViewModel @Inject constructor(
         // misread item line must never inflate the total the user is about to save.
         val subtotalVal = parsed.subtotal?.takeIf { it > 0L } ?: itemsSum
         val totalVal = if (parsed.total > 0L) parsed.total else subtotalVal + taxVal
-        val isAmountMismatch = parsed.total > 0L && itemsSum > 0L &&
-            Math.abs(parsed.total - (itemsSum + taxVal)) > AMOUNT_TOLERANCE
+        val isTotalPinned = parsed.total > 0L
 
         val suggestedAcc = getSuggestedAccount(rawText, _accounts.value)
         val suggestedCat = getSuggestedCategory(rawText, _categories.value)
 
-        _uiState.update {
-            it.copy(
+        val previous = _uiState.value
+        _uiState.value = ReceiptReviewUiState(
+                accountId = previous.accountId,
+                categoryId = previous.categoryId,
                 imageUri = imageUri,
                 merchantName = parsed.merchantName ?: "",
                 receiptDate = parsed.date ?: System.currentTimeMillis(),
@@ -131,12 +136,28 @@ class ReceiptReviewViewModel @Inject constructor(
                 isMerchantConfident = !parsed.merchantName.isNullOrBlank(),
                 isDateConfident = parsed.date != null,
                 isItemsConfident = parsedItems.isNotEmpty(),
-                isAmountMismatch = isAmountMismatch,
+                isTotalPinned = isTotalPinned,
+                isAmountMismatch = computeMismatch(itemsSum, taxVal, totalVal),
                 suggestedAccountId = suggestedAcc?.id,
                 suggestedCategoryId = suggestedCat?.id
-            )
-        }
+        )
     }
+
+    private fun recalculate(state: ReceiptReviewUiState, items: List<ParsedItemInput>, taxStr: String): ReceiptReviewUiState {
+        val itemsSum = items.sumOf { it.subtotal }
+        val tax = parseAmount(taxStr)
+        val total = if (state.isTotalPinned) parseAmount(state.totalStr) else itemsSum + tax
+        return state.copy(
+            items = items,
+            taxStr = taxStr,
+            subtotal = itemsSum,
+            totalStr = total.toString(),
+            isAmountMismatch = computeMismatch(itemsSum, tax, total)
+        )
+    }
+
+    private fun computeMismatch(itemsSum: Long, tax: Long, total: Long): Boolean =
+        total > 0L && itemsSum > 0L && Math.abs(total - (itemsSum + tax)) > AMOUNT_TOLERANCE
 
     fun updateMerchantName(name: String) {
         _uiState.update { it.copy(merchantName = name) }
@@ -155,13 +176,17 @@ class ReceiptReviewViewModel @Inject constructor(
     }
 
     fun updateTax(tax: String) {
-        val parsedTax = tax.toLongOrNull() ?: 0L
-        val taxVal = if (parsedTax < 0) 0L else parsedTax
-        _uiState.update {
-            val sub = it.subtotal
-            it.copy(
-                taxStr = tax,
-                totalStr = (sub + taxVal).toString()
+        val digits = tax.filter { it.isDigit() }.trimStart('0').ifEmpty { "0" }
+        _uiState.update { recalculate(it, it.items, digits) }
+    }
+
+    fun updateTotal(total: String) {
+        val amount = parseAmount(total)
+        _uiState.update { state ->
+            state.copy(
+                totalStr = amount.toString(),
+                isTotalPinned = true,
+                isAmountMismatch = computeMismatch(state.subtotal, parseAmount(state.taxStr), amount)
             )
         }
     }
@@ -186,18 +211,12 @@ class ReceiptReviewViewModel @Inject constructor(
                 val newSubtotal = if (qty != null) (qty * old.unitPrice).toLong() else old.subtotal
                 updatedItems[index] = old.copy(quantity = qty, subtotal = newSubtotal)
             }
-            val newSubtotalSum = updatedItems.sumOf { it.subtotal }
-            val taxVal = state.taxStr.toLongOrNull() ?: 0L
-            state.copy(
-                items = updatedItems,
-                subtotal = newSubtotalSum,
-                totalStr = (newSubtotalSum + taxVal).toString()
-            )
+            recalculate(state, updatedItems, state.taxStr)
         }
     }
 
     fun updateItemUnitPrice(index: Int, priceStr: String) {
-        val price = priceStr.toLongOrNull() ?: 0L
+        val price = parseAmount(priceStr)
         _uiState.update { state ->
             val updatedItems = state.items.toMutableList()
             if (index in updatedItems.indices) {
@@ -206,13 +225,7 @@ class ReceiptReviewViewModel @Inject constructor(
                 val newSubtotal = (qty * price).toLong()
                 updatedItems[index] = old.copy(unitPrice = price, subtotal = newSubtotal)
             }
-            val newSubtotalSum = updatedItems.sumOf { it.subtotal }
-            val taxVal = state.taxStr.toLongOrNull() ?: 0L
-            state.copy(
-                items = updatedItems,
-                subtotal = newSubtotalSum,
-                totalStr = (newSubtotalSum + taxVal).toString()
-            )
+            recalculate(state, updatedItems, state.taxStr)
         }
     }
 
@@ -230,13 +243,7 @@ class ReceiptReviewViewModel @Inject constructor(
             if (index in updatedItems.indices) {
                 updatedItems.removeAt(index)
             }
-            val newSubtotalSum = updatedItems.sumOf { it.subtotal }
-            val taxVal = state.taxStr.toLongOrNull() ?: 0L
-            state.copy(
-                items = updatedItems,
-                subtotal = newSubtotalSum,
-                totalStr = (newSubtotalSum + taxVal).toString()
-            )
+            recalculate(state, updatedItems, state.taxStr)
         }
     }
 
@@ -251,7 +258,7 @@ class ReceiptReviewViewModel @Inject constructor(
             _uiState.update { it.copy(errorMessage = "Harus memilih dompet") }
             return
         }
-        val total = state.totalStr.toLongOrNull() ?: 0L
+        val total = parseAmount(state.totalStr)
         if (total <= 0) {
             _uiState.update { it.copy(errorMessage = "Total belanja harus lebih dari 0") }
             return
@@ -277,7 +284,7 @@ class ReceiptReviewViewModel @Inject constructor(
                     merchantName = state.merchantName,
                     receiptDate = state.receiptDate,
                     subtotal = state.subtotal,
-                    tax = state.taxStr.toLongOrNull() ?: 0L,
+                    tax = parseAmount(state.taxStr),
                     total = total,
                     ocrRawText = ocrRawText,
                     accountId = state.accountId,
@@ -297,6 +304,8 @@ class ReceiptReviewViewModel @Inject constructor(
     }
 
     private companion object {
+        fun parseAmount(input: String): Long = input.filter { it.isDigit() }.toLongOrNull() ?: 0L
+
         /** Rounding differences below this are normal on Indonesian receipts. */
         const val AMOUNT_TOLERANCE = 100L
     }
