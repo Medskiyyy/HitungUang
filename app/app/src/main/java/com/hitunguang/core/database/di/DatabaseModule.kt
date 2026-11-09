@@ -8,6 +8,7 @@ import com.hitunguang.core.database.dao.AttachmentDao
 import com.hitunguang.core.database.dao.BudgetDao
 import com.hitunguang.core.database.dao.CategoryDao
 import com.hitunguang.core.database.dao.ReceiptDao
+import com.hitunguang.core.database.dao.RecurringTransactionDao
 import com.hitunguang.core.database.dao.RecycleBinDao
 import com.hitunguang.core.database.dao.SettingsDao
 import com.hitunguang.core.database.dao.TransactionDao
@@ -116,4 +117,7 @@ object DatabaseModule {
 
     @Provides
     fun provideAttachmentDao(database: HitungUangDatabase): AttachmentDao = database.attachmentDao()
+
+    @Provides
+    fun provideRecurringTransactionDao(database: HitungUangDatabase): RecurringTransactionDao = database.recurringTransactionDao()
 }

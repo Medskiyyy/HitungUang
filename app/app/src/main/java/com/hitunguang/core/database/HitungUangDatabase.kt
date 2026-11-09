@@ -7,6 +7,7 @@ import com.hitunguang.core.database.dao.AttachmentDao
 import com.hitunguang.core.database.dao.BudgetDao
 import com.hitunguang.core.database.dao.CategoryDao
 import com.hitunguang.core.database.dao.ReceiptDao
+import com.hitunguang.core.database.dao.RecurringTransactionDao
 import com.hitunguang.core.database.dao.RecycleBinDao
 import com.hitunguang.core.database.dao.SettingsDao
 import com.hitunguang.core.database.dao.TransactionDao
@@ -64,4 +65,5 @@ abstract class HitungUangDatabase : RoomDatabase() {
     abstract fun settingsDao(): SettingsDao
     abstract fun recycleBinDao(): RecycleBinDao
     abstract fun attachmentDao(): AttachmentDao
+    abstract fun recurringTransactionDao(): RecurringTransactionDao
 }
