@@ -1,5 +1,7 @@
 package com.hitunguang.feature.recurring.domain.usecase
 
+import android.content.Context
+import com.hitunguang.R
 import com.hitunguang.core.notification.NotificationHelper
 import com.hitunguang.core.notification.RecurringFailureStore
 import com.hitunguang.feature.account.domain.repository.AccountRepository
@@ -9,6 +11,9 @@ import com.hitunguang.feature.recurring.domain.repository.RecurringTransactionRe
 import com.hitunguang.feature.recurring.domain.util.RecurrenceSchedule
 import com.hitunguang.feature.transaction.domain.model.Transaction
 import com.hitunguang.feature.transaction.domain.usecase.CreateTransactionUseCase
+import com.hitunguang.feature.transaction.domain.model.UserStateException
+import com.hitunguang.feature.transaction.domain.model.userMessage
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.firstOrNull
 import java.util.UUID
@@ -24,7 +29,8 @@ class ProcessDueRecurringUseCase @Inject constructor(
     private val categoryRepository: CategoryRepository,
     private val createTransactionUseCase: CreateTransactionUseCase,
     private val failureStore: RecurringFailureStore,
-    private val notificationHelper: NotificationHelper
+    private val notificationHelper: NotificationHelper,
+    @ApplicationContext private val context: Context
 ) {
     companion object {
         const val MAX_OCCURRENCES_PER_RUN = 60
@@ -44,12 +50,12 @@ class ProcessDueRecurringUseCase @Inject constructor(
         var posted = 0
         while (occurrence <= now && posted < MAX_OCCURRENCES_PER_RUN) {
             val next = try {
-                missingTargetReason(rule)?.let { throw IllegalStateException(it) }
+                missingTargetReason(rule)?.let { throw it }
                 postOccurrence(rule.id, occurrence, now)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                reportFailure(rule, occurrence, e.message ?: "Ada yang gagal.")
+                reportFailure(rule, occurrence, e.userMessage(context) ?: context.getString(R.string.recurring_failure_unknown))
                 return posted
             }
             // Null: the rule was changed, paused or already posted by a concurrent run
@@ -89,14 +95,14 @@ class ProcessDueRecurringUseCase @Inject constructor(
             next
         }
 
-    private suspend fun missingTargetReason(rule: RecurringTransaction): String? {
+    private suspend fun missingTargetReason(rule: RecurringTransaction): UserStateException? {
         if (accountRepository.getAccountById(rule.accountId).firstOrNull() == null) {
-            return "dompetnya udah dihapus."
+            return UserStateException(R.string.recurring_failure_wallet_deleted, fallbackMessage = "dompetnya udah dihapus.")
         }
         val categoryId = rule.categoryId ?: return null
         val category = categoryRepository.getCategoryByIdDirect(categoryId)
         if (category == null || category.isDeleted) {
-            return "kategorinya udah dihapus."
+            return UserStateException(R.string.recurring_failure_category_deleted, fallbackMessage = "kategorinya udah dihapus.")
         }
         return null
     }
@@ -106,8 +112,8 @@ class ProcessDueRecurringUseCase @Inject constructor(
         notificationHelper.showNotification(
             channelId = NotificationHelper.CHANNEL_RECURRING,
             notificationId = rule.id.hashCode(),
-            title = "Transaksi berulang gagal dicatat",
-            message = "Transaksi berulang \"${rule.title}\" gagal dicatat: $reason"
+            title = context.getString(R.string.recurring_failure_title),
+            message = context.getString(R.string.recurring_failure_message, rule.title, reason)
         )
         failureStore.markNotified(rule.id, occurrence)
     }

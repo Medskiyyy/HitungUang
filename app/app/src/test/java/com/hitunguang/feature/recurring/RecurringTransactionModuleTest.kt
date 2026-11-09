@@ -83,7 +83,8 @@ class RecurringTransactionModuleTest {
                 CheckBudgetThresholdUseCase(budgetRepository, context)
             ),
             failureStore = RecurringFailureStore(context),
-            notificationHelper = NotificationHelper(context)
+            notificationHelper = NotificationHelper(context),
+            context = context
         )
 
         db.accountDao().insertAccount(AccountEntity("acc-1", "Dompet Tunai", "CASH", null, 100_000L, 100_000L, 1000L, 1000L))

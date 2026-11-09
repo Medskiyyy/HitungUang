@@ -9,7 +9,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.hitunguang.R
 import com.hitunguang.feature.category.domain.model.Category
 
 @Composable
@@ -23,7 +25,7 @@ fun DeleteCategoryDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Hapus kategori \"${category.name}\"?")
+            Text(stringResource(R.string.category_delete_title, category.name))
         },
         text = {
             Column(
@@ -32,13 +34,13 @@ fun DeleteCategoryDialog(
             ) {
                 if (hasTransactions) {
                     Text(
-                        text = "Kategori ini dipakai di beberapa transaksi. Kalau dihapus, semua transaksinya ikut masuk Tempat Sampah dan saldo dompet disesuaikan. Semuanya bisa dipulihkan dalam 30 hari.",
+                        text = stringResource(R.string.category_delete_with_tx),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error
                     )
                 } else {
                     Text(
-                        text = "Hapus kategori ini?",
+                        text = stringResource(R.string.category_delete_confirm),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -49,14 +51,14 @@ fun DeleteCategoryDialog(
                 onClick = { onConfirm(hasTransactions) }
             ) {
                 Text(
-                    text = if (hasTransactions) "Tetap hapus" else "Hapus",
+                    text = if (hasTransactions) stringResource(R.string.category_delete_anyway) else stringResource(R.string.common_delete),
                     color = MaterialTheme.colorScheme.error
                 )
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Batal")
+                Text(stringResource(R.string.common_cancel))
             }
         }
     )

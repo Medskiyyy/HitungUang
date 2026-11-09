@@ -43,11 +43,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.hitunguang.R
 import com.hitunguang.core.common.util.CurrencyFormatter
 import com.hitunguang.core.designsystem.theme.Elevation
 import com.hitunguang.core.designsystem.theme.ExpenseRed
@@ -74,12 +77,12 @@ fun RecurringTransactionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Transaksi Berulang", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.recurring_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Kembali"
+                            contentDescription = stringResource(R.string.common_back)
                         )
                     }
                 }
@@ -94,7 +97,7 @@ fun RecurringTransactionScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Tambah transaksi berulang"
+                    contentDescription = stringResource(R.string.recurring_add_cd)
                 )
             }
         },
@@ -129,7 +132,7 @@ fun RecurringTransactionScreen(
                     )
                     Spacer(modifier = Modifier.height(Spacing.medium))
                     Text(
-                        text = "Belum ada transaksi berulang. Ketuk + buat bikin yang pertama, misalnya bayar kos tiap bulan.",
+                        text = stringResource(R.string.recurring_empty),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
@@ -179,8 +182,8 @@ fun RecurringTransactionScreen(
     recurringToDelete?.let { recurring ->
         AlertDialog(
             onDismissRequest = { recurringToDelete = null },
-            title = { Text("Hapus transaksi berulang?", fontWeight = FontWeight.Bold) },
-            text = { Text("Hapus transaksi berulang ini? Transaksi yang udah tercatat nggak ikut kehapus.") },
+            title = { Text(stringResource(R.string.recurring_delete_title), fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.recurring_delete_message)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -192,12 +195,12 @@ fun RecurringTransactionScreen(
                         contentColor = MaterialTheme.colorScheme.onError
                     )
                 ) {
-                    Text("Hapus")
+                    Text(stringResource(R.string.common_delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { recurringToDelete = null }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -214,9 +217,9 @@ private fun RecurringTransactionCard(
 ) {
     val recurring = item.recurring
     val isExpense = recurring.transactionType == "EXPENSE"
-    val details = listOfNotNull(item.accountName ?: "Dompet udah dihapus", item.categoryName).joinToString(" • ")
-    val schedule = RecurrenceText.describe(recurring.recurrenceRule, recurring.nextRunAt) + " • " +
-        if (recurring.isActive) "Berikutnya ${dateFormatter.format(Date(recurring.nextRunAt))}" else "Dijeda"
+    val details = listOfNotNull(item.accountName ?: stringResource(R.string.recurring_account_deleted), item.categoryName).joinToString(" • ")
+    val schedule = RecurrenceText.describe(LocalContext.current, recurring.recurrenceRule, recurring.nextRunAt) + " • " +
+        if (recurring.isActive) stringResource(R.string.recurring_next_run, dateFormatter.format(Date(recurring.nextRunAt))) else stringResource(R.string.recurring_paused)
 
     Card(
         onClick = onClick,
@@ -273,7 +276,7 @@ private fun RecurringTransactionCard(
                 IconButton(onClick = onDeleteClick) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Hapus",
+                        contentDescription = stringResource(R.string.common_delete),
                         tint = MaterialTheme.colorScheme.error
                     )
                 }

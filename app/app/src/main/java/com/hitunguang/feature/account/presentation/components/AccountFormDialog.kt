@@ -22,8 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.hitunguang.R
 import com.hitunguang.feature.account.domain.model.Account
 
 @Composable
@@ -40,11 +42,12 @@ fun AccountFormDialog(
     var nameError by remember { mutableStateOf<String?>(null) }
 
     val isEditMode = account != null
+    val nameRequiredText = stringResource(R.string.account_err_name)
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(if (isEditMode) "Edit dompet" else "Tambah dompet")
+            Text(if (isEditMode) stringResource(R.string.account_form_edit) else stringResource(R.string.account_form_add))
         },
         text = {
             Column(
@@ -57,9 +60,9 @@ fun AccountFormDialog(
                     value = name,
                     onValueChange = {
                         name = it
-                        nameError = if (it.isBlank()) "Nama dompet belum diisi" else null
+                        nameError = if (it.isBlank()) nameRequiredText else null
                     },
-                    label = { Text("Nama dompet *") },
+                    label = { Text(stringResource(R.string.account_form_name)) },
                     isError = nameError != null,
                     supportingText = { nameError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                     singleLine = true,
@@ -67,7 +70,7 @@ fun AccountFormDialog(
                 )
 
                 Column {
-                    Text("Tipe dompet", style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.account_form_type), style = MaterialTheme.typography.bodySmall)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -76,7 +79,7 @@ fun AccountFormDialog(
                             selected = type == "CASH",
                             onClick = { type = "CASH"; icon = "wallet" }
                         )
-                        Text("Tunai")
+                        Text(stringResource(R.string.account_type_cash))
                         
                         Spacer(modifier = Modifier.width(12.dp))
                         
@@ -84,7 +87,7 @@ fun AccountFormDialog(
                             selected = type == "BANK",
                             onClick = { type = "BANK"; icon = "bank" }
                         )
-                        Text("Bank")
+                        Text(stringResource(R.string.account_type_bank))
                         
                         Spacer(modifier = Modifier.width(12.dp))
                         
@@ -92,7 +95,7 @@ fun AccountFormDialog(
                             selected = type == "E_WALLET",
                             onClick = { type = "E_WALLET"; icon = "e_wallet" }
                         )
-                        Text("E-Wallet")
+                        Text(stringResource(R.string.account_type_ewallet))
                     }
                 }
 
@@ -100,7 +103,7 @@ fun AccountFormDialog(
                     OutlinedTextField(
                         value = initialBalanceStr,
                         onValueChange = { initialBalanceStr = it },
-                        label = { Text("Saldo awal (Rp)") },
+                        label = { Text(stringResource(R.string.account_form_initial_balance)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
@@ -112,19 +115,19 @@ fun AccountFormDialog(
             TextButton(
                 onClick = {
                     if (name.isBlank()) {
-                        nameError = "Nama dompet belum diisi"
+                        nameError = nameRequiredText
                     } else {
                         val balance = initialBalanceStr.toLongOrNull() ?: 0L
                         onSave(name, type, icon, balance)
                     }
                 }
             ) {
-                Text("Simpan")
+                Text(stringResource(R.string.common_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Batal")
+                Text(stringResource(R.string.common_cancel))
             }
         }
     )

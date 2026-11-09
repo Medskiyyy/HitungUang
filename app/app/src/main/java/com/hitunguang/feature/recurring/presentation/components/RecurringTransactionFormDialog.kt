@@ -58,9 +58,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.hitunguang.R
 import com.hitunguang.core.common.util.CurrencyFormatter
 import com.hitunguang.core.designsystem.theme.Elevation
 import com.hitunguang.core.designsystem.theme.ExpenseRed
@@ -80,8 +83,8 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-private enum class Frequency(val label: String) {
-    DAILY("Harian"), WEEKLY("Mingguan"), MONTHLY("Bulanan")
+private enum class Frequency(val labelRes: Int) {
+    DAILY(R.string.recurring_freq_daily), WEEKLY(R.string.recurring_freq_weekly), MONTHLY(R.string.recurring_freq_monthly)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -155,6 +158,10 @@ fun RecurringTransactionFormDialog(
         Frequency.MONTHLY -> dayOfMonth?.takeIf { it in 1..31 }?.let { RecurrenceRule.Monthly(it) }
     }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("d MMM yyyy", Locale("id", "ID")) }
+    val amountMissingText = stringResource(R.string.recurring_err_amount)
+    val titleMissingText = stringResource(R.string.recurring_err_title)
+    val accountMissingText = stringResource(R.string.recurring_err_account)
+    val dayRangeText = stringResource(R.string.recurring_err_day)
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -177,7 +184,7 @@ fun RecurringTransactionFormDialog(
                     .padding(horizontal = Spacing.large)
             ) {
                 Text(
-                    text = if (recurring != null) "Edit transaksi berulang" else "Tambah transaksi berulang",
+                    text = if (recurring != null) stringResource(R.string.recurring_form_edit) else stringResource(R.string.recurring_form_add),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(vertical = Spacing.medium)
@@ -195,7 +202,7 @@ fun RecurringTransactionFormDialog(
                             .fillMaxWidth()
                             .padding(Spacing.extraSmall)
                     ) {
-                        listOf("EXPENSE" to "Pengeluaran", "INCOME" to "Pemasukan").forEach { (itemType, label) ->
+                        listOf("EXPENSE" to R.string.recurring_type_expense, "INCOME" to R.string.recurring_type_income).forEach { (itemType, label) ->
                             val isSelected = type == itemType
                             Box(
                                 modifier = Modifier
@@ -211,7 +218,7 @@ fun RecurringTransactionFormDialog(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = label,
+                                    text = stringResource(label),
                                     color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
                                     style = MaterialTheme.typography.labelLarge,
                                     fontWeight = FontWeight.Bold
@@ -239,7 +246,7 @@ fun RecurringTransactionFormDialog(
                         // Keep digits only so "2.000.000" typed or pasted still works
                         onValueChange = { amountStr = it.filter(Char::isDigit).take(15) },
                         placeholder = { Text("0") },
-                        label = { Text("Nominal") },
+                        label = { Text(stringResource(R.string.recurring_form_amount)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         shape = RoundedCornerShape(Radius.medium),
@@ -254,8 +261,8 @@ fun RecurringTransactionFormDialog(
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("Judul *") },
-                    placeholder = { Text("Contoh: Bayar kos") },
+                    label = { Text(stringResource(R.string.recurring_form_title)) },
+                    placeholder = { Text(stringResource(R.string.recurring_form_title_hint)) },
                     singleLine = true,
                     shape = RoundedCornerShape(Radius.medium),
                     modifier = Modifier.fillMaxWidth()
@@ -264,7 +271,7 @@ fun RecurringTransactionFormDialog(
                 Spacer(modifier = Modifier.height(Spacing.medium))
 
                 Text(
-                    "Kategori",
+                    stringResource(R.string.recurring_form_category),
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(bottom = Spacing.small)
                 )
@@ -277,7 +284,7 @@ fun RecurringTransactionFormDialog(
                             FilterChip(
                                 selected = true,
                                 onClick = {},
-                                label = { Text("Tanpa kategori") },
+                                label = { Text(stringResource(R.string.recurring_form_no_category)) },
                                 shape = RoundedCornerShape(Radius.medium)
                             )
                         }
@@ -307,7 +314,7 @@ fun RecurringTransactionFormDialog(
                 Spacer(modifier = Modifier.height(Spacing.medium))
 
                 Text(
-                    "Dompet *",
+                    stringResource(R.string.recurring_form_account),
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(bottom = Spacing.small)
                 )
@@ -331,7 +338,7 @@ fun RecurringTransactionFormDialog(
                             )
                             Spacer(modifier = Modifier.width(Spacing.medium))
                             Text(
-                                currentAccount?.name ?: "Pilih dompet",
+                                currentAccount?.name ?: stringResource(R.string.recurring_form_pick_account),
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.weight(1f)
@@ -362,7 +369,7 @@ fun RecurringTransactionFormDialog(
                 Spacer(modifier = Modifier.height(Spacing.medium))
 
                 Text(
-                    "Frekuensi",
+                    stringResource(R.string.recurring_form_frequency),
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(bottom = Spacing.small)
                 )
@@ -371,7 +378,7 @@ fun RecurringTransactionFormDialog(
                         FilterChip(
                             selected = frequency == option,
                             onClick = { frequency = option },
-                            label = { Text(option.label) },
+                            label = { Text(stringResource(option.labelRes)) },
                             shape = RoundedCornerShape(Radius.medium)
                         )
                     }
@@ -380,7 +387,7 @@ fun RecurringTransactionFormDialog(
                 when (frequency) {
                     Frequency.DAILY -> Unit
                     Frequency.WEEKLY -> Text(
-                        text = "Tiap ${RecurrenceText.weekdayName(startDate.dayOfWeek)}, ikut hari tanggal mulai.",
+                        text = stringResource(R.string.recurring_weekly_hint, RecurrenceText.weekdayName(LocalContext.current, startDate.dayOfWeek)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = Spacing.small)
@@ -390,14 +397,14 @@ fun RecurringTransactionFormDialog(
                         OutlinedTextField(
                             value = dayOfMonthStr,
                             onValueChange = { dayOfMonthStr = it.filter(Char::isDigit).take(2) },
-                            label = { Text("Tanggal tiap bulan") },
+                            label = { Text(stringResource(R.string.recurring_form_day_of_month)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             isError = rule == null,
                             supportingText = {
                                 Text(
                                     when {
-                                        rule == null -> "Isi tanggal 1–31"
-                                        (dayOfMonth ?: 0) > 28 -> "Bulan yang nggak punya tanggal $dayOfMonth dicatat di tanggal terakhirnya."
+                                        rule == null -> stringResource(R.string.recurring_day_hint)
+                                        (dayOfMonth ?: 0) > 28 -> stringResource(R.string.recurring_day_overflow, dayOfMonth.toString())
                                         else -> ""
                                     }
                                 )
@@ -412,7 +419,7 @@ fun RecurringTransactionFormDialog(
                 Spacer(modifier = Modifier.height(Spacing.medium))
 
                 Text(
-                    "Mulai tanggal",
+                    stringResource(R.string.recurring_form_start),
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(bottom = Spacing.small)
                 )
@@ -439,7 +446,7 @@ fun RecurringTransactionFormDialog(
                 }
                 if (rule != null) {
                     Text(
-                        text = "Pertama dicatat ${RecurrenceSchedule.firstDate(rule, startDate).format(dateFormatter)}, jam 07.00.",
+                        text = stringResource(R.string.recurring_first_run, RecurrenceSchedule.firstDate(rule, startDate).format(dateFormatter)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = Spacing.small)
@@ -451,14 +458,14 @@ fun RecurringTransactionFormDialog(
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("Catatan (opsional)") },
+                    label = { Text(stringResource(R.string.recurring_form_note)) },
                     shape = RoundedCornerShape(Radius.medium),
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 errorMessage?.let {
                     Text(
-                        text = it,
+                        text = it.ifBlank { stringResource(R.string.recurring_err_save_failed) },
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(top = Spacing.medium)
@@ -479,16 +486,16 @@ fun RecurringTransactionFormDialog(
                     horizontalArrangement = Arrangement.spacedBy(Spacing.medium)
                 ) {
                     TextButton(onClick = onDismiss, modifier = Modifier.weight(1f)) {
-                        Text("Batal")
+                        Text(stringResource(R.string.common_cancel))
                     }
                     Button(
                         onClick = {
                             val amount = amountStr.toLongOrNull() ?: 0L
                             validationMessage = when {
-                                amount <= 0L -> "Nominal belum diisi"
-                                title.isBlank() -> "Judulnya belum diisi"
-                                accounts.none { it.id == selectedAccountId } -> "Pilih dompetnya dulu"
-                                rule == null -> "Tanggal tiap bulan harus 1–31"
+                                amount <= 0L -> amountMissingText
+                                title.isBlank() -> titleMissingText
+                                accounts.none { it.id == selectedAccountId } -> accountMissingText
+                                rule == null -> dayRangeText
                                 else -> null
                             }
                             if (validationMessage == null && rule != null) {
@@ -508,7 +515,7 @@ fun RecurringTransactionFormDialog(
                         shape = RoundedCornerShape(Radius.medium),
                         colors = ButtonDefaults.buttonColors(containerColor = accentColor)
                     ) {
-                        Text("Simpan")
+                        Text(stringResource(R.string.common_save))
                     }
                 }
             }
@@ -518,11 +525,11 @@ fun RecurringTransactionFormDialog(
     validationMessage?.let { message ->
         AlertDialog(
             onDismissRequest = { validationMessage = null },
-            title = { Text("Peringatan", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.recurring_warning_title), fontWeight = FontWeight.Bold) },
             text = { Text(message) },
             confirmButton = {
                 TextButton(onClick = { validationMessage = null }) {
-                    Text("OK")
+                    Text(stringResource(R.string.common_ok))
                 }
             }
         )
@@ -545,12 +552,12 @@ fun RecurringTransactionFormDialog(
                         showDatePicker = false
                     }
                 ) {
-                    Text("Pilih")
+                    Text(stringResource(R.string.common_choose))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         ) {

@@ -52,10 +52,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.hitunguang.R
 import com.hitunguang.core.designsystem.theme.Elevation
 import com.hitunguang.core.designsystem.theme.ExpenseRed
 import com.hitunguang.core.designsystem.theme.IncomeGreen
@@ -103,7 +105,7 @@ fun BudgetListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Anggaran", fontWeight = FontWeight.Bold) }
+                title = { Text(stringResource(R.string.budget_title), fontWeight = FontWeight.Bold) }
             )
         },
         floatingActionButton = {
@@ -115,7 +117,7 @@ fun BudgetListScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Tambah Anggaran"
+                    contentDescription = stringResource(R.string.budget_add_cd)
                 )
             }
         },
@@ -130,12 +132,12 @@ fun BudgetListScreen(
                 Tab(
                     selected = selectedTabIndex == 0,
                     onClick = { selectedTabIndex = 0 },
-                    text = { Text("Aktif", fontWeight = FontWeight.Bold) }
+                    text = { Text(stringResource(R.string.budget_tab_active), fontWeight = FontWeight.Bold) }
                 )
                 Tab(
                     selected = selectedTabIndex == 1,
                     onClick = { selectedTabIndex = 1 },
-                    text = { Text("Riwayat", fontWeight = FontWeight.Bold) }
+                    text = { Text(stringResource(R.string.budget_tab_history), fontWeight = FontWeight.Bold) }
                 )
             }
 
@@ -161,7 +163,7 @@ fun BudgetListScreen(
                         )
                         Spacer(modifier = Modifier.height(Spacing.medium))
                         Text(
-                            text = if (selectedTabIndex == 0) "Belum ada anggaran aktif. Ketuk + buat bikin yang pertama." else "Belum ada riwayat anggaran",
+                            text = if (selectedTabIndex == 0) stringResource(R.string.budget_empty_active) else stringResource(R.string.budget_empty_history),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -233,7 +235,7 @@ fun BudgetListScreen(
                                                     color = MaterialTheme.colorScheme.onSurface
                                                 )
                                                 Text(
-                                                    text = "Terpakai",
+                                                    text = stringResource(R.string.budget_spent_label),
                                                     style = MaterialTheme.typography.labelSmall,
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
@@ -246,23 +248,23 @@ fun BudgetListScreen(
                                             verticalArrangement = Arrangement.spacedBy(Spacing.extraSmall)
                                         ) {
                                             Text(
-                                                text = "Total Anggaran Aktif",
+                                                text = stringResource(R.string.budget_total_active),
                                                 style = MaterialTheme.typography.titleSmall,
                                                 fontWeight = FontWeight.Bold,
                                                 color = MaterialTheme.colorScheme.onSurface
                                             )
                                             Text(
-                                                text = "Batas: ${CurrencyFormatter.format(totalLimit)}",
+                                                text = stringResource(R.string.budget_limit_fmt, CurrencyFormatter.format(totalLimit)),
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                             Text(
-                                                text = "Terpakai: ${CurrencyFormatter.format(totalSpent)}",
+                                                text = stringResource(R.string.budget_spent_fmt, CurrencyFormatter.format(totalSpent)),
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                             Text(
-                                                text = "Sisa: ${CurrencyFormatter.format(totalRemaining)}",
+                                                text = stringResource(R.string.budget_remaining_fmt, CurrencyFormatter.format(totalRemaining)),
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 fontWeight = FontWeight.Bold,
                                                 color = if (totalRemaining <= 0L && totalLimit > 0) MaterialTheme.colorScheme.error else IncomeGreen
@@ -271,10 +273,10 @@ fun BudgetListScreen(
                                             Spacer(modifier = Modifier.height(Spacing.extraSmall))
 
                                             val healthSummaryList = mutableListOf<String>()
-                                            if (safeCount > 0) healthSummaryList.add("$safeCount aman")
-                                            if (warningCount > 0) healthSummaryList.add("$warningCount hampir habis")
-                                            if (overCount > 0) healthSummaryList.add("$overCount lewat batas")
-                                            val healthSummary = if (healthSummaryList.isEmpty()) "Tidak ada anggaran" else healthSummaryList.joinToString(" • ")
+                                            if (safeCount > 0) healthSummaryList.add(stringResource(R.string.budget_health_safe, safeCount))
+                                            if (warningCount > 0) healthSummaryList.add(stringResource(R.string.budget_health_warning, warningCount))
+                                            if (overCount > 0) healthSummaryList.add(stringResource(R.string.budget_health_over, overCount))
+                                            val healthSummary = if (healthSummaryList.isEmpty()) stringResource(R.string.budget_health_none) else healthSummaryList.joinToString(" • ")
 
                                             Text(
                                                 text = healthSummary,
@@ -325,7 +327,7 @@ fun BudgetProgressCard(
 ) {
     val idLocale = Locale("in", "ID")
     val budget = budgetProgress.budget
-    val title = if (budget.budgetType == "GLOBAL") "Semua Kategori" else budgetProgress.categoryName ?: "Tanpa Kategori"
+    val title = if (budget.budgetType == "GLOBAL") stringResource(R.string.budget_all_categories) else budgetProgress.categoryName ?: stringResource(R.string.budget_no_category)
     val dateRangeText = formatBudgetRange(budget.startDate, budget.endDate, idLocale)
 
     val category = remember(budget.categoryId, categories) {
@@ -408,14 +410,14 @@ fun BudgetProgressCard(
                     IconButton(onClick = { onEditClick(budget) }) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit",
+                            contentDescription = stringResource(R.string.common_edit),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     IconButton(onClick = { onDeleteClick(budget) }) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = "Hapus",
+                            contentDescription = stringResource(R.string.common_delete),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
@@ -449,7 +451,7 @@ fun BudgetProgressCard(
                 ) {
                     Column {
                         Text(
-                            text = "Batas",
+                            text = stringResource(R.string.budget_limit_label),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -461,7 +463,7 @@ fun BudgetProgressCard(
                     }
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = "Terpakai",
+                            text = stringResource(R.string.budget_spent_label),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -483,7 +485,7 @@ fun BudgetProgressCard(
                     Column {
                         if (budgetProgress.isOverBudget) {
                             Text(
-                                text = "Lewat batas",
+                                text = stringResource(R.string.budget_over_label),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -495,7 +497,7 @@ fun BudgetProgressCard(
                             )
                         } else {
                             Text(
-                                text = "Sisa",
+                                text = stringResource(R.string.budget_remaining_label),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary
                             )

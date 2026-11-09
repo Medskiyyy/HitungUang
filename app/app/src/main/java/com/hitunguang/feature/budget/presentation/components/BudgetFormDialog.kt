@@ -30,8 +30,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import com.hitunguang.R
 import com.hitunguang.core.designsystem.theme.Radius
 import com.hitunguang.core.designsystem.theme.Spacing
 import com.hitunguang.feature.budget.domain.model.Budget
@@ -80,13 +82,18 @@ fun BudgetFormDialog(
     }
 
     val isEditMode = budget != null
+    val amountInvalidText = stringResource(R.string.budget_err_amount)
+    val thresholdInvalidText = stringResource(R.string.budget_err_threshold)
+    val categoryMissingText = stringResource(R.string.budget_err_category)
+    val dateInvalidText = stringResource(R.string.budget_err_dates)
+    val saveFailedText = stringResource(R.string.budget_err_save_failed)
     val dateFormatter = SimpleDateFormat("d MMM yyyy", Locale("id", "ID"))
 
     AlertDialog(
         onDismissRequest = onDismiss,
         shape = RoundedCornerShape(Radius.large),
         title = {
-            Text(if (isEditMode) "Edit anggaran" else "Tambah anggaran", fontWeight = FontWeight.Bold)
+            Text(if (isEditMode) stringResource(R.string.budget_form_edit) else stringResource(R.string.budget_form_add), fontWeight = FontWeight.Bold)
         },
         text = {
             Column(
@@ -95,7 +102,7 @@ fun BudgetFormDialog(
             ) {
                 // Tipe Budget
                 Column {
-                    Text("Tipe anggaran", style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.budget_form_type), style = MaterialTheme.typography.bodySmall)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -104,7 +111,7 @@ fun BudgetFormDialog(
                             selected = budgetType == "GLOBAL",
                             onClick = { budgetType = "GLOBAL"; selectedCategoryId = "" }
                         )
-                        Text("Semua kategori")
+                        Text(stringResource(R.string.budget_form_all_categories))
 
                         Spacer(modifier = Modifier.width(Spacing.medium))
 
@@ -112,14 +119,14 @@ fun BudgetFormDialog(
                             selected = budgetType == "CATEGORY",
                             onClick = { budgetType = "CATEGORY" }
                         )
-                        Text("Kategori")
+                        Text(stringResource(R.string.budget_form_category))
                     }
                 }
 
                 // Category selection dropdown if CATEGORY budget
                 if (budgetType == "CATEGORY") {
                     Column {
-                        Text("Kategori *", style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(R.string.budget_form_category_required), style = MaterialTheme.typography.bodySmall)
                         Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         Box(modifier = Modifier.fillMaxWidth()) {
                             val currentCategory = expenseCategories.find { it.id == selectedCategoryId }
@@ -128,7 +135,7 @@ fun BudgetFormDialog(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(Radius.medium)
                             ) {
-                                Text(currentCategory?.name ?: "Pilih kategori")
+                                Text(currentCategory?.name ?: stringResource(R.string.budget_form_pick_category))
                             }
                             DropdownMenu(
                                 expanded = categoryExpanded,
@@ -159,9 +166,9 @@ fun BudgetFormDialog(
                     onValueChange = {
                         amountStr = it
                         val v = it.toLongOrNull() ?: 0L
-                        amountError = if (v <= 0L) "Nominal harus lebih besar dari 0" else null
+                        amountError = if (v <= 0L) amountInvalidText else null
                     },
-                    label = { Text("Nominal anggaran *") },
+                    label = { Text(stringResource(R.string.budget_form_amount)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     isError = amountError != null,
                     supportingText = { amountError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
@@ -176,9 +183,9 @@ fun BudgetFormDialog(
                     onValueChange = {
                         thresholdStr = it
                         val v = it.toIntOrNull() ?: 0
-                        thresholdError = if (v !in 1..100) "Isi angka 1–100" else null
+                        thresholdError = if (v !in 1..100) thresholdInvalidText else null
                     },
-                    label = { Text("Ingatkan saat terpakai (%)") },
+                    label = { Text(stringResource(R.string.budget_form_threshold)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     isError = thresholdError != null,
                     supportingText = { thresholdError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
@@ -193,7 +200,7 @@ fun BudgetFormDialog(
                     horizontalArrangement = Arrangement.spacedBy(Spacing.small)
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Mulai tanggal", style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(R.string.budget_form_start), style = MaterialTheme.typography.bodySmall)
                         Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         OutlinedButton(
                             onClick = { showStartDatePicker = true },
@@ -204,7 +211,7 @@ fun BudgetFormDialog(
                         }
                     }
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Sampai tanggal", style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(R.string.budget_form_end), style = MaterialTheme.typography.bodySmall)
                         Spacer(modifier = Modifier.height(Spacing.extraSmall))
                         OutlinedButton(
                             onClick = { showEndDatePicker = true },
@@ -219,7 +226,7 @@ fun BudgetFormDialog(
                     Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 }
                 errorMessage?.let {
-                    Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    Text(it.ifBlank { saveFailedText }, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 }
             }
         },
@@ -231,19 +238,19 @@ fun BudgetFormDialog(
                     var hasError = false
 
                     if (amount <= 0L) {
-                        amountError = "Nominal harus lebih besar dari 0"
+                        amountError = amountInvalidText
                         hasError = true
                     }
                     if (threshold !in 1..100) {
-                        thresholdError = "Isi angka 1–100"
+                        thresholdError = thresholdInvalidText
                         hasError = true
                     }
                     if (budgetType == "CATEGORY" && selectedCategoryId.isBlank()) {
-                        categoryError = "Kategori belum dipilih"
+                        categoryError = categoryMissingText
                         hasError = true
                     }
                     if (startDateMillis > endDateMillis) {
-                        dateError = "Tanggal mulai nggak boleh lewat dari tanggal selesai"
+                        dateError = dateInvalidText
                         hasError = true
                     } else {
                         dateError = null
@@ -261,12 +268,12 @@ fun BudgetFormDialog(
                     }
                 }
             ) {
-                Text("Simpan")
+                Text(stringResource(R.string.common_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Batal")
+                Text(stringResource(R.string.common_cancel))
             }
         }
     )
@@ -282,12 +289,12 @@ fun BudgetFormDialog(
                         showStartDatePicker = false
                     }
                 ) {
-                    Text("Pilih")
+                    Text(stringResource(R.string.common_choose))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showStartDatePicker = false }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         ) {
@@ -306,12 +313,12 @@ fun BudgetFormDialog(
                         showEndDatePicker = false
                     }
                 ) {
-                    Text("Pilih")
+                    Text(stringResource(R.string.common_choose))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showEndDatePicker = false }) {
-                    Text("Batal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         ) {

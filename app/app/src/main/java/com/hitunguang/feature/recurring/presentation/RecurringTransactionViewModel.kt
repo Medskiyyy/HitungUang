@@ -133,7 +133,7 @@ class RecurringTransactionViewModel @Inject constructor(
                 dismissFormDialog()
                 processDue()
             } catch (e: Exception) {
-                formState.value = formState.value.copy(error = e.message ?: "Gagal menyimpan transaksi berulang.")
+                formState.value = formState.value.copy(error = e.message ?: "")
             }
         }
     }

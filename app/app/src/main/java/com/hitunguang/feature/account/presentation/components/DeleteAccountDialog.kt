@@ -1,5 +1,7 @@
 package com.hitunguang.feature.account.presentation.components
 
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
 import com.hitunguang.core.common.util.CurrencyFormatter
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,7 +49,7 @@ fun DeleteAccountDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Hapus dompet \"${account.name}\"?")
+            Text(stringResource(R.string.account_delete_title, account.name))
         },
         text = {
             Column(
@@ -56,7 +58,7 @@ fun DeleteAccountDialog(
             ) {
                 if (hasTransactions) {
                     Text(
-                        text = "Dompet ini punya riwayat transaksi/transfer. Pilih dompet lain buat nampung riwayatnya.",
+                        text = stringResource(R.string.account_delete_has_history),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -64,7 +66,7 @@ fun DeleteAccountDialog(
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     Text(
-                        text = "Pilih dompet pengganti:",
+                        text = stringResource(R.string.account_delete_choose_replacement),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -73,7 +75,7 @@ fun DeleteAccountDialog(
                     
                     if (otherAccounts.isEmpty()) {
                         Text(
-                            text = "Belum ada dompet lain. Buat dompet baru dulu sebelum menghapus yang ini.",
+                            text = stringResource(R.string.account_delete_no_other),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -120,7 +122,7 @@ fun DeleteAccountDialog(
                                                 fontWeight = FontWeight.Bold
                                             )
                                             Text(
-                                                text = "Saldo: ${CurrencyFormatter.format(other.currentBalance)}",
+                                                text = stringResource(R.string.account_balance_fmt, CurrencyFormatter.format(other.currentBalance)),
                                                 style = MaterialTheme.typography.bodySmall
                                             )
                                         }
@@ -131,7 +133,7 @@ fun DeleteAccountDialog(
                     }
                 } else {
                     Text(
-                        text = "Hapus dompet ini? Dompetnya kosong dan nggak punya transaksi.",
+                        text = stringResource(R.string.account_delete_confirm_empty),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -144,14 +146,14 @@ fun DeleteAccountDialog(
                 onClick = { onConfirm(selectedReplacementId) }
             ) {
                 Text(
-                    text = if (hasTransactions) "Pindahkan dan hapus" else "Hapus",
+                    text = if (hasTransactions) stringResource(R.string.account_delete_move_and_delete) else stringResource(R.string.common_delete),
                     color = if (enabled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Batal")
+                Text(stringResource(R.string.common_cancel))
             }
         }
     )

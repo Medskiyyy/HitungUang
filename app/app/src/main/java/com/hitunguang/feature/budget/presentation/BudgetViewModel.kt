@@ -188,7 +188,7 @@ class BudgetViewModel @Inject constructor(
                 }
                 dismissFormDialog()
             } catch (e: Exception) {
-                _saveError.value = e.message ?: "Gagal menyimpan anggaran."
+                _saveError.value = e.message ?: ""
             }
         }
     }

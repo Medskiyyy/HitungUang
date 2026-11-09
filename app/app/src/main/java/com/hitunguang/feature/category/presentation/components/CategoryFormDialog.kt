@@ -22,7 +22,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.hitunguang.R
 import com.hitunguang.feature.category.domain.model.Category
 
 @Composable
@@ -40,11 +42,12 @@ fun CategoryFormDialog(
     var nameError by remember { mutableStateOf<String?>(null) }
 
     val isEditMode = category != null
+    val nameRequiredText = stringResource(R.string.category_err_name)
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(if (isEditMode) "Edit kategori" else "Tambah kategori")
+            Text(if (isEditMode) stringResource(R.string.category_form_edit) else stringResource(R.string.category_form_add))
         },
         text = {
             Column(
@@ -55,9 +58,9 @@ fun CategoryFormDialog(
                     value = name,
                     onValueChange = {
                         name = it
-                        nameError = if (it.isBlank()) "Nama kategori belum diisi" else null
+                        nameError = if (it.isBlank()) nameRequiredText else null
                     },
-                    label = { Text("Nama kategori *") },
+                    label = { Text(stringResource(R.string.category_form_name)) },
                     isError = nameError != null,
                     supportingText = { nameError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                     singleLine = true,
@@ -67,7 +70,7 @@ fun CategoryFormDialog(
                 // Hanya izinkan ubah tipe jika bukan mengedit kategori bawaan (default)
                 if (category == null || !category.isDefault) {
                     Column {
-                        Text("Tipe kategori", style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(R.string.category_form_type), style = MaterialTheme.typography.bodySmall)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
@@ -76,7 +79,7 @@ fun CategoryFormDialog(
                                 selected = type == "INCOME",
                                 onClick = { type = "INCOME" }
                             )
-                            Text("Pemasukan")
+                            Text(stringResource(R.string.category_tab_income))
 
                             Spacer(modifier = Modifier.width(16.dp))
 
@@ -84,13 +87,13 @@ fun CategoryFormDialog(
                                 selected = type == "EXPENSE",
                                 onClick = { type = "EXPENSE" }
                             )
-                            Text("Pengeluaran")
+                            Text(stringResource(R.string.category_tab_expense))
                         }
                     }
                 }
 
                 Column {
-                    Text("Ikon kategori *", style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.category_form_icon), style = MaterialTheme.typography.bodySmall)
                     Spacer(modifier = Modifier.height(8.dp))
                     androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
                         columns = androidx.compose.foundation.lazy.grid.GridCells.Adaptive(minSize = 48.dp),
@@ -117,7 +120,7 @@ fun CategoryFormDialog(
                             ) {
                                 androidx.compose.material3.Icon(
                                     imageVector = CategoryIconHelper.getIconByName(iconName),
-                                    contentDescription = label,
+                                    contentDescription = stringResource(label),
                                     tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                                 )
                             }
@@ -133,7 +136,7 @@ fun CategoryFormDialog(
                         checked = isPinned,
                         onCheckedChange = { isPinned = it }
                     )
-                    Text("Sematkan kategori")
+                    Text(stringResource(R.string.category_form_pin))
                 }
             }
         },
@@ -141,18 +144,18 @@ fun CategoryFormDialog(
             TextButton(
                 onClick = {
                     if (name.isBlank()) {
-                        nameError = "Nama kategori belum diisi"
+                        nameError = nameRequiredText
                     } else {
                         onSave(name, type, icon.ifBlank { null }, isPinned)
                     }
                 }
             ) {
-                Text("Simpan")
+                Text(stringResource(R.string.common_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Batal")
+                Text(stringResource(R.string.common_cancel))
             }
         }
     )

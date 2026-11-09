@@ -19,6 +19,8 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Restore
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
 import com.hitunguang.feature.category.presentation.components.CategoryIconHelper
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -60,19 +62,19 @@ fun CategoryListScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Pemasukan", "Pengeluaran")
+    val tabs = listOf(stringResource(R.string.category_tab_income), stringResource(R.string.category_tab_expense))
     val currentType = if (selectedTab == 0) "INCOME" else "EXPENSE"
     val categoriesToShow = if (selectedTab == 0) incomeCategories else expenseCategories
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Kelola Kategori", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.category_manage_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Kembali"
+                            contentDescription = stringResource(R.string.common_back)
                         )
                     }
                 },
@@ -80,7 +82,7 @@ fun CategoryListScreen(
                     IconButton(onClick = { viewModel.restoreDefaultCategories() }) {
                         Icon(
                             imageVector = Icons.Default.Restore,
-                            contentDescription = "Pulihkan kategori bawaan",
+                            contentDescription = stringResource(R.string.category_restore_defaults_cd),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -95,7 +97,7 @@ fun CategoryListScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Tambah Kategori"
+                    contentDescription = stringResource(R.string.category_add_cd)
                 )
             }
         },
@@ -138,7 +140,7 @@ fun CategoryListScreen(
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                     Text(
-                        text = "Belum ada kategori. Ketuk + buat bikin yang pertama.",
+                        text = stringResource(R.string.category_empty),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -184,7 +186,7 @@ fun CategoryListScreen(
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 SuggestionChip(
                                                     onClick = {},
-                                                    label = { Text("Bawaan", style = MaterialTheme.typography.labelSmall) }
+                                                    label = { Text(stringResource(R.string.category_default_badge), style = MaterialTheme.typography.labelSmall) }
                                                 )
                                             }
                                         }
@@ -195,7 +197,7 @@ fun CategoryListScreen(
                                     IconButton(onClick = { viewModel.togglePinCategory(category) }) {
                                         Icon(
                                             imageVector = Icons.Default.PushPin,
-                                            contentDescription = if (category.isPinned) "Lepas sematan" else "Sematkan",
+                                            contentDescription = if (category.isPinned) stringResource(R.string.category_unpin_cd) else stringResource(R.string.category_pin_cd),
                                             tint = if (category.isPinned)
                                                 MaterialTheme.colorScheme.primary
                                             else
@@ -207,7 +209,7 @@ fun CategoryListScreen(
                                         IconButton(onClick = { viewModel.showEditDialog(category) }) {
                                             Icon(
                                                 imageVector = Icons.Default.Edit,
-                                                contentDescription = "Edit",
+                                                contentDescription = stringResource(R.string.common_edit),
                                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                         }
@@ -215,7 +217,7 @@ fun CategoryListScreen(
                                     IconButton(onClick = { viewModel.showDeleteDialog(category) }) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
-                                            contentDescription = "Hapus",
+                                            contentDescription = stringResource(R.string.common_delete),
                                             tint = MaterialTheme.colorScheme.error
                                         )
                                     }

@@ -1,5 +1,7 @@
 package com.hitunguang.feature.account.presentation
 
+import androidx.compose.ui.res.stringResource
+import com.hitunguang.R
 import com.hitunguang.core.designsystem.theme.HeroGradientEnd
 import com.hitunguang.core.designsystem.theme.HeroGradientStart
 import com.hitunguang.core.designsystem.theme.HeroOnGradient
@@ -89,6 +91,9 @@ fun AccountListScreen(
     val accounts by viewModel.accounts.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     var showTransferDialog by remember { mutableStateOf(false) }
+    val createdText = stringResource(R.string.account_created)
+    val updatedText = stringResource(R.string.account_updated)
+    val deletedText = stringResource(R.string.account_deleted)
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
@@ -108,7 +113,7 @@ fun AccountListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Dompet", fontWeight = FontWeight.Bold) }
+                title = { Text(stringResource(R.string.account_title), fontWeight = FontWeight.Bold) }
             )
         },
         floatingActionButton = {
@@ -120,7 +125,7 @@ fun AccountListScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Tambah dompet"
+                    contentDescription = stringResource(R.string.account_add_cd)
                 )
             }
         },
@@ -167,7 +172,7 @@ fun AccountListScreen(
                         )
                         Spacer(modifier = Modifier.width(Spacing.small))
                         Text(
-                            text = "Transfer Saldo",
+                            text = stringResource(R.string.account_transfer),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -189,7 +194,7 @@ fun AccountListScreen(
                         )
                         Spacer(modifier = Modifier.width(Spacing.small))
                         Text(
-                            text = "Riwayat transfer",
+                            text = stringResource(R.string.account_transfer_history),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -218,12 +223,12 @@ fun AccountListScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = if (cashExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                    contentDescription = if (cashExpanded) "Tutup" else "Buka",
+                                    contentDescription = if (cashExpanded) stringResource(R.string.common_close) else stringResource(R.string.account_open_cd),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(modifier = Modifier.width(Spacing.small))
                                 Text(
-                                    text = "Tunai",
+                                    text = stringResource(R.string.account_type_cash),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -263,12 +268,12 @@ fun AccountListScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = if (bankExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                    contentDescription = if (bankExpanded) "Tutup" else "Buka",
+                                    contentDescription = if (bankExpanded) stringResource(R.string.common_close) else stringResource(R.string.account_open_cd),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(modifier = Modifier.width(Spacing.small))
                                 Text(
-                                    text = "Bank",
+                                    text = stringResource(R.string.account_type_bank),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -308,12 +313,12 @@ fun AccountListScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = if (eWalletExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                    contentDescription = if (eWalletExpanded) "Tutup" else "Buka",
+                                    contentDescription = if (eWalletExpanded) stringResource(R.string.common_close) else stringResource(R.string.account_open_cd),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(modifier = Modifier.width(Spacing.small))
                                 Text(
-                                    text = "E-Wallet",
+                                    text = stringResource(R.string.account_type_ewallet),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -349,7 +354,7 @@ fun AccountListScreen(
             onDismiss = { viewModel.hideCreateDialog() },
             onSave = { name, type, icon, balance ->
                 viewModel.createAccount(name, type, icon, balance)
-                showSnackbar("Dompet berhasil dibuat")
+                showSnackbar(createdText)
             }
         )
     }
@@ -360,7 +365,7 @@ fun AccountListScreen(
             onDismiss = { viewModel.hideEditDialog() },
             onSave = { name, type, icon, _ ->
                 viewModel.updateAccount(uiState.accountToEdit!!, name, type, icon)
-                showSnackbar("Dompet berhasil diperbarui")
+                showSnackbar(updatedText)
             }
         )
     }
@@ -373,7 +378,7 @@ fun AccountListScreen(
             onDismiss = { viewModel.hideDeleteDialog() },
             onConfirm = { replacementId ->
                 viewModel.deleteAccount(replacementId) {
-                    showSnackbar("Dompet berhasil dihapus")
+                    showSnackbar(deletedText)
                 }
             }
         )
@@ -410,7 +415,7 @@ fun WalletSummaryCard(
         ) {
             Column {
                 Text(
-                    text = "Total Saldo",
+                    text = stringResource(R.string.account_total_balance),
                     style = MaterialTheme.typography.labelMedium,
                     color = HeroOnGradient.copy(alpha = 0.7f)
                 )
@@ -423,7 +428,7 @@ fun WalletSummaryCard(
                 )
                 Spacer(modifier = Modifier.height(Spacing.medium))
                 Text(
-                    text = "$walletCount dompet terdaftar",
+                    text = stringResource(R.string.account_count_registered, walletCount),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     color = HeroOnGradient.copy(alpha = 0.9f)
@@ -488,7 +493,7 @@ fun WalletListItem(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Saldo: ${CurrencyFormatter.format(account.currentBalance)}",
+                        text = stringResource(R.string.account_balance_fmt, CurrencyFormatter.format(account.currentBalance)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -499,14 +504,14 @@ fun WalletListItem(
                 IconButton(onClick = onEdit) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit",
+                        contentDescription = stringResource(R.string.common_edit),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Hapus",
+                        contentDescription = stringResource(R.string.common_delete),
                         tint = MaterialTheme.colorScheme.error
                     )
                 }
@@ -532,7 +537,7 @@ fun EmptyWalletState() {
         )
         Spacer(modifier = Modifier.height(Spacing.medium))
         Text(
-            text = "Belum ada dompet. Ketuk + buat bikin yang pertama.",
+            text = stringResource(R.string.account_empty),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

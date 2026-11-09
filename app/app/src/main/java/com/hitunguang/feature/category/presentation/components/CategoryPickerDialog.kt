@@ -33,8 +33,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.hitunguang.R
 import com.hitunguang.feature.category.domain.model.Category
 
 @Composable
@@ -54,7 +56,7 @@ fun CategoryPickerDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Pilih kategori", fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.category_picker_title), fontWeight = FontWeight.Bold)
         },
         text = {
             Column(
@@ -64,12 +66,12 @@ fun CategoryPickerDialog(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Cari kategori...") },
+                    placeholder = { Text(stringResource(R.string.category_picker_search)) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
                             IconButton(onClick = { searchQuery = "" }) {
-                                Icon(Icons.Default.Clear, contentDescription = "Bersihkan")
+                                Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.category_picker_clear_cd))
                             }
                         }
                     },
@@ -94,7 +96,7 @@ fun CategoryPickerDialog(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = "Kategori tidak ditemukan",
+                                    text = stringResource(R.string.category_picker_not_found),
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
@@ -145,14 +147,14 @@ fun CategoryPickerDialog(
                 ) {
                     Icon(Icons.Default.Settings, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Kelola kategori")
+                    Text(stringResource(R.string.category_picker_manage))
                 }
             }
         },
         confirmButton = {},
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Batal")
+                Text(stringResource(R.string.common_cancel))
             }
         }
     )

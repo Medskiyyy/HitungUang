@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.hitunguang.R
 
 object CategoryIconHelper {
     fun getIconByName(name: String?): ImageVector {
@@ -37,18 +38,18 @@ object CategoryIconHelper {
     }
 
     val availableIcons = listOf(
-        "restaurant" to "Makanan",
-        "directions_car" to "Transportasi",
-        "shopping_cart" to "Belanja",
-        "movie" to "Hiburan",
-        "receipt" to "Tagihan",
-        "category" to "Lain-lain",
-        "payments" to "Gaji",
-        "trending_up" to "Investasi",
-        "redeem" to "Bonus",
-        "home" to "Rumah/Kos",
-        "school" to "Pendidikan",
-        "star" to "Favorit",
-        "work" to "Pekerjaan"
+        "restaurant" to R.string.category_icon_restaurant,
+        "directions_car" to R.string.category_icon_directions_car,
+        "shopping_cart" to R.string.category_icon_shopping_cart,
+        "movie" to R.string.category_icon_movie,
+        "receipt" to R.string.category_icon_receipt,
+        "category" to R.string.category_icon_category,
+        "payments" to R.string.category_icon_payments,
+        "trending_up" to R.string.category_icon_trending_up,
+        "redeem" to R.string.category_icon_redeem,
+        "home" to R.string.category_icon_home,
+        "school" to R.string.category_icon_school,
+        "star" to R.string.category_icon_star,
+        "work" to R.string.category_icon_work
     )
 }
