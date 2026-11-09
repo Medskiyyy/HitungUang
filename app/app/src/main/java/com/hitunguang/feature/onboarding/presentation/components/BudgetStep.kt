@@ -22,6 +22,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -74,10 +78,12 @@ fun BudgetStep(
 
             OutlinedTextField(
                 value = budgetAmount,
-                onValueChange = onBudgetAmountChange,
+                // Keep digits only (users may type "2.000.000"); dots are shown by the visual transformation
+                onValueChange = { onBudgetAmountChange(it.filter(Char::isDigit).take(15)) },
                 label = { Text("Budget Bulanan (Rp)") },
                 placeholder = { Text("Contoh: 2.000.000") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                visualTransformation = ThousandSeparatorTransformation,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 leadingIcon = {
@@ -133,6 +139,32 @@ fun BudgetStep(
                 )
             }
         }
+    }
+}
+
+internal fun formatThousands(digits: String): String =
+    digits.reversed().chunked(3).joinToString(".").reversed()
+
+private object ThousandSeparatorTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val formatted = formatThousands(text.text)
+        val offsetMapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int {
+                if (offset <= 0) return 0
+                var digits = 0
+                formatted.forEachIndexed { index, c ->
+                    if (c != '.') {
+                        digits++
+                        if (digits == offset) return index + 1
+                    }
+                }
+                return formatted.length
+            }
+
+            override fun transformedToOriginal(offset: Int): Int =
+                formatted.take(offset).count { it != '.' }
+        }
+        return TransformedText(AnnotatedString(formatted), offsetMapping)
     }
 }
 
