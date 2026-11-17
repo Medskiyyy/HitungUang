@@ -345,4 +345,122 @@ class ReceiptParserTest {
         assertEquals("SABUN", result.items[0].name)
         assertEquals(5000L, result.items[0].subtotal)
     }
+
+    @Test
+    fun `parse Alfamart Jogja receipt with dot date and two line items`() {
+        val rawText = """
+            Alfamart
+            Belanja puas harga pas
+            Alfamart Jogja
+            Jl. Kenangan
+            Jogja
+            08897482739
+            18.7.2024 08:49 #281
+            Cimory
+            1x 2.000 2.000
+            Cimory hazelnut
+            1x 9.000 9.000
+            Frestea madu
+            1x 8.000 8.000
+            Ice cream aice
+            1x 5.000 5.000
+            Kanzler
+            1x 10.000 10.000
+            Le Minerale
+            1x 4.000 4.000
+            ---- ----
+            Total Rp38.000
+            Tunai Rp38.000
+            Lunas
+            Barang yang sudah dibeli tidak b
+            isa dikembalikan lagi
+            Kasir : Sinta
+            Terima kasih
+        """.trimIndent()
+
+        val result = parseReceiptUseCase(rawText)
+
+        assertEquals("Alfamart", result.merchantName)
+        assertEquals(38000L, result.total)
+        assertEquals(6, result.items.size)
+        assertEquals("Cimory", result.items[0].name)
+        assertEquals(2000L, result.items[0].subtotal)
+        assertEquals("Le Minerale", result.items[5].name)
+        assertEquals(4000L, result.items[5].subtotal)
+
+        val cal = Calendar.getInstance()
+        cal.timeInMillis = result.date ?: 0L
+        assertEquals(2024, cal.get(Calendar.YEAR))
+        assertEquals(Calendar.JULY, cal.get(Calendar.MONTH))
+        assertEquals(18, cal.get(Calendar.DAY_OF_MONTH))
+    }
+
+    @Test
+    fun `parse Indomaret harga jual total`() {
+        val result = parseLines(
+            "INDOMARET KENANGAN",
+            "----",
+            "ROTI 1 x 12.000 12.000",
+            "SUSU 2 x 13.000 26.000",
+            "----",
+            "HARGA JUAL : 38,000",
+            "TUNAI : 50,000"
+        )
+        assertEquals(38000L, result.total)
+        assertEquals(2, result.items.size)
+    }
+
+    @Test
+    fun `two line item with digits in name and Ix OCR typo parses cleanly`() {
+        val result = parseLines(
+            "WARUNG MINUM",
+            "----",
+            "AQUA BOTOL 600ML",
+            "2 x 3.500 7.000",
+            "TEH PUCUK",
+            "Ix 4.000 4.000",
+            "----",
+            "TOTAL 11.000"
+        )
+        assertEquals(2, result.items.size)
+        assertEquals("AQUA BOTOL 600ML", result.items[0].name)
+        assertEquals(2.0, result.items[0].quantity ?: 0.0, 0.0)
+        assertEquals(7000L, result.items[0].subtotal)
+        assertEquals("TEH PUCUK", result.items[1].name)
+        assertEquals(1.0, result.items[1].quantity ?: 0.0, 0.0)
+        assertEquals(4000L, result.items[1].subtotal)
+        assertEquals(11000L, result.total)
+    }
+
+    @Test
+    fun `reverse two line item attaches qty and orphan qty line never becomes X`() {
+        val result = parseLines(
+            "TOKO JAYA",
+            "----",
+            "CIMORY HAZELNUT 9.000",
+            "1x 9.000",
+            "----",
+            "2 X 5.000",
+            "TOTAL 9.000"
+        )
+        assertEquals(1, result.items.size)
+        assertEquals("CIMORY HAZELNUT", result.items[0].name)
+        assertEquals(1.0, result.items[0].quantity ?: 0.0, 0.0)
+        assertEquals(9000L, result.items[0].subtotal)
+        assertTrue(result.items.none { it.name.equals("X", ignoreCase = true) })
+    }
+
+    @Test
+    fun `digital receipt with next line total amount`() {
+        val result = parseLines(
+            "QRIS MERCHANT",
+            "----",
+            "Kopi Susu 38.000",
+            "----",
+            "Total Pembayaran",
+            "Rp38.000"
+        )
+        assertEquals(38000L, result.total)
+        assertEquals(1, result.items.size)
+    }
 }

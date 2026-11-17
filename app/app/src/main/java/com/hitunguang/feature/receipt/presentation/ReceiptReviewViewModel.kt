@@ -121,6 +121,18 @@ class ReceiptReviewViewModel @Inject constructor(
         val subtotalVal = parsed.subtotal?.takeIf { it > 0L } ?: itemsSum
         val totalVal = if (parsed.total > 0L) parsed.total else subtotalVal + taxVal
         val isTotalPinned = parsed.total > 0L
+        val effectiveItems = if (parsedItems.isEmpty() && totalVal > 0L) {
+            listOf(
+                ParsedItemInput(
+                    name = parsed.merchantName?.takeIf { it.isNotBlank() } ?: "",
+                    quantity = 1.0,
+                    unitPrice = totalVal,
+                    subtotal = totalVal
+                )
+            )
+        } else {
+            parsedItems
+        }
 
         val suggestedAcc = getSuggestedAccount(rawText, _accounts.value)
         val suggestedCat = getSuggestedCategory(rawText, _categories.value)
@@ -132,9 +144,9 @@ class ReceiptReviewViewModel @Inject constructor(
                 imageUri = imageUri,
                 merchantName = parsed.merchantName ?: "",
                 receiptDate = parsed.date ?: System.currentTimeMillis(),
-                items = parsedItems,
+                items = effectiveItems,
                 taxStr = taxVal.toString(),
-                subtotal = subtotalVal,
+                subtotal = if (subtotalVal > 0L) subtotalVal else totalVal,
                 totalStr = totalVal.toString(),
                 isMerchantConfident = !parsed.merchantName.isNullOrBlank(),
                 isDateConfident = parsed.date != null,

@@ -1,6 +1,7 @@
 package com.hitunguang.core.ocr
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
 import com.google.mlkit.vision.common.InputImage
 import com.hitunguang.core.filemanager.BitmapDecoder
@@ -28,8 +29,10 @@ class OcrManagerImpl @Inject constructor(
     override suspend fun recognizeText(imageUri: Uri): Result<OcrResult> {
         return try {
             // A full-resolution camera photo can exhaust the heap: decode it downscaled
-            // and already rotated upright.
-            val bitmap = withContext(Dispatchers.IO) { BitmapDecoder.decodeUpright(context, imageUri) }
+            // and already rotated upright. Small downloaded images are upscaled so digits
+            // stay above ML Kit's comfortable recognition height.
+            val decoded = withContext(Dispatchers.IO) { BitmapDecoder.decodeUpright(context, imageUri) }
+            val bitmap = upscaleIfSmall(decoded)
             val result = try {
                 processImage(InputImage.fromBitmap(bitmap, 0))
             } finally {
@@ -41,11 +44,24 @@ class OcrManagerImpl @Inject constructor(
         }
     }
 
+    private fun upscaleIfSmall(bitmap: Bitmap): Bitmap {
+        val minSide = minOf(bitmap.width, bitmap.height)
+        val maxSide = maxOf(bitmap.width, bitmap.height)
+        if (minSide >= MIN_UPSCALE_THRESHOLD || maxSide >= MAX_UPSCALED_SIDE) {
+            return bitmap
+        }
+        val scaled = Bitmap.createScaledBitmap(bitmap, bitmap.width * 2, bitmap.height * 2, true)
+        if (scaled != bitmap) {
+            bitmap.recycle()
+        }
+        return scaled
+    }
+
     private suspend fun processImage(image: InputImage): OcrResult = suspendCancellableCoroutine { continuation ->
         recognizer.process(image)
             .addOnSuccessListener { visionText ->
                 if (continuation.isActive) {
-                    continuation.resume(OcrResult(text = visionText.text))
+                    continuation.resume(OcrResult(text = VisionTextFormatter.format(visionText)))
                 }
             }
             .addOnFailureListener { e ->
@@ -57,5 +73,10 @@ class OcrManagerImpl @Inject constructor(
 
     override fun close() {
         recognizer.close()
+    }
+
+    private companion object {
+        const val MIN_UPSCALE_THRESHOLD = 720
+        const val MAX_UPSCALED_SIDE = 1440
     }
 }

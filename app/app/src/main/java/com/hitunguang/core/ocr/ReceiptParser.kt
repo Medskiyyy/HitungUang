@@ -38,7 +38,7 @@ object ReceiptParser {
         "gopay", "ovo", "dana", "linkaja", "ovo points", "promo",
         "voucher", "kupon", "reward", "member", "point", "loyalty",
         "donation", "bulatkan", "rounded", "saving", "tabungan",
-        "refund", "pengembalian dana", "biaya penanganan", "handling fee"
+        "refund", "pengembalian dana", "biaya penanganan", "handling fee", "lunas"
     )
 
     private val PROMOTIONAL_HINTS = listOf(
@@ -67,12 +67,14 @@ object ReceiptParser {
     private val TOTAL_BLOCK_KEYWORDS = listOf(
         "total", "sub total", "subtotal", "grand total", "ppn", "pb1", "pajak",
         "tax", "tunai", "cash", "kembali", "kembalian", "bayar", "service charge",
-        "biaya admin", "handling fee", "harga jual", "jumlah item"
+        "biaya admin", "handling fee", "harga jual", "jumlah item",
+        "total pembayaran", "jumlah bayar", "total tagihan", "tagihan"
     )
 
     private val TOTAL_KEYWORDS = listOf(
         "total", "grand total", "jumlah", "total bayar", "total belanja",
-        "netto", "net"
+        "netto", "net", "harga jual", "total pembayaran", "jumlah bayar",
+        "total tagihan", "tagihan"
     )
 
     private val TOTAL_EXCLUDE_KEYWORDS = listOf(
@@ -92,6 +94,8 @@ object ReceiptParser {
         "transaksi", "ref", "invoice"
     )
 
+    private val DATE_LABELS = listOf("tanggal", "tgl", "date", "waktu", "time")
+
     private val TAX_KEYWORDS = listOf("ppn", "tax", "pajak", "pb1", "vat")
 
     private val TAX_EXCLUDE_KEYWORDS = listOf("before", "excluding", "tanpa")
@@ -107,7 +111,7 @@ object ReceiptParser {
         "discount", "voucher", "kasir", "cashier", "struk", "nota", "invoice",
         "ovo", "gopay", "shopeepay", "dana", "linkaja", "qris", "bca",
         "mandiri", "bri", "bni", "visa", "mastercard", "service", "charge",
-        "sc", "payment", "member", "point", "poin", "hp", "wa", "telepon"
+        "sc", "payment", "member", "point", "poin", "hp", "wa", "telepon", "lunas"
     )
 
     /** Tokens that mark an address / contact line, used when picking the merchant name. */
@@ -126,14 +130,22 @@ object ReceiptParser {
     /** Below this length a single edit distance produces false positives. */
     private const val FUZZY_MIN_LENGTH = 7
 
+    private const val AMOUNT_TOKEN = "(?:(?i)rp\\.?\\s*)?\\d[\\d.,]*(?:,-|\\.-)?"
+
     /** "25 000" printed with a space as thousands separator. */
     private val SPACED_THOUSANDS = Regex("(?<![\\d.,])\\d{1,3}(?: \\d{3})+(?![\\d.,])")
 
-    /** Second line of a two-line item: "2 x 3.500 7.000" or "2 3.500 7.000". */
+    /** Second line of a two-line item: "2 x 3.500 7.000", "1x 2.000", or "2 3.500 7.000". */
     private val QTY_PRICE_LINE =
-        Regex("^\\d+(?:[.,]\\d+)?\\s*(?:[@xX]\\s*[\\d.,]+(?:\\s+[\\d.,]+)?|\\s[\\d.,]+\\s+[\\d.,]+)$")
+        Regex("^\\d+(?:[.,]\\d+)?\\s*(?:[@xX]\\s*$AMOUNT_TOKEN(?:\\s+$AMOUNT_TOKEN)?|\\s$AMOUNT_TOKEN\\s+$AMOUNT_TOKEN)\\s*$")
 
     private val PHONE_TOKEN = Regex("^\\+?\\d[\\d-]*$")
+    private val TIME_TOKEN = Regex("\\b\\d{1,2}:\\d{2}\\b")
+    private val SLASH_DATE_TOKEN = Regex("\\b\\d{1,2}[/-]\\d{1,2}[/-]\\d{2,4}\\b")
+    private val ISO_DATE_TOKEN = Regex("\\b\\d{4}[/-]\\d{1,2}[/-]\\d{1,2}\\b")
+    private val DOT_DATE_4Y_TOKEN = Regex("\\b\\d{1,2}\\.\\d{1,2}\\.20\\d{2}\\b")
+    private val ISO_DOT_DATE_TOKEN = Regex("\\b20\\d{2}\\.\\d{1,2}\\.\\d{1,2}\\b")
+    private val DOT_DATE_2Y_TOKEN = Regex("\\b\\d{1,2}\\.\\d{1,2}\\.\\d{2}\\b")
 
     fun parse(rawText: String?): ParsedReceipt {
         if (rawText.isNullOrBlank()) {
@@ -197,7 +209,9 @@ object ReceiptParser {
         for (i in lines.indices) {
             val line = lines[i]
             if (isSeparatorLine(line)) continue
-            if (matchesKeyword(line, TOTAL_BLOCK_KEYWORDS, fuzzy = true) && extractLastNumber(line) != null) {
+            if (matchesKeyword(line, TOTAL_BLOCK_KEYWORDS, fuzzy = true) &&
+                extractAmountOnOrNextLine(lines, i, allowZero = true) != null
+            ) {
                 return i
             }
         }
@@ -225,8 +239,9 @@ object ReceiptParser {
         (from until until).any { !isSeparatorLine(lines[it]) && lines[it].any { c -> c.isDigit() } }
 
     private fun isSeparatorLine(line: String): Boolean {
-        if (line.length < 3) return false
-        return line.all { it in SEPARATOR_CHARS }
+        val compact = line.filterNot { it.isWhitespace() }
+        if (compact.length < 3) return false
+        return compact.all { it in SEPARATOR_CHARS }
     }
 
     // ---------------------------------------------------------------- merchant
@@ -254,12 +269,11 @@ object ReceiptParser {
      * misread such as 31/02/2026 is rejected instead of silently rolling over.
      */
     private fun parseDate(lines: List<String>): Long? {
-        val dateLabels = listOf("tanggal", "tgl", "date", "waktu", "time")
         var firstValid: Long? = null
 
         for (line in lines) {
             val candidate = extractDateFromLine(line) ?: continue
-            if (matchesKeyword(line, dateLabels)) {
+            if (matchesKeyword(line, DATE_LABELS)) {
                 return candidate
             }
             if (firstValid == null) {
@@ -268,6 +282,9 @@ object ReceiptParser {
         }
         return firstValid
     }
+
+    private fun hasTimeOrDateHint(line: String): Boolean =
+        TIME_TOKEN.containsMatchIn(line) || matchesKeyword(line, DATE_LABELS)
 
     private fun extractDateFromLine(line: String): Long? {
         val normalized = line.lowercase()
@@ -284,6 +301,18 @@ object ReceiptParser {
             }
         }
 
+        val dotFourYearMatcher = Pattern
+            .compile("\\b(\\d{1,2})\\.(\\d{1,2})\\.(20\\d{2})\\b")
+            .matcher(normalized)
+        while (dotFourYearMatcher.find()) {
+            val day = dotFourYearMatcher.group(1)?.toIntOrNull()
+            val month = dotFourYearMatcher.group(2)?.toIntOrNull()
+            val year = dotFourYearMatcher.group(3)?.toIntOrNull()
+            if (day != null && month != null && year != null) {
+                toTimestamp(year, month - 1, day)?.let { return it }
+            }
+        }
+
         val isoMatcher = Pattern
             .compile("\\b(\\d{4})[/-](\\d{1,2})[/-](\\d{1,2})\\b")
             .matcher(normalized)
@@ -293,6 +322,32 @@ object ReceiptParser {
             val day = isoMatcher.group(3)?.toIntOrNull()
             if (day != null && month != null && year != null) {
                 toTimestamp(year, month - 1, day)?.let { return it }
+            }
+        }
+
+        val isoDotMatcher = Pattern
+            .compile("\\b(20\\d{2})\\.(\\d{1,2})\\.(\\d{1,2})\\b")
+            .matcher(normalized)
+        while (isoDotMatcher.find()) {
+            val year = isoDotMatcher.group(1)?.toIntOrNull()
+            val month = isoDotMatcher.group(2)?.toIntOrNull()
+            val day = isoDotMatcher.group(3)?.toIntOrNull()
+            if (day != null && month != null && year != null) {
+                toTimestamp(year, month - 1, day)?.let { return it }
+            }
+        }
+
+        if (hasTimeOrDateHint(normalized)) {
+            val dotTwoYearMatcher = Pattern
+                .compile("\\b(\\d{1,2})\\.(\\d{1,2})\\.(\\d{2})\\b")
+                .matcher(normalized)
+            while (dotTwoYearMatcher.find()) {
+                val day = dotTwoYearMatcher.group(1)?.toIntOrNull()
+                val month = dotTwoYearMatcher.group(2)?.toIntOrNull()
+                val year = normalizeYear(dotTwoYearMatcher.group(3)?.toIntOrNull())
+                if (day != null && month != null && year != null) {
+                    toTimestamp(year, month - 1, day)?.let { return it }
+                }
             }
         }
 
@@ -341,7 +396,7 @@ object ReceiptParser {
             if (matchesKeyword(line, TOTAL_KEYWORDS, fuzzy = true) &&
                 !matchesKeyword(line, TOTAL_EXCLUDE_KEYWORDS, fuzzy = true)
             ) {
-                val amount = extractLastNumber(line)
+                val amount = extractAmountOnOrNextLine(lines, i, allowZero = false)
                 if (amount != null && amount > 0) return amount
             }
         }
@@ -366,7 +421,7 @@ object ReceiptParser {
             if (matchesKeyword(line, TAX_KEYWORDS, fuzzy = true) &&
                 !matchesKeyword(line, TAX_EXCLUDE_KEYWORDS)
             ) {
-                val amount = extractLastNumber(line)
+                val amount = extractAmountOnOrNextLine(lines, i, allowZero = true)
                 if (amount != null) return amount
             }
         }
@@ -377,11 +432,33 @@ object ReceiptParser {
         for (i in lines.indices.reversed()) {
             val line = lines[i]
             if (matchesKeyword(line, SUBTOTAL_KEYWORDS, fuzzy = true)) {
-                val amount = extractLastNumber(line)
+                val amount = extractAmountOnOrNextLine(lines, i, allowZero = true)
                 if (amount != null) return amount
             }
         }
         return null
+    }
+
+    private fun extractAmountOnOrNextLine(
+        lines: List<String>,
+        index: Int,
+        allowZero: Boolean
+    ): Long? {
+        val onLine = extractLastNumber(lines[index], allowZero = allowZero)
+        if (onLine != null) return onLine
+        val next = lines.getOrNull(index + 1) ?: return null
+        if (!isStandaloneAmountLine(next)) return null
+        val amount = cleanAndParseAmount(next) ?: return null
+        return if (allowZero) amount.takeIf { it >= 0L } else amount.takeIf { it > 0L }
+    }
+
+    private fun isStandaloneAmountLine(line: String): Boolean {
+        val trimmed = line.trim()
+        if (trimmed.isEmpty() || isPhoneNumber(trimmed)) return false
+        val stripped = trimmed.replace(Regex("(?i)^rp\\.?\\s*"), "").trim()
+        if (stripped.any { it.isLetter() }) return false
+        val amount = cleanAndParseAmount(trimmed)
+        return amount != null && amount >= 0L
     }
 
     // ---------------------------------------------------------------- items
@@ -399,60 +476,97 @@ object ReceiptParser {
         skipHeaderInfo: Boolean
     ): List<ParsedReceiptItem> {
         val items = mutableListOf<ParsedReceiptItem>()
-        var pendingName = leadingName?.takeIf { isItemNameLine(it) }
+        var pendingName = leadingName?.takeIf { isCandidateItemName(it) }
 
         for (line in lines) {
-            if (line.length < 3) continue
-            if (isSeparatorLine(line)) continue
-            if (matchesKeyword(line, ITEM_SKIP_KEYWORDS)) continue
-            if (matchesKeyword(line, PROMOTIONAL_HINTS)) continue
-            if (skipHeaderInfo && matchesKeyword(line, HEADER_INFO_KEYWORDS)) continue
+            val normLine = normalizeOcrQtyLine(line)
+            if (normLine.length < 2 ||
+                isSeparatorLine(normLine) ||
+                matchesKeyword(normLine, ITEM_SKIP_KEYWORDS) ||
+                matchesKeyword(normLine, PROMOTIONAL_HINTS) ||
+                (skipHeaderInfo && matchesKeyword(normLine, HEADER_INFO_KEYWORDS))
+            ) {
+                pendingName = null
+                continue
+            }
 
-            // Two-line item: the name on one line, "2 x 3.500 7.000" on the next.
+            // Two-line item: either name above "2 x 3.500 7.000", or "[Name] [Subtotal]" above "1x 2.000".
             val name = pendingName
             pendingName = null
-            if (name != null && QTY_PRICE_LINE.matches(line)) {
-                tryParseItemLine("$name $line")?.let { items.add(it) }
+            if (QTY_PRICE_LINE.matches(normLine)) {
+                if (name != null) {
+                    tryParseItemLine("$name $normLine")?.let { items.add(it) }
+                } else {
+                    val prev = items.lastOrNull()
+                    if (prev != null && prev.quantity == null) {
+                        val parsedQty = tryParseItemLine("ITEM $normLine")
+                        if (parsedQty != null) {
+                            items[items.lastIndex] = prev.copy(
+                                quantity = parsedQty.quantity,
+                                unitPrice = parsedQty.unitPrice,
+                                subtotal = if (prev.subtotal > 0L) prev.subtotal else parsedQty.subtotal
+                            )
+                        }
+                    }
+                }
                 continue
             }
 
-            if (line == merchantName) continue
-            if (!line.any { it.isDigit() }) {
-                if (isItemNameLine(line)) pendingName = line
-                continue
-            }
+            if (line == merchantName || normLine == merchantName) continue
 
-            tryParseItemLine(line)?.let { items.add(it) }
+            val parsed = tryParseItemLine(normLine)
+            if (parsed != null) {
+                items.add(parsed)
+            } else if (isCandidateItemName(normLine)) {
+                pendingName = normLine
+            }
         }
 
         return items
     }
 
-    private fun isItemNameLine(line: String): Boolean =
-        !isSeparatorLine(line) && line.none { it.isDigit() } && line.count { it.isLetter() } >= 2
+    private fun normalizeOcrQtyLine(line: String): String = line
+        .replace(Regex("^([Il|])\\s*([xX@])(?=\\s|\\d)"), "1$2")
+        .replace(Regex("(\\s)([Il|])\\s*([xX@])\\s+(?=(?:(?i)rp\\.?\\s*)?\\d)"), "$11$3 ")
 
-    private fun tryParseItemLine(line: String): ParsedReceiptItem? {
-        if (line.split(Regex("\\s+")).any { isPhoneNumber(it) }) return null
+    private fun isCandidateItemName(line: String): Boolean {
+        if (line.length < 2 || isSeparatorLine(line)) return false
+        if (line.count { it.isLetter() } < 2) return false
+        if (line.split(Regex("\\s+")).any { isPhoneNumber(it) }) return false
+        if (firstToken(line)?.let { it in ADDRESS_HINTS } == true) return false
+        if (isDateOrTimeLine(line)) return false
+        if (matchesKeyword(line, HEADER_INFO_KEYWORDS)) return false
+        if (matchesKeyword(line, ITEM_SKIP_KEYWORDS)) return false
+        if (matchesKeyword(line, PROMOTIONAL_HINTS)) return false
+        return true
+    }
 
-        // Skip lines that look like dates or times
-        if (line.matches(Regex(".*\\b\\d{1,2}[/-]\\d{1,2}[/-]\\d{2,4}\\b.*")) ||
-            line.matches(Regex(".*\\b\\d{4}[/-]\\d{1,2}[/-]\\d{1,2}\\b.*")) ||
-            line.matches(Regex(".*\\b\\d{2}:\\d{2}\\b.*"))
+    private fun isDateOrTimeLine(line: String): Boolean {
+        val lower = line.lowercase()
+        if (SLASH_DATE_TOKEN.containsMatchIn(line) ||
+            ISO_DATE_TOKEN.containsMatchIn(line) ||
+            TIME_TOKEN.containsMatchIn(line) ||
+            DOT_DATE_4Y_TOKEN.containsMatchIn(line) ||
+            ISO_DOT_DATE_TOKEN.containsMatchIn(line) ||
+            (hasTimeOrDateHint(lower) && DOT_DATE_2Y_TOKEN.containsMatchIn(line))
         ) {
-            return null
+            return true
         }
-
         // "8 Juni 2026" is a date, but "1 Croissant 25.000" is an item: only reject the
         // digit-word-digit shape when the middle word is an actual month name.
         val wordDate = Regex("\\b(\\d{1,2})\\s+([a-zA-Z]{3,9})\\s+(\\d{2,4})\\b").find(line)
-        if (wordDate != null && MONTH_MAP.containsKey(wordDate.groupValues[2].lowercase())) {
-            return null
-        }
+        return wordDate != null && MONTH_MAP.containsKey(wordDate.groupValues[2].lowercase())
+    }
+
+    private fun tryParseItemLine(rawLine: String): ParsedReceiptItem? {
+        val line = normalizeOcrQtyLine(rawLine)
+        if (line.split(Regex("\\s+")).any { isPhoneNumber(it) }) return null
+        if (isDateOrTimeLine(line)) return null
 
         // Pattern 1: [Name] [Qty] x/X/@ [UnitPrice] [Subtotal]
         // E.g. "AQUA 2 x 5.000 10.000" or "INDOMIE 3 @ 3,000 9,000"
         val matcher1 = Pattern
-            .compile("^(.*?)\\s+(\\d+(?:[.,]\\d+)?)\\s*[@xX]\\s*([\\d.,]+)\\s+([\\d.,]+)\\s*$")
+            .compile("^(.*?)\\s+(\\d+(?:[.,]\\d+)?)\\s*[@xX]\\s*($AMOUNT_TOKEN)\\s+($AMOUNT_TOKEN)\\s*$")
             .matcher(line)
         if (matcher1.find()) {
             val name = cleanItemName(matcher1.group(1))
@@ -467,7 +581,7 @@ object ReceiptParser {
         // Pattern 1B: [Name] [Qty] x/X/@ [UnitPrice] (without trailing subtotal)
         // E.g. "INDOMIE 2 x 3500" or "TELUR 1 x 25000"
         val matcher1B = Pattern
-            .compile("^(.*?)\\s+(\\d+(?:[.,]\\d+)?)\\s*[@xX]\\s*([\\d.,]+)\\s*$")
+            .compile("^(.*?)\\s+(\\d+(?:[.,]\\d+)?)\\s*[@xX]\\s*($AMOUNT_TOKEN)\\s*$")
             .matcher(line)
         if (matcher1B.find()) {
             val name = cleanItemName(matcher1B.group(1))
@@ -482,7 +596,7 @@ object ReceiptParser {
         // Pattern 4: [Qty] [Name] [Subtotal] (restaurant / QRIS format)
         // E.g. "1 NASI GORENG 25.000" or "2 ES TEH 10000"
         val matcher4 = Pattern
-            .compile("^(\\d+(?:[.,]\\d+)?)\\s+(.*?)\\s+([\\d.,]+)\\s*$")
+            .compile("^(\\d+(?:[.,]\\d+)?)\\s+(.*?)\\s+($AMOUNT_TOKEN)\\s*$")
             .matcher(line)
         if (matcher4.find()) {
             val qty = parseQty(matcher4.group(1))
@@ -491,8 +605,9 @@ object ReceiptParser {
             val price = if (qty > 0) (subtotal / qty).toLong() else subtotal
             // "600 ML AQUA 5.000" - the leading number is a measurement, not a quantity.
             val leadsWithMeasurement = firstToken(name)?.let { it in MEASUREMENT_TOKENS } ?: false
-            if (name.isNotEmpty() && subtotal >= 100L && name.any { it.isLetter() } &&
-                isPlausibleQty(qty) && !leadsWithMeasurement
+            val isQtyMultiplierToken = name.matches(Regex("(?i)^[x@pcs]+$"))
+            if (name.isNotEmpty() && subtotal >= 100L && name.count { it.isLetter() } >= 2 &&
+                !isQtyMultiplierToken && isPlausibleQty(qty) && !leadsWithMeasurement
             ) {
                 return ParsedReceiptItem(name, qty, price, subtotal)
             }
@@ -501,7 +616,7 @@ object ReceiptParser {
         // Pattern 2: [Name] [Qty] [UnitPrice] [Subtotal] (without separator)
         // E.g. "AQUA 2 5.000 10.000"
         val matcher2 = Pattern
-            .compile("^(.*?)\\s+(\\d+)\\s+([\\d.,]+)\\s+([\\d.,]+)\\s*$")
+            .compile("^(.*?)\\s+(\\d+)\\s+($AMOUNT_TOKEN)\\s+($AMOUNT_TOKEN)\\s*$")
             .matcher(line)
         if (matcher2.find()) {
             val name = cleanItemName(matcher2.group(1))
@@ -519,7 +634,7 @@ object ReceiptParser {
         // Pattern 2B: [Name] [UnitPrice] [Subtotal] (implicit Qty 1, when UnitPrice == Subtotal)
         // E.g. "ROTI TAWAR SARI    15.000  15.000"
         val matcher2B = Pattern
-            .compile("^(.*?)\\s+([\\d.,]+)\\s+([\\d.,]+)\\s*$")
+            .compile("^(.*?)\\s+($AMOUNT_TOKEN)\\s+($AMOUNT_TOKEN)\\s*$")
             .matcher(line)
         if (matcher2B.find()) {
             val name = cleanItemName(matcher2B.group(1))
@@ -531,12 +646,13 @@ object ReceiptParser {
         }
 
         // Pattern 3: Simple item line: [Name] [Subtotal]
-        // E.g. "TEH KOTAK 6.500" or "KOPI KAPAL API Rp12.000"
-        val lastSpaceIndex = line.lastIndexOf(' ')
-        if (lastSpaceIndex > 0) {
-            val name = cleanItemName(line.substring(0, lastSpaceIndex))
-            val lastPart = line.substring(lastSpaceIndex + 1)
-            val amount = cleanAndParseAmount(lastPart)
+        // E.g. "TEH KOTAK 6.500", "KOPI KAPAL API Rp12.000", or "KOPI Rp 12.000"
+        val matcher3 = Pattern
+            .compile("^(.*?)\\s+($AMOUNT_TOKEN)\\s*$")
+            .matcher(line)
+        if (matcher3.find()) {
+            val name = cleanItemName(matcher3.group(1))
+            val amount = cleanAndParseAmount(matcher3.group(2))
             val looksLikeAddress = firstToken(name)?.let { it in ADDRESS_HINTS } ?: false
             if (name.isNotEmpty() && amount != null && amount >= 100L && !looksLikeAddress) {
                 if (name.replace(Regex("[^a-zA-Z]"), "").length >= 2) {
@@ -616,12 +732,12 @@ object ReceiptParser {
         return digits.length >= 10 || trimmed.startsWith("08") || trimmed.startsWith("+62")
     }
 
-    private fun extractLastNumber(line: String): Long? {
+    private fun extractLastNumber(line: String, allowZero: Boolean = false): Long? {
         val parts = line.split(Regex("\\s+"))
         for (i in parts.indices.reversed()) {
             if (isPhoneNumber(parts[i])) continue
             val amount = cleanAndParseAmount(parts[i])
-            if (amount != null && amount > 0) {
+            if (amount != null && (if (allowZero) amount >= 0L else amount > 0L)) {
                 return amount
             }
         }
