@@ -43,8 +43,11 @@ object VisionTextFormatter {
 
     private data class DeskewedLine(
         val box: LineBox,
+        val cx: Float,
+        val cy: Float,
         val yCorr: Float,
-        val width: Float
+        val width: Float,
+        val localSlope: Float?
     )
 
     fun format(visionText: Text): String {
@@ -87,40 +90,65 @@ object VisionTextFormatter {
         val ordered = valid.map { box ->
             val cx = (box.left + box.right) * 0.5f
             val cy = (box.top + box.bottom) * 0.5f
+            val localSlope = box.cornerPoints?.takeIf { it.size >= 2 }?.let { pts ->
+                val dx = (pts[1].x - pts[0].x).toFloat()
+                if (dx >= MIN_LOCAL_SLOPE_SPAN_PX) {
+                    val s = (pts[1].y - pts[0].y).toFloat() / dx
+                    if (abs(s) <= MAX_ABS_SLOPE) s else null
+                } else {
+                    null
+                }
+            }
             DeskewedLine(
                 box = box,
+                cx = cx,
+                cy = cy,
                 yCorr = cy - slope * cx,
-                width = (box.right - box.left).coerceAtLeast(1).toFloat()
+                width = (box.right - box.left).coerceAtLeast(1).toFloat(),
+                localSlope = localSlope
             )
         }.sortedWith(compareBy<DeskewedLine>({ it.yCorr }, { it.box.left }))
 
         val rows = mutableListOf<MutableList<DeskewedLine>>()
-        var currentRow = mutableListOf<DeskewedLine>()
-        var rowYCorrSum = 0f
 
         for (cand in ordered) {
-            if (currentRow.isEmpty()) {
-                currentRow.add(cand)
-                rowYCorrSum = cand.yCorr
+            if (rows.isEmpty()) {
+                rows.add(mutableListOf(cand))
                 continue
             }
-            val meanYCorr = rowYCorrSum / currentRow.size
-            val yClose = abs(cand.yCorr - meanYCorr) <= yThreshold
-            val noHorizOverlap = currentRow.all { existing ->
-                val overlap = minOf(cand.box.right, existing.box.right) - maxOf(cand.box.left, existing.box.left)
-                overlap <= MAX_HORIZ_OVERLAP * minOf(cand.width, existing.width)
+            var bestRow: MutableList<DeskewedLine>? = null
+            var bestErr = Float.MAX_VALUE
+            val firstRowIdx = (rows.size - ROW_LOOKBACK_LIMIT).coerceAtLeast(0)
+            for (rIdx in (rows.size - 1) downTo firstRowIdx) {
+                val row = rows[rIdx]
+                val noHorizOverlap = row.all { existing ->
+                    val overlap = minOf(cand.box.right, existing.box.right) - maxOf(cand.box.left, existing.box.left)
+                    overlap <= MAX_HORIZ_OVERLAP * minOf(cand.width, existing.width)
+                }
+                if (!noHorizOverlap) continue
+
+                val meanYCorr = row.map { it.yCorr }.average().toFloat()
+                val yCorrErr = abs(cand.yCorr - meanYCorr)
+                val ref = row.filter { it.localSlope != null }.maxByOrNull { it.width }
+                val baselineSlope = ref?.localSlope ?: cand.localSlope
+                val anchor = ref ?: row.maxByOrNull { it.width }
+                val localErr = if (baselineSlope != null && anchor != null) {
+                    abs(cand.cy - (anchor.cy + baselineSlope * (cand.cx - anchor.cx)))
+                } else {
+                    null
+                }
+
+                val effectiveErr = if (localErr != null) minOf(yCorrErr, localErr) else yCorrErr
+                if (effectiveErr <= yThreshold && effectiveErr < bestErr) {
+                    bestErr = effectiveErr
+                    bestRow = row
+                }
             }
-            if (yClose && noHorizOverlap) {
-                currentRow.add(cand)
-                rowYCorrSum += cand.yCorr
+            if (bestRow != null) {
+                bestRow.add(cand)
             } else {
-                rows.add(currentRow)
-                currentRow = mutableListOf(cand)
-                rowYCorrSum = cand.yCorr
+                rows.add(mutableListOf(cand))
             }
-        }
-        if (currentRow.isNotEmpty()) {
-            rows.add(currentRow)
         }
 
         return rows.joinToString("\n") { row ->
@@ -134,7 +162,9 @@ object VisionTextFormatter {
     }
 
     private const val MIN_SLOPE_SPAN_PX = 40f
+    private const val MIN_LOCAL_SLOPE_SPAN_PX = 60f
     private const val MAX_ABS_SLOPE = 0.35f
     private const val ROW_Y_TOLERANCE = 0.55f
     private const val MAX_HORIZ_OVERLAP = 0.25f
+    private const val ROW_LOOKBACK_LIMIT = 4
 }

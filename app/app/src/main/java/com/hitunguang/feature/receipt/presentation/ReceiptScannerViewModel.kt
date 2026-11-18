@@ -124,7 +124,7 @@ class ReceiptScannerViewModel @Inject constructor(
         if (text.isBlank()) return ScanQuality.LOW
 
         val lines = text.lines().filter { it.isNotBlank() }
-        val hasAmountLike = Regex("\\d[\\d.,]{2,}").containsMatchIn(text)
+        val hasAmountLike = Regex("\\d(?:[\\d.,]|\\s(?=\\d{3})){2,}").containsMatchIn(text)
 
         return if (lines.size >= MIN_QUALITY_LINES && text.length >= MIN_QUALITY_CHARS && hasAmountLike) {
             ScanQuality.GOOD

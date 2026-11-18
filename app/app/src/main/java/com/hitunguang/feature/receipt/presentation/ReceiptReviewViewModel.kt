@@ -124,7 +124,7 @@ class ReceiptReviewViewModel @Inject constructor(
         val effectiveItems = if (parsedItems.isEmpty() && totalVal > 0L) {
             listOf(
                 ParsedItemInput(
-                    name = parsed.merchantName?.takeIf { it.isNotBlank() } ?: "",
+                    name = parsed.merchantName?.takeIf { it.isNotBlank() } ?: "Belanja",
                     quantity = 1.0,
                     unitPrice = totalVal,
                     subtotal = totalVal

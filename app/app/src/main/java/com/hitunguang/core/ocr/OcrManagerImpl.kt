@@ -47,10 +47,18 @@ class OcrManagerImpl @Inject constructor(
     private fun upscaleIfSmall(bitmap: Bitmap): Bitmap {
         val minSide = minOf(bitmap.width, bitmap.height)
         val maxSide = maxOf(bitmap.width, bitmap.height)
-        if (minSide >= MIN_UPSCALE_THRESHOLD || maxSide >= MAX_UPSCALED_SIDE) {
+        if (minSide >= TARGET_MIN_SIDE || maxSide >= MAX_UPSCALED_SIDE || minSide <= 0 || maxSide <= 0) {
             return bitmap
         }
-        val scaled = Bitmap.createScaledBitmap(bitmap, bitmap.width * 2, bitmap.height * 2, true)
+        val targetScale = TARGET_MIN_SIDE.toFloat() / minSide
+        val maxSideScale = MAX_UPSCALED_SIDE.toFloat() / maxSide
+        val scale = minOf(targetScale, maxSideScale, MAX_UPSCALE_FACTOR)
+        if (scale <= 1.05f) {
+            return bitmap
+        }
+        val newWidth = (bitmap.width * scale).toInt().coerceAtLeast(bitmap.width)
+        val newHeight = (bitmap.height * scale).toInt().coerceAtLeast(bitmap.height)
+        val scaled = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
         if (scaled != bitmap) {
             bitmap.recycle()
         }
@@ -76,7 +84,8 @@ class OcrManagerImpl @Inject constructor(
     }
 
     private companion object {
-        const val MIN_UPSCALE_THRESHOLD = 720
-        const val MAX_UPSCALED_SIDE = 1440
+        const val TARGET_MIN_SIDE = 960
+        const val MAX_UPSCALED_SIDE = 2000
+        const val MAX_UPSCALE_FACTOR = 3.5f
     }
 }

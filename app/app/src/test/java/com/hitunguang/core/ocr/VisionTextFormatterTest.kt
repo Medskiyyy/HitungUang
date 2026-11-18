@@ -75,4 +75,40 @@ class VisionTextFormatterTest {
         assertEquals("Subtotal Rp15.000\nTotal Rp15.000", formatted)
         assertEquals("fallback", VisionTextFormatter.formatLines(emptyList(), "fallback"))
     }
+
+    @Test
+    fun `groups curved row price sitting 1_2x line height lower along local baseline slope`() {
+        fun slopedBox(text: String, left: Int, cy: Int, right: Int, height: Int, slope: Float): LineBox {
+            val halfW = (right - left) * 0.5f
+            val yLeft = (cy - slope * halfW).toInt()
+            val yRight = (cy + slope * halfW).toInt()
+            val top = cy - height / 2
+            return LineBox(
+                text = text,
+                left = left,
+                top = top,
+                right = right,
+                bottom = top + height,
+                cornerPoints = arrayOf(
+                    Point(left, yLeft - height / 2),
+                    Point(right, yRight - height / 2),
+                    Point(right, yRight + height / 2),
+                    Point(left, yLeft + height / 2)
+                )
+            )
+        }
+
+        // Most lines are flat (median slope ~0), while the curved item row slopes downward at +0.08
+        // so its right-hand price sits 24px (1.2x line height) lower than the item label.
+        val boxes = listOf(
+            slopedBox("INDOMARET", 20, 100, 300, 20, 0f),
+            slopedBox("AQUA BOTOL 600ML", 20, 200, 220, 20, 0.08f),
+            slopedBox("TOTAL", 20, 280, 140, 20, 0f),
+            slopedBox("10.000", 380, 224, 460, 20, 0.08f),
+            slopedBox("10.000", 380, 280, 460, 20, 0f)
+        )
+
+        val formatted = VisionTextFormatter.formatLines(boxes)
+        assertEquals("INDOMARET\nAQUA BOTOL 600ML 10.000\nTOTAL 10.000", formatted)
+    }
 }

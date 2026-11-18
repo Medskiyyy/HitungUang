@@ -463,4 +463,151 @@ class ReceiptParserTest {
         assertEquals(38000L, result.total)
         assertEquals(1, result.items.size)
     }
+
+    @Test
+    fun `modern Indomaret prefers TOTAL BELANJA above bottom HARGA JUAL and ignores inclusive DPP`() {
+        val rawText = """
+            PT INDOMARCO PRISMATAMA
+            INDOMARET CIKINI
+            JL. CIKINI RAYA NO. 10
+            15.05.25-14:20/4.1.4/ABCD-1234/KASIR/01
+            AQUA 600ML       2  3500   7,000
+            ROTI TAWAR       1 38000  38,000
+            TO TAL :                  45,000
+            TUNAI :                   50,000
+            KEMBALI :                  5,000
+            PPN : DPP= 40,541 PPN= 4,459
+            HARGA JUAL :              43,604
+        """.trimIndent()
+
+        val result = parseReceiptUseCase(rawText)
+
+        assertEquals("Indomaret", result.merchantName)
+        assertEquals(45000L, result.total)
+        assertNull(result.tax)
+        assertEquals(2, result.items.size)
+    }
+
+    @Test
+    fun `Alfamart Total Item line and parenthesized PPN parse accurately`() {
+        val rawText = """
+            PT. SUMBER ALFARIA TRIJAYA
+            ALFAMART KEMANG
+            JL. KEMANG RAYA NO. 5
+            -----------------------
+            AIR MINERAL 600ML   2  3,500   7,000
+            MINYAK GORENG 2L    1 50,000  50,000
+            -----------------------
+            otal Iter   2    57,000
+            Tunai           100,000
+            Kembalian        43,000
+            PPN ( 5,549)
+        """.trimIndent()
+
+        val result = parseReceiptUseCase(rawText)
+
+        assertEquals("Alfamart", result.merchantName)
+        assertEquals(57000L, result.total)
+        assertNull(result.tax)
+        assertEquals(2, result.items.size)
+    }
+
+    @Test
+    fun `wholesale receipt with units and thousands dot quantity parses cleanly`() {
+        val rawText = """
+            TOKO GROSIR MAKMUR
+            -----------------------
+            Beras Ketan
+            4.000 Kg X 12.500 Rp. 50.000.000
+            Kacang Tanah
+            1600 KIg X 14.000 Rp. 22.400.000
+            -----------------------
+            TOTAL : Rp. 72.400.000
+        """.trimIndent()
+
+        val result = parseReceiptUseCase(rawText)
+
+        assertEquals(2, result.items.size)
+        assertEquals("Beras Ketan", result.items[0].name)
+        assertEquals(4000.0, result.items[0].quantity ?: 0.0, 0.0)
+        assertEquals(50_000_000L, result.items[0].subtotal)
+        assertEquals("Kacang Tanah", result.items[1].name)
+        assertEquals(1600.0, result.items[1].quantity ?: 0.0, 0.0)
+        assertEquals(22_400_000L, result.items[1].subtotal)
+        assertEquals(72_400_000L, result.total)
+    }
+
+    @Test
+    fun `spaced commas spaced dot date and faded total reconcile via cash tender`() {
+        val spaced = parseReceiptUseCase(
+            """
+                INDOMARET SUDIRMAN
+                14. 09. 16- 06:46/1.0/TRX/01
+                --------------------
+                ROTI COKLAT   1 18, 000  18, 000
+                SUSU UHT      1 15, 900  15, 900
+                --------------------
+                TOTAL : 33, 900
+            """.trimIndent()
+        )
+        assertEquals(33900L, spaced.total)
+        assertEquals(2, spaced.items.size)
+        val cal = Calendar.getInstance().apply { timeInMillis = spaced.date ?: 0L }
+        assertEquals(2016, cal.get(Calendar.YEAR))
+        assertEquals(Calendar.SEPTEMBER, cal.get(Calendar.MONTH))
+        assertEquals(14, cal.get(Calendar.DAY_OF_MONTH))
+
+        val faded = parseLines(
+            "INDOMARET",
+            "----",
+            "SNACK PACK 1 15.800 15.800",
+            "----",
+            "TOTAL : 1:,800",
+            "TUNAI : 20,000",
+            "KEMBALI : 4,200"
+        )
+        assertEquals(15800L, faded.total)
+    }
+
+    @Test
+    fun `barcode prefixed qty line and truncated trailing zero total recover cleanly`() {
+        val rawText = """
+            MINIMARKET HARAPAN
+            -----------------------
+            BISKUIT KELAPA
+            18853868 1 x 5.500 = 5.500
+            ROTI MANIS 41.500
+            -----------------------
+            Sub Total :Rp. 47.000
+            Total Rp. 47.00
+        """.trimIndent()
+
+        val result = parseReceiptUseCase(rawText)
+
+        assertEquals(2, result.items.size)
+        assertEquals("BISKUIT KELAPA", result.items[0].name)
+        assertEquals(5500L, result.items[0].subtotal)
+        assertEquals(47000L, result.total)
+    }
+
+    @Test
+    fun `thermal OCR artifacts like trailing margin noise B glyph and cropped subtotal recover`() {
+        val rawText = """
+            PT INDOMARCO PRISMATAMA
+            INDOMARET TEST
+            14.12.25-10:33/4.0/TRX/01
+            ORONAMIN C DRINK 120 1 7500 7,500 40
+            NUTRIJEL STRAW 15    2 6500 13,00
+            MR.BREAD CHOCO       4 8500 B,500
+            TOTAL BELANJA : 29,000
+        """.trimIndent()
+
+        val result = parseReceiptUseCase(rawText)
+
+        assertEquals(3, result.items.size)
+        assertEquals(7500L, result.items[0].subtotal)
+        assertEquals(13000L, result.items[1].subtotal)
+        assertEquals(8500L, result.items[2].subtotal)
+        assertEquals(29000L, result.total)
+    }
 }
